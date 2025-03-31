@@ -17,9 +17,14 @@ Saved/
 
 .DS_Store
 
+# IDE specific files
 .vscode/
 .idea/
+.vsconfig
 
 # Visual Studio cache
 .vs/
 *.ipch
+
+# Package Files
+Package/
