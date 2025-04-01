@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
 #include "UnitBase.generated.h"
 
 UCLASS()
-class ELVENRING_API AUnitBase : public APawn
+class ELVENRING_API AUnitBase : public ACharacter
 {
 	GENERATED_BODY()
 
@@ -29,10 +29,10 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	void Attack();
-	void OnAttacked();
-	void OnDeath();
-	void OnHealthChanged();
+	virtual void Attack();
+	virtual void OnAttacked();
+	virtual void OnDeath();
+	virtual void OnHealthChanged();
 	virtual float TakeDamage
 	(
 		float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser
