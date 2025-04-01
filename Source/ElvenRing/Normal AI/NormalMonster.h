@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AUnitBase.h"
+#include "ElvenRing/Character/UnitBase.h"
 #include "NormalMonster.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ELVENRING_API ANormalMonster : public AAUnitBase
+class ELVENRING_API ANormalMonster : public AUnitBase
 {
 	GENERATED_BODY()
 	
