@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
-#include "AUnitBase.generated.h"
+#include "GameFramework/Pawn.h"
+#include "UnitBase.generated.h"
 
 UCLASS()
-class ELVENRING_API AAUnitBase : public ACharacter
+class ELVENRING_API AUnitBase : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AAUnitBase();
+	AUnitBase();
 
 protected:
 	// Called when the game starts or when spawned
@@ -27,7 +27,7 @@ protected:
 	bool bIsHit;
 	bool bIsDie;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
 	void Attack();
 	void OnAttacked();

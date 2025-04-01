@@ -1,54 +1,54 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AUnitBase.h"
+#include "UnitBase.h"
 #include "Kismet/GameplayStatics.h"
 // Sets default values
-AAUnitBase::AAUnitBase()
+AUnitBase::AUnitBase()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
 // Called when the game starts or when spawned
-void AAUnitBase::BeginPlay()
+void AUnitBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
 
 // Called every frame
-void AAUnitBase::Tick(float DeltaTime)
+void AUnitBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-void AAUnitBase::Attack()
+void AUnitBase::Attack()
 {
 }
 
-void AAUnitBase::OnAttacked()
+void AUnitBase::OnAttacked()
 {
 }
 
-void AAUnitBase::OnDeath()
+void AUnitBase::OnDeath()
 {
 }
 
-void AAUnitBase::OnHealthChanged()
+void AUnitBase::OnHealthChanged()
 {
 }
 
-float  AAUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float HitDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage > 0 && !bIsDie)
 	{
 		CurHealth -= Damage;
 		if (CurHealth <= 0.f) OnDeath();
-		else 
+		else
 		{
 			PlayDamageAnim();
 		}
@@ -57,16 +57,16 @@ float  AAUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACo
 }
 
 
-void AAUnitBase::PlayDamageAnim()
+void AUnitBase::PlayDamageAnim()
 {
 }
 
-void AAUnitBase::PlayDealthAnim()
+void AUnitBase::PlayDealthAnim()
 {
 }
 
 // Called to bind functionality to input
-void AAUnitBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void AUnitBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
