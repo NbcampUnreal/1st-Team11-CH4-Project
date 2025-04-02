@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "AUnitBase.generated.h"
+#include "UnitBase.generated.h"
 
 UCLASS()
-class ELVENRING_API AAUnitBase : public ACharacter
+class ELVENRING_API AUnitBase : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	AAUnitBase();
+	AUnitBase();
 
 protected:
 	// Called when the game starts or when spawned
@@ -27,12 +27,12 @@ protected:
 	bool bIsHit;
 	bool bIsDie;
 
-public:	
+public:
 	virtual void Tick(float DeltaTime) override;
-	void Attack();
-	void OnAttacked();
-	void OnDeath();
-	void OnHealthChanged();
+	virtual void Attack();
+	virtual void OnAttacked();
+	virtual void OnDeath();
+	virtual void OnHealthChanged();
 	virtual float TakeDamage
 	(
 		float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser
