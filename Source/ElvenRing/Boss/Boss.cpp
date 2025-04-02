@@ -2,6 +2,7 @@
 #include "BossPattern/BossNormalPatternComponent.h"
 #include "BossPattern/BossSpecialPatternComponent.h"
 #include "EngineUtils.h"
+#include "ElvenRing/Character/ElvenRingCharacter.h"
 
 ABoss::ABoss()
 {
@@ -9,6 +10,9 @@ ABoss::ABoss()
 
 	NormalPattern = CreateDefaultSubobject<UBossNormalPatternComponent>("Normal Pattern");
 	SpecialPattern = CreateDefaultSubobject<UBossSpecialPatternComponent>("Special Pattern");
+
+	AnimInstance = nullptr;
+	TargetPlayer = nullptr;
 }
 
 
@@ -25,6 +29,15 @@ void ABoss::BeginPlay()
 
 
 
+void ABoss::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	RotateToTarget(DeltaTime);
+}
+
+
+
 void ABoss::Attack()
 {
 	Super::Attack();
@@ -37,6 +50,7 @@ void ABoss::Attack()
 
 void ABoss::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	bCanAttack = true;
 	SetAttackTimer();
 }
 
@@ -49,6 +63,7 @@ void ABoss::PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate)
 		if (IsValid(MontageToPlay))
 		{
 			LOG(TEXT("Begin!"));
+			bCanAttack = false;
 			AnimInstance->Montage_Play(MontageToPlay, PlayRate);
 		}
 	}
@@ -95,6 +110,8 @@ void ABoss::SetAttackTarget()
 	for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
 	{
 		LOG(TEXT("%s"), *PlayerController->GetPawn()->GetName());
+		TargetPlayer = Cast<AElvenRingCharacter>(PlayerController->GetPawn());
+		break;
 	}
 
 	SetAttackTargetTimer();
@@ -102,7 +119,25 @@ void ABoss::SetAttackTarget()
 
 
 
-void ABoss::RotateToTarget()
+void ABoss::RotateToTarget(float DeltaTime)
 {
-	
+	// 공격 중일 경우 종료
+	if (!bCanAttack) return;
+
+	// 타겟이 존재하지 않을 경우 종료
+	if (!IsValid(TargetPlayer)) return;
+
+	// 높이를 제외한 방향 벡터 계산
+	FVector Direction = TargetPlayer->GetActorLocation() - GetActorLocation();
+	Direction.Z = 0.0f;
+	Direction.Normalize();
+
+	// 회전 값이 너무 작을 경우 종료
+	if (Direction.SizeSquared() < KINDA_SMALL_NUMBER) return;
+
+	const FRotator CurrentRotation = GetActorRotation();
+	const FRotator TargetRotation = FRotator(0.0f, Direction.Rotation().Yaw, 0.0f);
+	const FRotator InterpRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, RotationSpeed);
+
+	SetActorRotation(InterpRotation);
 }

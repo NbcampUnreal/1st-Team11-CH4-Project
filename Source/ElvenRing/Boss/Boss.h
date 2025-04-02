@@ -4,6 +4,8 @@
 #include "ElvenRing/Character/UnitBase.h"
 #include "Boss.generated.h"
 
+class AElvenRingCharacter;
+
 UCLASS()
 class ELVENRING_API ABoss : public AUnitBase
 {
@@ -14,6 +16,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 	virtual void Attack() override;
 
 	void PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate = 1.0f);
@@ -32,7 +35,7 @@ private:
 	void SetAttackTarget();
 
 	/** 공격할 대상을 향해 회전하는 함수 */
-	void RotateToTarget();
+	void RotateToTarget(float DeltaTime);
 	
 public:
 
@@ -46,7 +49,12 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	float GetAttackTargetInterval;
 
+	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
+	float RotationSpeed;
+
 	UAnimInstance* AnimInstance;
+
+	AElvenRingCharacter* TargetPlayer; 
 
 private:
 	FTimerHandle AttackTimerHandle;
