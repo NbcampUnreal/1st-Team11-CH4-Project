@@ -7,27 +7,25 @@ ABossArtorias::ABossArtorias()
 	
 }
 
+
+
 void ABossArtorias::BeginPlay()
 {
-	Super::BeginPlay();
-
-	AnimInstance = GetMesh()->GetAnimInstance();
-
 	LOG(TEXT("Begin!"));
 
 	NormalPattern->AddAttackPattern(this, &ABossArtorias::HorizonSlashAttack, FString("HorizonSlashAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossArtorias::VerticalSlashAttack, FString("VerticalSlashAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossArtorias::RotationAttack, FString("RotationAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossArtorias::DodgeAttack, FString("DodgeAttack"));
-
-	//NormalPattern->ExecuteAttackPattern();
+	
+	Super::BeginPlay();
 }
 
 
 
-void ABossArtorias::Tick(float DeltaTime)
+void ABossArtorias::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	Super::Tick(DeltaTime);
+	Super::OnMontageEnded(Montage, bInterrupted);
 }
 
 
@@ -40,6 +38,7 @@ void ABossArtorias::HorizonSlashAttack()
 		{
 			LOG(TEXT("Begin!"));
 			AnimInstance->Montage_Play(HorizontalSlashAnim);
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ABossArtorias::OnMontageEnded);
 		}
 	}
 }
@@ -54,6 +53,7 @@ void ABossArtorias::VerticalSlashAttack()
 		{
 			LOG(TEXT("Begin!"));
 			AnimInstance->Montage_Play(VerticalSlashAnim);
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ABossArtorias::OnMontageEnded);
 		}
 	}
 }
@@ -67,7 +67,8 @@ void ABossArtorias::RotationAttack()
 		if (IsValid(RotationAttackAnim))
 		{
 			LOG(TEXT("Begin!"));
-			AnimInstance->Montage_Play(RotationAttackAnim);	
+			AnimInstance->Montage_Play(RotationAttackAnim);
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ABossArtorias::OnMontageEnded);
 		}
 	}
 }
@@ -81,7 +82,8 @@ void ABossArtorias::DodgeAttack()
 		if (IsValid(DodgeAttackAnim))
 		{
 			LOG(TEXT("Begin!"));
-			AnimInstance->Montage_Play(DodgeAttackAnim);	
+			AnimInstance->Montage_Play(DodgeAttackAnim);
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ABossArtorias::OnMontageEnded);
 		}
 	}
 }
@@ -96,6 +98,7 @@ void ABossArtorias::JumpAttack()
 		{
 			LOG(TEXT("Begin!"));
 			AnimInstance->Montage_Play(JumpAttackAnim);
+			AnimInstance->OnMontageEnded.AddDynamic(this, &ABossArtorias::OnMontageEnded);
 		}
 	}
 }

@@ -13,8 +13,15 @@ public:
 	ABoss();
 
 protected:
+	virtual void BeginPlay() override;
+	virtual void Attack() override;
+
+	UFUNCTION()
+	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	
 private:
+	/** 공격 패턴 타이머 설정하는 함수 */
+	virtual void SetAttackTimer();
 	
 public:
 
@@ -29,6 +36,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	float AttackInterval;
 
+	UAnimInstance* AnimInstance;
+
 private:
+	FTimerHandle AttackTimerHandle;
 	
 };
