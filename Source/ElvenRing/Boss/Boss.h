@@ -23,10 +23,16 @@ protected:
 
 private:
 	/** 공격 패턴 타이머 설정하는 함수 */
-	virtual void SetAttackTimer();
+	void SetAttackTimer();
+
+	/** 공격할 대상 탐색 주기 설정 함수 */
+	void SetAttackTargetTimer();
 
 	/** 공격할 대상을 설정하는 함수 */
 	void SetAttackTarget();
+
+	/** 공격할 대상을 향해 회전하는 함수 */
+	void RotateToTarget();
 	
 public:
 
@@ -37,9 +43,13 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	float AttackInterval;
 
+	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
+	float GetAttackTargetInterval;
+
 	UAnimInstance* AnimInstance;
 
 private:
 	FTimerHandle AttackTimerHandle;
+	FTimerHandle GetAttackTargetTimerHandle;
 	
 };
