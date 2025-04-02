@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AUnitBase.h"
+#include "ElvenRing/Character/UnitBase.h"
 #include "Boss.generated.h"
 
 UCLASS()
-class ELVENRING_API ABoss : public AAUnitBase
+class ELVENRING_API ABoss : public AUnitBase
 {
 	GENERATED_BODY()
 
