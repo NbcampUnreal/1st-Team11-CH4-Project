@@ -31,12 +31,6 @@ public:
 
 	/** 공격 실행 순수 가상 함수 */
 	virtual void ExecuteAttackPattern() PURE_VIRTUAL(UBossPatternComponent::ExecuteAttackPattern, );
-	
-protected:
-	
-private:
-
-public:
 
 protected:
 	/** 등록된 공격 패턴 수 추적 변수 */
@@ -48,7 +42,5 @@ protected:
 
 	/** 공격 패턴 이름 */
 	TArray<FString> PatternName;
-
-private:
 	
 };
