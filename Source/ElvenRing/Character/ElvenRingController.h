@@ -33,6 +33,10 @@ public:
 	// IA_Sprint를 지정할 변수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* SprintAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* AttackAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* DefenceAction;
 
 	virtual void BeginPlay() override;
 };
