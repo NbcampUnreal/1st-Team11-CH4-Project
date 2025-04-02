@@ -15,7 +15,6 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted) override;
 
 private:
 	/** 수평으로 검을 휘두르는 공격 */

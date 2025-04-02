@@ -17,6 +17,7 @@ void ABoss::BeginPlay()
 	Super::BeginPlay();
 
 	AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->OnMontageEnded.AddDynamic(this, &ABoss::ABoss::OnMontageEnded);
 	SetAttackTimer();
 }
 
@@ -39,6 +40,20 @@ void ABoss::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 
 
+void ABoss::PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate)
+{
+	if (IsValid(AnimInstance))
+	{
+		if (IsValid(MontageToPlay))
+		{
+			LOG(TEXT("Begin!"));
+			AnimInstance->Montage_Play(MontageToPlay, PlayRate);
+		}
+	}
+}
+
+
+
 void ABoss::SetAttackTimer()
 {
 	const float RandomAttackTime = FMath::RandRange(AttackInterval, AttackInterval+0.5f);
@@ -51,3 +66,10 @@ void ABoss::SetAttackTimer()
 		false,
 		-1.0f);
 }
+
+
+
+void ABoss::SetAttackTarget()
+{
+}
+

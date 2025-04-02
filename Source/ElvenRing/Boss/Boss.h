@@ -16,23 +16,24 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Attack() override;
 
+	void PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate = 1.0f);
+	
 	UFUNCTION()
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	
+
 private:
 	/** 공격 패턴 타이머 설정하는 함수 */
 	virtual void SetAttackTimer();
+
+	/** 공격할 대상을 설정하는 함수 */
+	void SetAttackTarget();
 	
 public:
 
 protected:
-	/** 보스 일반공격 패턴 컴포넌트 */
 	TObjectPtr<class UBossNormalPatternComponent> NormalPattern;
-
-	/** 보스 특수공격 패턴 컴포넌트 */
 	TObjectPtr<class UBossSpecialPatternComponent> SpecialPattern;
 
-	/** 공격패턴 간격 */
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	float AttackInterval;
 
