@@ -29,7 +29,8 @@ public:
 	/** 타겟과의 거리를 구하는 함수 */
 	float GetDistanceBetweenTarget() const;
 
-	/** 타겟과의 거리를 구하는 함수 */
+	/** 타겟을 향한 방향벡터를 구하는 함수 */
+	UFUNCTION(BlueprintCallable)
 	FVector GetDirectionVectorToTarget() const;
 
 	/** 공격 패턴 타이머 설정하는 함수 */
@@ -88,7 +89,7 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Boss|Anim")
 	UAnimInstance* AnimInstance;
 
-	UPROPERTY(VisibleAnywhere, Category = "Boss|Target")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss|Target")
 	AElvenRingCharacter* TargetPlayer;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss|Target")
