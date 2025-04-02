@@ -15,7 +15,7 @@ void APickupItem::Interact(APlayerController* Player)
 
 bool APickupItem::CanInteract()
 {
-	return  false;
+	return true;
 }
 
 // Sets default values

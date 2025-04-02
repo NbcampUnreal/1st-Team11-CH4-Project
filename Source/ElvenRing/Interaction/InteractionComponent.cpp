@@ -4,7 +4,6 @@
 #include "InteractionComponent.h"
 
 #include "Interactable.h"
-#include "Chaos/AABBTree.h"
 #include "Engine/OverlapResult.h"
 
 
@@ -18,6 +17,8 @@ UInteractionComponent::UInteractionComponent()
 	bStartSearchOnBeginPlay = true;
 	SearchInterval = 0.1f;
 
+	bHasTarget = false;
+	
 	DistanceWeight = 0.7f;
 	DirectionWeight = 0.3f;
 }
@@ -51,26 +52,34 @@ void UInteractionComponent::SearchInteractable()
 		CollisionShape
 	);
 
-	if (AActor* BestInteractable = FindBestInteractable(OverlapResults))
-	{
-		if (CurrentInteractable.IsValid() && CurrentInteractable.Get() != BestInteractable)
-		{
-			OnInteractableLost.Broadcast();
-		}
-		
-		CurrentInteractable = BestInteractable;
+	AActor* NewInteractable = FindBestInteractable(OverlapResults);
+	AActor* OldInteractable = CurrentInteractable.Get();
 
-		IInteractable* Interactable = Cast<IInteractable>(CurrentInteractable.Get());
-		OnInteractableFound.Broadcast(Interactable->GetInteractText());
-	}
-	else
+	// Actor가 프레임 사이에서 파괴되었을 경우
+	if (bHasTarget && !CurrentInteractable.IsValid())
 	{
-		if (CurrentInteractable.IsValid())
+		OnInteractableLost.Broadcast();
+	}
+
+	if (OldInteractable != NewInteractable)
+	{
+		if (OldInteractable)
 		{
 			OnInteractableLost.Broadcast();
-			CurrentInteractable = nullptr;
+		}
+
+		CurrentInteractable = NewInteractable;
+		if (NewInteractable)
+		{
+			if (IInteractable* Interactable = Cast<IInteractable>(NewInteractable))
+			{
+				FString InteractText = Interactable->GetInteractText();
+				OnInteractableFound.Broadcast(InteractText);
+			}
 		}
 	}
+
+	bHasTarget = CurrentInteractable.IsValid();
 }
 
 AActor* UInteractionComponent::FindBestInteractable(const TArray<FOverlapResult>& OverlapResults)
@@ -112,9 +121,13 @@ float UInteractionComponent::CalculateMatchScore(const AActor* Interactable) con
 	// 거리는 가까울 수록 높은 점수가 높다.
 	// 방향은 Actor Forward에 일치할 수록 점수가 높다.
 	float Distance = (FVector::Distance(GetOwner()->GetActorLocation(), Interactable->GetActorLocation()));
-	float DistanceScore = 1 - InteractRadius / Distance; // 0.0f ~ 1.0f
-
+	float DistanceScore = 1 - Distance / InteractRadius; // 0.0f ~ 1.0f
+	// Overlap으로 판별하기 때문에 Actor 중심에서의 거리가 Interact Radius보다 커질 수 있다.
+	// Direction Weight와 곱해지기 때문에 최소한 작은 값을 넣는다.
+	DistanceScore = FMath::Clamp(DistanceScore, 0.01f, 1.0f); 
+	
 	FVector ToTarget = Interactable->GetActorLocation() - GetOwner()->GetActorLocation();
+	ToTarget.Normalize();
 	float Direction = FVector::DotProduct(GetOwner()->GetActorForwardVector(), ToTarget); // -1.0f ~ 1.0f
 	float DirectionScore = (Direction + 1.0f) * 0.5f; // 0.0f ~ 1.0f
 

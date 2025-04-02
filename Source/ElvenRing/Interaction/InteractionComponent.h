@@ -53,6 +53,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<AActor> CurrentInteractable;
 
+	/* 이전 프레임에서 Current Interactable 존재 여부, Weak Pointer로 저장하고 있는데 도중에 파괴된 것을 확인하기 위해 필요 */
+	bool bHasTarget;
+	
 	/* 상호 작용 가능 대상을 선택할 때 거리 선호도를 결정한다. */
 	UPROPERTY(EditDefaultsOnly)
 	float DistanceWeight;
