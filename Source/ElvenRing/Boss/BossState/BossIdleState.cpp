@@ -1,4 +1,6 @@
 #include "BossIdleState.h"
+
+#include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/Boss.h"
 
 void UABossIdleState::OnStateEnter(ABoss* Boss)
