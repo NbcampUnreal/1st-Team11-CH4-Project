@@ -33,6 +33,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetDirectionVectorToTarget() const;
 
+	/** 컷신 종료 후 호출할 함수로, 보스가 전투를 시작하는 상태가 됨 */
+	UFUNCTION(BlueprintCallable)
+	void SetBossBattleMode();
+
 	/** 공격 패턴 타이머 설정하는 함수 */
 	void SetAttackTimer();
 
@@ -64,6 +68,9 @@ private:
 public:
 	TObjectPtr<class UBossNormalPatternComponent> NormalPattern;
 	TObjectPtr<class UBossSpecialPatternComponent> SpecialPattern;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|BGM")
+	USoundBase* BossBattleBGM;
 
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	float MinAttackRadius;
@@ -101,6 +108,8 @@ private:
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle GetAttackTargetTimerHandle;
 	FTimerHandle AnimationMontageHandle;
-	
+
+	UPROPERTY()
+	UAudioComponent* AudioComponent;
 	
 };

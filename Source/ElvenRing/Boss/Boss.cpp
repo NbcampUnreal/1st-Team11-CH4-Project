@@ -7,6 +7,7 @@
 #include "BossState/BossMoveState.h"
 #include "BossState/BossSpecialAttackState.h"
 #include "BossState/BossStateInterface.h"
+#include "Components/AudioComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 
 ABoss::ABoss()
@@ -20,6 +21,8 @@ ABoss::ABoss()
 	MoveState = CreateDefaultSubobject<UABossMoveState>("Move State");
 	AttackState = CreateDefaultSubobject<UBossAttackState>("Attack State");
 	SpecialAttackState = CreateDefaultSubobject<UBossSpecialAttackState>("Special Attack State");
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>("BGM");
 
 	AnimInstance = nullptr;
 	TargetPlayer = nullptr;
@@ -35,21 +38,8 @@ void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// 1. AnimInstance 저장
 	AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->OnMontageEnded.AddDynamic(this, &ABoss::ABoss::OnMontageEnded);
-
-	// 2. 공격할 타겟 플레이어 지정
-	SetAttackTarget();
-	SetAttackTargetTimer();
-	SetAttackTimer();
-
-	// 3. 현재 상태를 Idle로 전환
-	CurrentState = IdleState;
-	ChangeState(CurrentState);
-
-	// 4. 공격 활성화
-	bCanAttack = true;
 }
 
 
@@ -106,6 +96,23 @@ FVector ABoss::GetDirectionVectorToTarget() const
 	return Direction;
 }
 
+void ABoss::SetBossBattleMode()
+{
+	// 1. 공격할 타겟 플레이어 지정
+	SetAttackTarget();
+	SetAttackTimer();
+
+	// 2. 현재 상태를 Idle로 전환
+	CurrentState = IdleState;
+	ChangeState(CurrentState);
+
+	// 3. 공격 활성화
+	bCanAttack = true;
+
+	// 4. 보스 BGM 활성화
+	AudioComponent->SetSound(BossBattleBGM);
+	AudioComponent->Play();
+}
 
 
 void ABoss::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -168,20 +175,15 @@ void ABoss::SetAttackTarget()
 	// 공격 중에 SetAttackTarget이 호출되어도 이미 이전 타겟을 향해 공격 중이기 때문에
 	// 새로운 타겟이 설정되어도 문제가 없을 것으로 보임
 	
-	GetWorldTimerManager().ClearTimer(GetAttackTargetTimerHandle);
-	
-	for (APlayerController* PlayerController : TActorRange<APlayerController>(GetWorld()))
+	for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
 	{
-		if (PlayerController && PlayerController->GetPawn()) // PlayerController와 Pawn이 유효한지 체크
-		{
-			AElvenRingCharacter* NewTarget = Cast<AElvenRingCharacter>(PlayerController->GetPawn());
-			if (IsValid(NewTarget)) // NewTarget이 유효한지 체크
+			if (IsValid(Player)) // NewTarget이 유효한지 체크
 			{
-				LOG(TEXT("Target set to: %s"), *NewTarget->GetName());
-				TargetPlayer = NewTarget;
+				LOG(TEXT("Target set to: %s"), *Player->GetName());
+				TargetPlayer = Player;
 				break;
 			}
-		}
+		
 	}
 
 	SetAttackTargetTimer();

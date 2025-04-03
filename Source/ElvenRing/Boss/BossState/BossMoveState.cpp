@@ -1,4 +1,6 @@
 #include "BossMoveState.h"
+
+#include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/Boss.h"
 
 void UABossMoveState::OnStateEnter(ABoss* Boss)
