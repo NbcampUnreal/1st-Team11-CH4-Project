@@ -24,23 +24,32 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* CameraComponent;
 	protected:
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* DodgeMontage;
+	//달리기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float NormalSpeed; // 기본 걷기 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed; 	// 실제 스프린트 속도
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	FVector RollDirection = GetVelocity().GetSafeNormal(); // 움직이고 있는 방향
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
-	float DodgeDuration = 0.3f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
-	float DodgeStrength = 4000.0f;
 
+	//구르기
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
+	float DodgeDuration = 0.8f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
+	float DodgeDistance = 1000.0f;
+	float DodgeTime = 0.f;
 	bool bIsDodging = false;
-	FTimerHandle DodgeTimerHandle;
 	
+	FVector DodgeStartLocation;
+	FVector DodgeTargetLocation;
+	
+	FTimerHandle DodgeTimerHandle;  
+	FTimerHandle DodgeStopTimerHandle;
+
+	void PlayDodgeAnimation(float Duration);
+	void UpdateDodge();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	UFUNCTION()
 	void Move(const FInputActionValue& value);

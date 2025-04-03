@@ -131,6 +131,20 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     }
 }
 
+void AElvenRingCharacter::PlayDodgeAnimation(float _DodgeDuration)
+{
+    if (DodgeMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            float MontageLength = DodgeMontage->GetPlayLength();
+            float PlayRate = MontageLength / _DodgeDuration;
+            AnimInstance->Montage_Play(DodgeMontage,PlayRate);
+        }
+    }
+}
+
 void AElvenRingCharacter::Move(const FInputActionValue& value)
 {
     if (!Controller) return;
@@ -202,20 +216,33 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& value)
     }
     DodgeDirection.Normalize();
     DodgeDirection.Z = 0;
-    LaunchCharacter(DodgeDirection * DodgeStrength, true, true);
 
+    DodgeStartLocation = GetActorLocation();
+    DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
+    
     bIsDodging = true;
+    DodgeTime = 0.f;
+    PlayDodgeAnimation(DodgeDuration);
+    
+    const float DodgeUpdate = 0.01f;
+    GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::UpdateDodge, DodgeUpdate, true);
 
-    /*
-     애니메이션 코드 추가할 자리
-     필요없으면 안할거같음
-     */
-
-    // DodgeDuration 후에 구르기 상태를 종료하기 위해 타이머 설정
-    GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::StopDodge, DodgeDuration, false);
+    GetWorld()->GetTimerManager().SetTimer(DodgeStopTimerHandle, this, &AElvenRingCharacter::StopDodge, DodgeDuration, false);
+    
 }
 
+void AElvenRingCharacter::UpdateDodge()
+{
+    const float DodgeUpdate = 0.01f;
+    DodgeTime += DodgeUpdate;
+    float Alpha = FMath::Clamp(DodgeTime / DodgeDuration, 0.f, 1.f);
+    
+    // 선형 보간(Lerp)을 사용해 위치 업데이트
+    FVector NewLocation = FMath::Lerp(DodgeStartLocation, DodgeTargetLocation, Alpha);
+    SetActorLocation(NewLocation);
+}
 void AElvenRingCharacter::StopDodge()
 {
     bIsDodging = false;
+    GetWorld()->GetTimerManager().ClearTimer(DodgeTimerHandle);
 }
