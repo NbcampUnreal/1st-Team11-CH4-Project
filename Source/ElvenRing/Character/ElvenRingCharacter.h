@@ -31,6 +31,15 @@ public:
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed; 	// 실제 스프린트 속도
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+	FVector RollDirection = GetVelocity().GetSafeNormal(); // 움직이고 있는 방향
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
+	float DodgeDuration = 0.3f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
+	float DodgeStrength = 4000.0f;
+
+	bool bIsDodging = false;
+	FTimerHandle DodgeTimerHandle;
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	UFUNCTION()
@@ -45,4 +54,9 @@ public:
 	void StartSprint(const FInputActionValue& value);
 	UFUNCTION()
 	void StopSprint(const FInputActionValue& value);
+	UFUNCTION()
+	void StartDodge(const FInputActionValue& value);
+	UFUNCTION()
+	void StopDodge(); //혹시나 필요할거 같아서 일단 만듬
 };
+

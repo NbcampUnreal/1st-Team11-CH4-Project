@@ -19,7 +19,6 @@ AElvenRingCharacter::AElvenRingCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent , USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
-
     NormalSpeed = 600.0f;
     SprintSpeedMultiplier = 1.5f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
@@ -93,6 +92,40 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                     this, 
                     &AElvenRingCharacter::StopSprint
                 );
+
+                
+                if (PlayerController->DodgeAction)
+                {
+                    // IA_Dodge 액션 키를 "눌렀을 때" DodgeAction() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->DodgeAction,
+                        ETriggerEvent::Triggered,
+                        this,
+                        &AElvenRingCharacter::StartDodge
+                    );
+                }
+                
+                /*if (PlayerController->AttackAction)
+                {
+                    // IA_Look 액션 마우스가 "움직일 때" Look() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->LookAction,
+                        ETriggerEvent::Triggered,
+                        this,
+                        &AElvenRingCharacter::Look
+                    ); */
+                
+                /*if (PlayerController->DefenceAction)
+                {
+                    // IA_Look 액션 마우스가 "움직일 때" Look() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->LookAction,
+                        ETriggerEvent::Triggered,
+                        this,
+                        &AElvenRingCharacter::Look
+                    ); 
+                }*/
+            
             }    
         }
     }
@@ -153,4 +186,36 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
     {
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
     }
+}
+
+void AElvenRingCharacter::StartDodge(const FInputActionValue& value)
+{
+    if (bIsDodging)
+        {
+        return;
+        }
+    FVector DodgeDirection = GetLastMovementInputVector(); 
+    if (DodgeDirection.IsNearlyZero())
+    {
+        // 입력 없을때 정면으로 구르기
+        DodgeDirection = GetActorForwardVector();
+    }
+    DodgeDirection.Normalize();
+    DodgeDirection.Z = 0;
+    LaunchCharacter(DodgeDirection * DodgeStrength, true, true);
+
+    bIsDodging = true;
+
+    /*
+     애니메이션 코드 추가할 자리
+     필요없으면 안할거같음
+     */
+
+    // DodgeDuration 후에 구르기 상태를 종료하기 위해 타이머 설정
+    GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::StopDodge, DodgeDuration, false);
+}
+
+void AElvenRingCharacter::StopDodge()
+{
+    bIsDodging = false;
 }
