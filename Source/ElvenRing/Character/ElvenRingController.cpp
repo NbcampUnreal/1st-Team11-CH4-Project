@@ -12,7 +12,8 @@ AElvenRingController::AElvenRingController()
 	  SprintAction(nullptr),
 	  DodgeAction(nullptr),
 	  AttackAction(nullptr),
-	  DefenceAction(nullptr)
+	  DefenceAction(nullptr),
+	  EndDefenceAction(nullptr)
 
 {
 	
