@@ -39,6 +39,8 @@ public:
 	UInputAction* AttackAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* DefenceAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* EndDefenceAction;
 
 	virtual void BeginPlay() override;
 };
