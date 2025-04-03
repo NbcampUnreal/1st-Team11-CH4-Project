@@ -10,6 +10,7 @@ AElvenRingController::AElvenRingController()
 	  JumpAction(nullptr),
 	  LookAction(nullptr),
 	  SprintAction(nullptr),
+	  DodgeAction(nullptr),
 	  AttackAction(nullptr),
 	  DefenceAction(nullptr)
 
