@@ -21,6 +21,8 @@ UInteractionComponent::UInteractionComponent()
 	
 	DistanceWeight = 0.7f;
 	DirectionWeight = 0.3f;
+
+	SetIsReplicated(true);
 }
 
 
@@ -190,6 +192,18 @@ void UInteractionComponent::LogInteractLost()
 	UE_LOG(LogTemp, Display, TEXT("Interactable Lost"));
 }
 
+bool UInteractionComponent::IsOwnerLocallyControlled() const
+{
+	if (AActor* Owner = GetOwner())
+	{
+		if (APlayerController* PlayerController = Cast<APlayerController>(Owner->GetInstigatorController()))
+		{
+			return PlayerController->IsLocalController();
+		}
+	}
+	return false;
+}
+
 float UInteractionComponent::CalculateMatchScore(const AActor* Interactable) const
 {
 	// 거리와 방향 2가지 기준이 존재한다.
@@ -213,14 +227,16 @@ void UInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (bStartSearchOnBeginPlay)
+	if (IsOwnerLocallyControlled())
 	{
-		StartSearch();
-	}
-
-	if (bShouldLog)
-	{
-		OnInteractableFound.AddDynamic(this, &UInteractionComponent::LogInteractFound);
-		OnInteractableLost.AddDynamic(this, &UInteractionComponent::LogInteractLost);
+		if (bStartSearchOnBeginPlay)
+		{
+			StartSearch();
+		}
+		if (bShouldLog)
+		{
+			OnInteractableFound.AddDynamic(this, &UInteractionComponent::LogInteractFound);
+			OnInteractableLost.AddDynamic(this, &UInteractionComponent::LogInteractLost);
+		}
 	}
 }

@@ -91,6 +91,7 @@ protected:
 	void LogInteractFound(FString InteractText);
 	UFUNCTION()
 	void LogInteractLost();
+	bool IsOwnerLocallyControlled() const;
 	// Called when the game starts
 	virtual void BeginPlay() override;
 };
