@@ -42,15 +42,7 @@ void UInteractionComponent::SearchInteractable()
 	if (InteractRadius <= 0.0f) return;
 	
 	TArray<FOverlapResult> OverlapResults;
-	FCollisionShape CollisionShape;
-	CollisionShape.SetSphere(InteractRadius);
-	GetWorld()->OverlapMultiByChannel(
-		OverlapResults,
-		GetOwner()->GetActorLocation(),
-		FQuat::Identity,
-		ECC_Visibility,
-		CollisionShape
-	);
+	FindOverlapInteractables(OverlapResults);
 
 	AActor* NewInteractable = FindBestInteractable(OverlapResults);
 	AActor* OldInteractable = CurrentInteractable.Get();
@@ -82,6 +74,19 @@ void UInteractionComponent::SearchInteractable()
 	bHasTarget = CurrentInteractable.IsValid();
 }
 
+void UInteractionComponent::FindOverlapInteractables(TArray<FOverlapResult>& OverlapResults) const
+{
+	FCollisionShape CollisionShape;
+	CollisionShape.SetSphere(InteractRadius);
+	GetWorld()->OverlapMultiByChannel(
+		OverlapResults,
+		GetOwner()->GetActorLocation(),
+		FQuat::Identity,
+		ECC_Visibility,
+		CollisionShape
+	);
+}
+
 AActor* UInteractionComponent::FindBestInteractable(const TArray<FOverlapResult>& OverlapResults)
 {
 	AActor* BestInteractable = nullptr;
@@ -103,6 +108,76 @@ AActor* UInteractionComponent::FindBestInteractable(const TArray<FOverlapResult>
 	}
 
 	return BestInteractable;
+}
+
+void UInteractionComponent::PerformInteract()
+{
+	if (!CurrentInteractable.IsValid())
+	{
+		return;
+	}
+
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		HandleInteraction(CurrentInteractable.Get());
+	}
+	else
+	{
+		ServerPerformInteract(CurrentInteractable.Get());
+	}
+}
+
+bool UInteractionComponent::HasInteractTarget() const
+{
+	return CurrentInteractable.IsValid();
+}
+
+void UInteractionComponent::HandleInteraction(AActor* InteractableActor)
+{
+	if (GetOwnerRole() != ROLE_Authority) return;
+	if (!ValidateInteractable(InteractableActor)) return;
+
+	if (IInteractable* Interactable = Cast<IInteractable>(InteractableActor))
+	{
+		if (APlayerController* PlayerController = Cast<APlayerController>(GetOwner()->GetInstigatorController()))
+		{
+			Interactable->Interact(PlayerController);
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("InteractableActor is not IInteractable"));
+	}
+}
+
+void UInteractionComponent::ServerPerformInteract_Implementation(AActor* InteractableActor)
+{
+	HandleInteraction(InteractableActor);
+}
+
+bool UInteractionComponent::ValidateInteractable(AActor* InteractableActor) const
+{
+	// 1. 상호 작용 객체가 Server에 아직 존재하는지 판단
+	if (!InteractableActor || !GetOwner())
+	{
+		return false;
+	}
+
+	// 2. 상호 작용 객체가 거리 이내에 존재하는지 판단
+	TArray<FOverlapResult> OverlapResults;
+	FindOverlapInteractables(OverlapResults);
+	const bool bOverlap = OverlapResults.ContainsByPredicate([InteractableActor](const FOverlapResult& Result)
+	{
+		return Result.GetActor() == InteractableActor;
+	});
+	if (!bOverlap)
+	{
+		return false;
+	}
+
+	// 3. Can Interact 확인
+	IInteractable* Interactable = Cast<IInteractable>(InteractableActor);
+	return Interactable && Interactable->CanInteract();
 }
 
 void UInteractionComponent::LogInteractFound(FString InteractText)

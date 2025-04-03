@@ -43,7 +43,7 @@ public:
 	/* Search를 중지한다. */
 	UFUNCTION(BlueprintCallable)
 	void StopSearch();
-
+	/* 현재 선택된 Interact 객체와 상호작용을 진행한다. */
 protected:
 	/* Interactable을 탐색하는 간격 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -63,9 +63,29 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	float DirectionWeight;
 
+	/** Interactable 검색을 해서 최신화 한다. */
 	void SearchInteractable();
+	/** 현재 위치에서 Interact 객체 검색 */
+	void FindOverlapInteractables(TArray<FOverlapResult>& OverlapResults) const;
+	/** Interact 객체들의 우선 순위 점수*/
 	float CalculateMatchScore(const AActor* Interactable) const;
 	virtual AActor* FindBestInteractable(const TArray<FOverlapResult>& OverlapResults);
+
+public:
+	/** 현재 선택된 Interatable과 상호작용을 실행한다. */
+	UFUNCTION(BlueprintCallable)
+	void PerformInteract();
+	UFUNCTION(BlueprintCallable)
+	bool HasInteractTarget() const;
+	
+protected:
+	/** Authority Node에서 실질적으로 실행되는 Interaction */
+	void HandleInteraction(AActor* InteractableActor);
+	UFUNCTION(Server, Reliable)
+	void ServerPerformInteract(AActor* InteractableActor);
+	void ServerPerformInteract_Implementation(AActor* InteractableActor);
+	/** Interactable 객체가 유효한지 판단한다.*/
+	bool ValidateInteractable(AActor* InteractableActor) const;
 protected:
 	UFUNCTION()
 	void LogInteractFound(FString InteractText);
