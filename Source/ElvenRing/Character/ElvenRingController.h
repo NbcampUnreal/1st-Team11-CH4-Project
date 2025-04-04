@@ -41,6 +41,13 @@ public:
 	UInputAction* DefenceAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* EndDefenceAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* InteractAction;
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestLevelChange(const FString& LevelPath);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastShowLoadingScreen();
 };
