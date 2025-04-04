@@ -12,7 +12,7 @@
 				"Engine",
 				"UMG",
 				"LevelSequence",
-				"CoreUObject"
+				"CoreUObject",
 				"AIModule"
 			]
 		}
