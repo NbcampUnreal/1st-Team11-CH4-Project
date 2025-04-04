@@ -51,6 +51,7 @@ protected:
 	float DodgeDistance = 1000.0f;
 	float DodgeTime = 0.f;
 	bool bIsDodging = false;
+	FVector DodgeVelocity;
 	//공격 방어 관련함수
 	float AttackSpeed = 1.f;
 	float DefenceSpeed = 1.f;

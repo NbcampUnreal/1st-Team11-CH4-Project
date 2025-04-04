@@ -194,8 +194,8 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
             MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
             AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DefenceMontage);
 
-            float MontageLength = DefenceMontage->GetPlayLength();
-            // PlayRate는 이제 필요 없으므로 기본값으로 사용
+            //float MontageLength = DefenceMontage->GetPlayLength(); 일단 빼두자 언제 또 써야할지도 모른다.....
+            
             AnimInstance->Montage_Play(DefenceMontage);
         }
     }
@@ -266,23 +266,25 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
     }
 }
 
-void AElvenRingCharacter::StartDodge(const FInputActionValue& value)
+void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
 {
     if (bIsDodging)
-        {
+    {
         return;
-        }
-    FVector DodgeDirection = GetLastMovementInputVector(); 
+    }
+    
+    FVector DodgeDirection = GetLastMovementInputVector();
     if (DodgeDirection.IsNearlyZero())
-    {  
-        // 입력 없을때 정면으로 구르기
+    {
         DodgeDirection = GetActorForwardVector();
     }
     DodgeDirection.Normalize();
     DodgeDirection.Z = 0;
-
+    
     DodgeStartLocation = GetActorLocation();
     DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
+    
+    DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
     
     bIsDodging = true;
     DodgeTime = 0.f;
@@ -290,21 +292,17 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& value)
     
     const float DodgeUpdate = 0.01f;
     GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::UpdateDodge, DodgeUpdate, true);
-
     GetWorld()->GetTimerManager().SetTimer(DodgeStopTimerHandle, this, &AElvenRingCharacter::StopDodge, DodgeDuration, false);
     
 }
 
-
 void AElvenRingCharacter::UpdateDodge()
 {
     const float DodgeUpdate = 0.01f;
-    DodgeTime += DodgeUpdate;
-    float Alpha = FMath::Clamp(DodgeTime / DodgeDuration, 0.f, 1.f);
+    float MoveDistance = DodgeVelocity.Size() * DodgeUpdate;
     
-    // 선형 보간(Lerp)을 사용해 위치 업데이트
-    FVector NewLocation = FMath::Lerp(DodgeStartLocation, DodgeTargetLocation, Alpha);
-    SetActorLocation(NewLocation);
+    AddMovementInput(DodgeVelocity.GetSafeNormal(), MoveDistance);
+    DodgeTime += DodgeUpdate;
 }
 
 void AElvenRingCharacter::Interact(const FInputActionValue& InputActionValue)
@@ -318,7 +316,6 @@ void AElvenRingCharacter::StopDodge()
     bIsDodging = false;
     GetWorld()->GetTimerManager().ClearTimer(DodgeTimerHandle);
 }
-
 void AElvenRingCharacter::StartAttack(const FInputActionValue& value)
 {
     if (bAttack)
