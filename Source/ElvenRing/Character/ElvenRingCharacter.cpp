@@ -6,6 +6,7 @@
 #include "ElvenRingController.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
+#include "ElvenRing/Interaction/InteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -24,6 +25,9 @@ AElvenRingCharacter::AElvenRingCharacter()
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+    InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
+    
 }
 void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -102,6 +106,16 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                         ETriggerEvent::Triggered,
                         this,
                         &AElvenRingCharacter::StartDodge
+                    );
+                }
+
+                if (PlayerController->InteractAction)
+                {
+                    EnhancedInput->BindAction(
+                        PlayerController->InteractAction,
+                        ETriggerEvent::Started,
+                        this,
+                        &AElvenRingCharacter::Interact
                     );
                 }
                 
@@ -292,6 +306,13 @@ void AElvenRingCharacter::UpdateDodge()
     FVector NewLocation = FMath::Lerp(DodgeStartLocation, DodgeTargetLocation, Alpha);
     SetActorLocation(NewLocation);
 }
+
+void AElvenRingCharacter::Interact(const FInputActionValue& InputActionValue)
+{
+    UE_LOG(LogTemp, Display, TEXT("Interact Pressed"));
+    InteractionComponent->PerformInteract();
+}
+
 void AElvenRingCharacter::StopDodge()
 {
     bIsDodging = false;
