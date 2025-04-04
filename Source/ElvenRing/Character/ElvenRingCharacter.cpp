@@ -180,8 +180,8 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
             MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
             AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DefenceMontage);
 
-            float MontageLength = DefenceMontage->GetPlayLength();
-            // PlayRate는 이제 필요 없으므로 기본값으로 사용
+            //float MontageLength = DefenceMontage->GetPlayLength(); 일단 빼두자 언제 또 써야할지도 모른다.....
+            
             AnimInstance->Montage_Play(DefenceMontage);
         }
     }
