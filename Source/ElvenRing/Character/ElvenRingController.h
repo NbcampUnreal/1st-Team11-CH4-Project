@@ -48,6 +48,6 @@ public:
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestLevelChange(const FString& LevelPath);
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastShowLoadingScreen();
+	UFUNCTION(Client, Reliable)
+	void ClientShowLoadingScreen();
 };
