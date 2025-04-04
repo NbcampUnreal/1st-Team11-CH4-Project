@@ -31,8 +31,8 @@ void AMyCharacterTest::BeginPlay()
 {
 	Super::BeginPlay();
     UMonsterWidget* Uiwedget = Cast<UMonsterWidget>(HPWidgetComponent->GetUserWidgetObject());
-    Uiwedget->SetSize(0.8f);
-    Uiwedget->UpdateHpBar(80.f);
+    Uiwedget->SetUiSize(0.8f);
+    Uiwedget->DecreaseHp(80.f,100.f);
 }
 
 // Called every frame

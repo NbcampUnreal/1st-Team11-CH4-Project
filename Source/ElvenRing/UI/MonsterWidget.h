@@ -8,6 +8,26 @@
 
 class UProgressBar;
 class UImage;
+
+struct FMRamdaElement
+{
+	bool Recover = false;
+	float TargetHp = 0.f;
+	float HpMax = 0.f;
+	float CurProgressBarPer = 0.f;
+	float TargetProgressBarPer = 0.f;
+	float ElapsedTime = 0.f;
+	float Duration = 1.f;
+	float PrevTime = 0.f;
+	UProgressBar* MyProgressBar = nullptr;
+	UProgressBar* MyProgressYellowBar = nullptr;
+	void ClearPointer()
+	{
+		MyProgressBar = nullptr;
+		MyProgressYellowBar = nullptr;
+	}
+};
+
 UCLASS()
 class ELVENRING_API UMonsterWidget : public UUserWidget
 {
@@ -17,9 +37,20 @@ public:
 	UProgressBar* HpProgressBar;
 
 	UPROPERTY(meta = (BindWidget))
+	UProgressBar* HpProgressYellowBar;
+
+	UPROPERTY(meta = (BindWidget))
 	UImage* HpFrameImg;
 
 	UFUNCTION(BlueprintCallable, Category =  "UI")
-	void SetSize(float size);
-	void UpdateHpBar(float Hp);
+	void SetUiSize(float UiSize);
+	void DecreaseHp(float CurHp, float HpMax);
+	void RecoverHp(float TargetHp, float HpMax);
+
+private:
+	FTimerHandle HpTimerHandle;
+	FTimerHandle HpTimerDelayHandle;
+
+	void UpdateProgressBar(FMRamdaElement& FElement);
+
 };
