@@ -16,5 +16,8 @@ class ELVENRING_API AElvenRingGameMode : public AGameMode
 
 public:
 	AElvenRingGameMode();
-	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName);
+	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
+
+protected:
+	void BroadcastLoadingScreen() const;
 };

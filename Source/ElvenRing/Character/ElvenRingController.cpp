@@ -42,15 +42,13 @@ void AElvenRingController::BeginPlay()
 
 void AElvenRingController::ServerRequestLevelChange_Implementation(const FString& LevelPath)
 {
-	MulticastShowLoadingScreen();
-	
 	if (AElvenRingGameMode* GameMode =  GetWorld()->GetAuthGameMode<AElvenRingGameMode>())
 	{
 		GameMode->HandleLevelTransition(this, LevelPath);
 	}
 }
 
-void AElvenRingController::MulticastShowLoadingScreen_Implementation()
+void AElvenRingController::ClientShowLoadingScreen_Implementation()
 {
 	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
 	{

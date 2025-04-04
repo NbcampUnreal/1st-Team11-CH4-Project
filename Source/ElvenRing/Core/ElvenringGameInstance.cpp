@@ -15,7 +15,6 @@ void UElvenringGameInstance::Init()
 
 void UElvenringGameInstance::ShowLoadingScreen()
 {
-	UE_LOG(LogTemp, Display, TEXT("ShowLoadingScreen"));
 	if (!LoadingScreenWidget && LoadingScreenClass)
 	{
 		LoadingScreenWidget = CreateWidget<UUserWidget>(this, LoadingScreenClass);
@@ -37,12 +36,10 @@ void UElvenringGameInstance::HideLoadingScreen()
 
 void UElvenringGameInstance::OnPreLoadMap(const FString& String)
 {
-	UE_LOG(LogTemp, Display, TEXT("OnPreLoadMap: %s"), *String);
 	ShowLoadingScreen();
 }
 
 void UElvenringGameInstance::OnPostLoadMap(UWorld* World)
 {
-	UE_LOG(LogTemp, Display, TEXT("OnPostLoadMap: %s"), *World->GetName());
 	HideLoadingScreen();
 }

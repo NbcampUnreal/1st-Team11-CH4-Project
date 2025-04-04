@@ -35,6 +35,7 @@ void AUnitBase::OnAttacked()
 
 void AUnitBase::OnDeath()
 {
+	OnDeathEvent.Broadcast(this);
 }
 
 void AUnitBase::OnHealthChanged()
