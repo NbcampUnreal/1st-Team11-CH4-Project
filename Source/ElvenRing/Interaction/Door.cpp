@@ -35,7 +35,7 @@ ADoor::ADoor()
 
 void ADoor::Open()
 {
-	if (IsLocked())
+	if (IsLocked() || !bCanOpen)
 	{
 		return;
 	}
@@ -47,6 +47,10 @@ void ADoor::Open()
 
 void ADoor::Close()
 {
+	if (!bCanClose)
+	{
+		return;
+	}
 	SetNetDormancy(DORM_Awake);
 	bIsOpen = false;
 	SetNetDormancy(DORM_DormantAll);
