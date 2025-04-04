@@ -39,7 +39,7 @@ void ABoss::BeginPlay()
 	Super::BeginPlay();
 
 	AnimInstance = GetMesh()->GetAnimInstance();
-	AnimInstance->OnMontageEnded.AddDynamic(this, &ABoss::ABoss::OnMontageEnded);
+	AnimInstance->OnMontageEnded.AddDynamic(this, &ABoss::OnMontageEnded);
 }
 
 
