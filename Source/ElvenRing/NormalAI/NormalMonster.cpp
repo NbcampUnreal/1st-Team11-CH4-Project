@@ -3,12 +3,43 @@
 
 #include "ElvenRing/NormalAI/NormalMonster.h"
 #include "ElvenRing/NormalAI/NormalAIController.h"
+#include "ElvenRing//Character/ElvenRingCharacter.h"
+#include "Engine/DamageEvents.h"
+
+#include "GameFramework/DamageType.h"
+#include "Engine/EngineTypes.h"
 
 ANormalMonster::ANormalMonster()
 {
-	// 이 캐릭터를 컨트롤할 AIController 클래스를 EnemyAIController로 지정
+	MaxHealth = 100;
+	CurHealth = MaxHealth;
+	AttackPower = 10;
+	MoveSpeed = 10;
+	bCanAttack = true;
+	bCanMove = true;
+	bIsHit = false;
+	bIsDie = false;
+
 	AIControllerClass = ANormalAIController::StaticClass();
-	// 레벨에 배치되거나 스폰되면 자동으로 AIController가 할당되도록 설정
-	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
+void ANormalMonster::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
+void ANormalMonster::Attack(AActor* Target)
+{
+	Super::Attack(Target);
+
+	AElvenRingCharacter* Character = Cast<AElvenRingCharacter>(Target);
+	AController* LocalController = GetController();
+	ANormalAIController* AIController = Cast<ANormalAIController>(LocalController);
+
+	FPointDamageEvent DamageEvent;
+	if (Character && AIController)
+	{
+		Character->TakeDamage(AttackPower, DamageEvent, AIController, this);	
+	}
+	
+}

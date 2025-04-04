@@ -25,7 +25,7 @@ void AUnitBase::Tick(float DeltaTime)
 
 }
 
-void AUnitBase::Attack()
+void AUnitBase::Attack(AActor* Target)
 {
 }
 
