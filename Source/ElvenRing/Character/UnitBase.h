@@ -18,9 +18,15 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MaxHealth;
 	float CurHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float AttackPower;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MoveSpeed;
 	bool bCanAttack;
 	bool bCanMove;
@@ -47,7 +53,7 @@ public:
 	}
 
 	virtual void PlayDamageAnim();
-	virtual void PlayDealthAnim();
+	virtual void PlayDeathAnim();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
