@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "Navigation/PathFollowingComponent.h"
 #include "ElvenRing/NormalAI/NormalAIController.h"
+#include "Navigation/PathFollowingComponent.h"
 
 #include "NormalMonster.h"
 
