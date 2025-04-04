@@ -22,7 +22,7 @@ UInteractionComponent::UInteractionComponent()
 	DistanceWeight = 0.7f;
 	DirectionWeight = 0.3f;
 
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 }
 
 
