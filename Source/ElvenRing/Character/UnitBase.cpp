@@ -61,7 +61,7 @@ void AUnitBase::PlayDamageAnim()
 {
 }
 
-void AUnitBase::PlayDealthAnim()
+void AUnitBase::PlayDeathAnim()
 {
 }
 
