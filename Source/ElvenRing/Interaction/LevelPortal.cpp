@@ -14,8 +14,11 @@ ALevelPortal::ALevelPortal()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
+	
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	SetRootComponent(MeshComponent);
+	MeshComponent->SetupAttachment(Root);
 }
 
 FString ALevelPortal::GetInteractText()
