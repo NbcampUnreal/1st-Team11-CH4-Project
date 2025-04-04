@@ -3,9 +3,7 @@
 
 #include "LevelPortal.h"
 
-#include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "ElvenRing/Character/ElvenRingController.h"
-#include "ElvenRing/Core/ElvenRingGameMode.h"
 
 
 // Sets default values
@@ -14,8 +12,10 @@ ALevelPortal::ALevelPortal()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
+	USceneComponent* Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+	SetRootComponent(Root);
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	SetRootComponent(MeshComponent);
+	MeshComponent->SetupAttachment(RootComponent);
 }
 
 FString ALevelPortal::GetInteractText()
