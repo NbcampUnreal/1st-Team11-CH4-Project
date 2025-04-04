@@ -105,27 +105,36 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                     );
                 }
                 
-                /*if (PlayerController->AttackAction)
+                if (PlayerController->AttackAction)
                 {
-                    // IA_Look 액션 마우스가 "움직일 때" Look() 호출
+                    // IA_Attack 액션 마우스가 "좌클릭할때" AttackAction() 호출
                     EnhancedInput->BindAction(
-                        PlayerController->LookAction,
+                        PlayerController->AttackAction,
                         ETriggerEvent::Triggered,
                         this,
-                        &AElvenRingCharacter::Look
-                    ); */
-                
-                /*if (PlayerController->DefenceAction)
+                        &AElvenRingCharacter::StartAttack
+                    );
+                }
+                if (PlayerController->DefenceAction)
                 {
-                    // IA_Look 액션 마우스가 "움직일 때" Look() 호출
+                    // IA_Defence 액션 마우스가 "우클릭할 때" DefenceAction() 호출
                     EnhancedInput->BindAction(
-                        PlayerController->LookAction,
+                        PlayerController->DefenceAction,
                         ETriggerEvent::Triggered,
                         this,
-                        &AElvenRingCharacter::Look
+                        &AElvenRingCharacter::StartDefence
                     ); 
-                }*/
-            
+                }
+                if (PlayerController->EndDefenceAction)
+                {
+                    // IA_Defence 액션 마우스가 "우클릭을 땔때" EndDefenceAction() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->EndDefenceAction,
+                        ETriggerEvent::Completed,
+                        this,
+                        &AElvenRingCharacter::StopDefence
+                    );
+                }
             }    
         }
     }
@@ -145,6 +154,47 @@ void AElvenRingCharacter::PlayDodgeAnimation(float _DodgeDuration)
     }
 }
 
+void AElvenRingCharacter::PlayAttackAnimation(float _AttackSpeed)
+{
+    if (AttackMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            float MontageLength = AttackMontage->GetPlayLength();
+            float PlayRate = MontageLength / _AttackSpeed;
+            AnimInstance->Montage_Play(AttackMontage,PlayRate);
+        }
+    }
+}
+
+void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
+{
+    if (DefenceMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            // delegate 바인딩 후 몽타주에 등록
+            FOnMontageEnded MontageEndedDelegate;
+            MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
+            AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DefenceMontage);
+
+            float MontageLength = DefenceMontage->GetPlayLength();
+            // PlayRate는 이제 필요 없으므로 기본값으로 사용
+            AnimInstance->Montage_Play(DefenceMontage);
+        }
+    }
+}
+
+void AElvenRingCharacter::OnDefenceMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+    if (Montage == DefenceMontage)
+    {
+        // 특정 조건(예: 중단되지 않은 경우)을 체크한 후 다시 재생
+        PlayDefenceAnimation(DefenceSpeed);
+    }
+}
 void AElvenRingCharacter::Move(const FInputActionValue& value)
 {
     if (!Controller) return;
@@ -210,7 +260,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& value)
         }
     FVector DodgeDirection = GetLastMovementInputVector(); 
     if (DodgeDirection.IsNearlyZero())
-    {
+    {  
         // 입력 없을때 정면으로 구르기
         DodgeDirection = GetActorForwardVector();
     }
@@ -231,6 +281,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& value)
     
 }
 
+
 void AElvenRingCharacter::UpdateDodge()
 {
     const float DodgeUpdate = 0.01f;
@@ -245,4 +296,38 @@ void AElvenRingCharacter::StopDodge()
 {
     bIsDodging = false;
     GetWorld()->GetTimerManager().ClearTimer(DodgeTimerHandle);
+}
+
+void AElvenRingCharacter::StartAttack(const FInputActionValue& value)
+{
+    if (bAttack)
+    {
+        return;
+    }
+    PlayAttackAnimation(AttackSpeed);
+    bAttack = true;
+    
+    GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &AElvenRingCharacter::StopAttack, AttackSpeed, false);
+}
+
+void AElvenRingCharacter::StopAttack()
+{
+    bAttack = false;
+    GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+}
+
+void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
+{
+    if (bDefence)
+    {
+        return;
+    }
+    PlayDefenceAnimation(DefenceSpeed);
+    bDefence = true;
+}
+
+void AElvenRingCharacter::StopDefence(const FInputActionValue& value)
+{
+    bDefence = false;
+    GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
 }
