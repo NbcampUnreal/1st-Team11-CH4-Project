@@ -33,6 +33,21 @@ public:
 	// IA_Sprint를 지정할 변수
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* SprintAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* DodgeAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* AttackAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* DefenceAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* EndDefenceAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* InteractAction;
 
 	virtual void BeginPlay() override;
+
+	UFUNCTION(Server, Reliable)
+	void ServerRequestLevelChange(const FString& LevelPath);
+	UFUNCTION(Client, Reliable)
+	void ClientShowLoadingScreen();
 };

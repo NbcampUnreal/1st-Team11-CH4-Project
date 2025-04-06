@@ -15,12 +15,21 @@ public:
 	// Sets default values for this character's properties
 	AUnitBase();
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathDelegate, AUnitBase*, Unit);
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnDeathDelegate OnDeathEvent;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MaxHealth;
 	float CurHealth;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float AttackPower;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MoveSpeed;
 	bool bCanAttack;
 	bool bCanMove;
@@ -29,7 +38,7 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void Attack();
+	virtual void Attack(AActor* Target);
 	virtual void OnAttacked();
 	virtual void OnDeath();
 	virtual void OnHealthChanged();
@@ -37,7 +46,7 @@ public:
 	(
 		float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser
 	) override;
-	float MaxGetHealth() const
+	float GetMaxHealth() const
 	{
 		return MaxHealth;
 	}
@@ -47,7 +56,7 @@ public:
 	}
 
 	virtual void PlayDamageAnim();
-	virtual void PlayDealthAnim();
+	virtual void PlayDeathAnim();
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;

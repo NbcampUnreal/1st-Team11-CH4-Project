@@ -18,20 +18,15 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 
 private:
-	/** 수평으로 검을 휘두르는 공격 */
 	void HorizonSlashAttack();
-
-	/** 위에서 아래로 검을 휘두르는 공격 */
 	void VerticalSlashAttack();
-
-	/** 한 바퀴 회전하며 검을 휘두르는 공격 */
 	void RotationAttack();
-
-	/** 검을 휘두름과 동시에 후진 방향으로 구르는 패턴 */
 	void DodgeAttack();
-
-	/** 높게 뛰어올라 플레이어에게 착지하며 검을 휘두르는 공격 */
 	void JumpAttack();
+	bool JumpAttackCondition();
+	void ThrustAttack();
+	bool ThrustAttackCondition();
+	void Dodge();
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
@@ -49,6 +44,15 @@ private:
 	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> JumpAttackAnim;
 
-	UAnimInstance* AnimInstance;
-	
+	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	TObjectPtr<class UAnimMontage> DodgeAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	TObjectPtr<class UAnimMontage> ThrustAnim;
+
+	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
+	float MinJumpAttackRadius;
+
+	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
+	float MinThrustAttackRadius;
 };

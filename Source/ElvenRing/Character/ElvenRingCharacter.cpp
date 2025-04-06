@@ -6,6 +6,7 @@
 #include "ElvenRingController.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
+#include "ElvenRing/Interaction/InteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -19,12 +20,14 @@ AElvenRingCharacter::AElvenRingCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent , USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
-
     NormalSpeed = 600.0f;
     SprintSpeedMultiplier = 1.5f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
 
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+
+    InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
+    
 }
 void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -93,11 +96,119 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                     this, 
                     &AElvenRingCharacter::StopSprint
                 );
+
+                
+                if (PlayerController->DodgeAction)
+                {
+                    // IA_Dodge 액션 키를 "눌렀을 때" DodgeAction() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->DodgeAction,
+                        ETriggerEvent::Triggered,
+                        this,
+                        &AElvenRingCharacter::StartDodge
+                    );
+                }
+
+                if (PlayerController->InteractAction)
+                {
+                    EnhancedInput->BindAction(
+                        PlayerController->InteractAction,
+                        ETriggerEvent::Started,
+                        this,
+                        &AElvenRingCharacter::Interact
+                    );
+                }
+                
+                if (PlayerController->AttackAction)
+                {
+                    // IA_Attack 액션 마우스가 "좌클릭할때" AttackAction() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->AttackAction,
+                        ETriggerEvent::Triggered,
+                        this,
+                        &AElvenRingCharacter::StartAttack
+                    );
+                }
+                if (PlayerController->DefenceAction)
+                {
+                    // IA_Defence 액션 마우스가 "우클릭할 때" DefenceAction() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->DefenceAction,
+                        ETriggerEvent::Triggered,
+                        this,
+                        &AElvenRingCharacter::StartDefence
+                    ); 
+                }
+                if (PlayerController->EndDefenceAction)
+                {
+                    // IA_Defence 액션 마우스가 "우클릭을 땔때" EndDefenceAction() 호출
+                    EnhancedInput->BindAction(
+                        PlayerController->EndDefenceAction,
+                        ETriggerEvent::Completed,
+                        this,
+                        &AElvenRingCharacter::StopDefence
+                    );
+                }
             }    
         }
     }
 }
 
+void AElvenRingCharacter::PlayDodgeAnimation(float _DodgeDuration)
+{
+    if (DodgeMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            float MontageLength = DodgeMontage->GetPlayLength();
+            float PlayRate = MontageLength / _DodgeDuration;
+            AnimInstance->Montage_Play(DodgeMontage,PlayRate);
+        }
+    }
+}
+
+void AElvenRingCharacter::PlayAttackAnimation(float _AttackSpeed)
+{
+    if (AttackMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            float MontageLength = AttackMontage->GetPlayLength();
+            float PlayRate = MontageLength / _AttackSpeed;
+            AnimInstance->Montage_Play(AttackMontage,PlayRate);
+        }
+    }
+}
+
+void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
+{
+    if (DefenceMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            // delegate 바인딩 후 몽타주에 등록
+            FOnMontageEnded MontageEndedDelegate;
+            MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
+            AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DefenceMontage);
+
+            //float MontageLength = DefenceMontage->GetPlayLength(); 일단 빼두자 언제 또 써야할지도 모른다.....
+            
+            AnimInstance->Montage_Play(DefenceMontage);
+        }
+    }
+}
+
+void AElvenRingCharacter::OnDefenceMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+    if (Montage == DefenceMontage)
+    {
+        // 특정 조건(예: 중단되지 않은 경우)을 체크한 후 다시 재생
+        PlayDefenceAnimation(DefenceSpeed);
+    }
+}
 void AElvenRingCharacter::Move(const FInputActionValue& value)
 {
     if (!Controller) return;
@@ -153,4 +264,88 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
     {
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
     }
+}
+
+void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
+{
+    if (bIsDodging)
+    {
+        return;
+    }
+    
+    FVector DodgeDirection = GetLastMovementInputVector();
+    if (DodgeDirection.IsNearlyZero())
+    {
+        DodgeDirection = GetActorForwardVector();
+    }
+    DodgeDirection.Normalize();
+    DodgeDirection.Z = 0;
+    
+    DodgeStartLocation = GetActorLocation();
+    DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
+    
+    DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
+    
+    bIsDodging = true;
+    DodgeTime = 0.f;
+    PlayDodgeAnimation(DodgeDuration);
+    
+    const float DodgeUpdate = 0.01f;
+    GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::UpdateDodge, DodgeUpdate, true);
+    GetWorld()->GetTimerManager().SetTimer(DodgeStopTimerHandle, this, &AElvenRingCharacter::StopDodge, DodgeDuration, false);
+    
+}
+
+void AElvenRingCharacter::UpdateDodge()
+{
+    const float DodgeUpdate = 0.01f;
+    float MoveDistance = DodgeVelocity.Size() * DodgeUpdate;
+    
+    AddMovementInput(DodgeVelocity.GetSafeNormal(), MoveDistance);
+    DodgeTime += DodgeUpdate;
+}
+
+void AElvenRingCharacter::Interact(const FInputActionValue& InputActionValue)
+{
+    UE_LOG(LogTemp, Display, TEXT("Interact Pressed"));
+    InteractionComponent->PerformInteract();
+}
+
+void AElvenRingCharacter::StopDodge()
+{
+    bIsDodging = false;
+    GetWorld()->GetTimerManager().ClearTimer(DodgeTimerHandle);
+}
+void AElvenRingCharacter::StartAttack(const FInputActionValue& value)
+{
+    if (bAttack)
+    {
+        return;
+    }
+    PlayAttackAnimation(AttackSpeed);
+    bAttack = true;
+    
+    GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &AElvenRingCharacter::StopAttack, AttackSpeed, false);
+}
+
+void AElvenRingCharacter::StopAttack()
+{
+    bAttack = false;
+    GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
+}
+
+void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
+{
+    if (bDefence)
+    {
+        return;
+    }
+    PlayDefenceAnimation(DefenceSpeed);
+    bDefence = true;
+}
+
+void AElvenRingCharacter::StopDefence(const FInputActionValue& value)
+{
+    bDefence = false;
+    GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
 }

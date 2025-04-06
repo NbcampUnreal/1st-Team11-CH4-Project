@@ -1,18 +1,18 @@
 #include "BossArtorias.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
+#include "ElvenRing/Boss/BossPattern/BossSpecialPatternComponent.h"
 
 ABossArtorias::ABossArtorias()
 {
-	
+	MinJumpAttackRadius = 1000.0f;
+	MinThrustAttackRadius = 700.0f;
 }
+
+
 
 void ABossArtorias::BeginPlay()
 {
-	Super::BeginPlay();
-
-	AnimInstance = GetMesh()->GetAnimInstance();
-
 	LOG(TEXT("Begin!"));
 
 	NormalPattern->AddAttackPattern(this, &ABossArtorias::HorizonSlashAttack, FString("HorizonSlashAttack"));
@@ -20,7 +20,12 @@ void ABossArtorias::BeginPlay()
 	NormalPattern->AddAttackPattern(this, &ABossArtorias::RotationAttack, FString("RotationAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossArtorias::DodgeAttack, FString("DodgeAttack"));
 
-	//NormalPattern->ExecuteAttackPattern();
+	SpecialPattern->AddAttackPattern(this, &ABossArtorias::JumpAttackCondition, &ABossArtorias::JumpAttack, FString("JumpAttack"));
+	SpecialPattern->AddAttackPattern(this, &ABossArtorias::ThrustAttackCondition, &ABossArtorias::ThrustAttack, FString("ThrustAttack"));
+
+	//NormalPattern->AddAttackPattern(this, &ABossArtorias::Dodge, FString("Dodge"));
+	
+	Super::BeginPlay();
 }
 
 
@@ -28,74 +33,71 @@ void ABossArtorias::BeginPlay()
 void ABossArtorias::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
 
+	RotateToTarget(DeltaTime);
+}
 
 
 void ABossArtorias::HorizonSlashAttack()
 {
-	if (IsValid(AnimInstance))
-	{
-		if (IsValid(HorizontalSlashAnim))
-		{
-			LOG(TEXT("Begin!"));
-			AnimInstance->Montage_Play(HorizontalSlashAnim);
-		}
-	}
+	PlayAnimMontage(HorizontalSlashAnim);
 }
 
 
 
 void ABossArtorias::VerticalSlashAttack()
 {
-	if (IsValid(AnimInstance))
-	{
-		if (IsValid(VerticalSlashAnim))
-		{
-			LOG(TEXT("Begin!"));
-			AnimInstance->Montage_Play(VerticalSlashAnim);
-		}
-	}
+	PlayAnimMontage(VerticalSlashAnim);
 }
 
 
 
 void ABossArtorias::RotationAttack()
 {
-	if (IsValid(AnimInstance))
-	{
-		if (IsValid(RotationAttackAnim))
-		{
-			LOG(TEXT("Begin!"));
-			AnimInstance->Montage_Play(RotationAttackAnim);	
-		}
-	}
+	PlayAnimMontage(RotationAttackAnim);
 }
 
 
 
 void ABossArtorias::DodgeAttack()
 {
-	if (IsValid(AnimInstance))
-	{
-		if (IsValid(DodgeAttackAnim))
-		{
-			LOG(TEXT("Begin!"));
-			AnimInstance->Montage_Play(DodgeAttackAnim);	
-		}
-	}
+	PlayAnimMontage(DodgeAttackAnim);
 }
 
 
 
 void ABossArtorias::JumpAttack()
 {
-	if (IsValid(AnimInstance))
+	PlayAnimMontage(JumpAttackAnim);
+}
+
+bool ABossArtorias::JumpAttackCondition()
+{
+	if (GetDistanceBetweenTarget() >= MinJumpAttackRadius)
 	{
-		if (IsValid(JumpAttackAnim))
-		{
-			LOG(TEXT("Begin!"));
-			AnimInstance->Montage_Play(JumpAttackAnim);
-		}
+		return true;
 	}
+
+	return false;
+}
+
+void ABossArtorias::ThrustAttack()
+{
+	PlayAnimMontage(ThrustAnim);
+}
+
+bool ABossArtorias::ThrustAttackCondition()
+{
+	if (GetDistanceBetweenTarget() >= MinThrustAttackRadius)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+
+void ABossArtorias::Dodge()
+{
+	PlayAnimMontage(DodgeAnim);
 }

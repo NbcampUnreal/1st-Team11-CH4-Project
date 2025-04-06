@@ -13,4 +13,11 @@ UCLASS()
 class ELVENRING_API AElvenRingGameMode : public AGameMode
 {
 	GENERATED_BODY()
+
+public:
+	AElvenRingGameMode();
+	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
+
+protected:
+	void BroadcastLoadingScreen() const;
 };
