@@ -51,7 +51,23 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void OnDeath() override;
 	virtual float PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate = 1.0f, FName StartSectionName = NAME_None) override;
+
+	UFUNCTION(BlueprintCallable)
+	void OnAttackStarted();
+
+	UFUNCTION(BlueprintCallable)
+	void OnAttackEnded();
+
+	UFUNCTION()
+	void OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
+							UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
+							bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnMeshOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
+						  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	UFUNCTION()
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
@@ -111,6 +127,10 @@ public:
 
 	IBossStateInterface* CurrentState, *IdleState, *MoveState, *AttackState, *SpecialAttackState;
 
+protected:
+	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
+	FName CollisionSocketName;
+
 private:
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle GetAttackTargetTimerHandle;
@@ -119,4 +139,8 @@ private:
 	UPROPERTY()
 	UAudioComponent* AudioComponent;
 	
+	UPROPERTY(EditAnywhere)
+	UCapsuleComponent* AttackCollision;
+
+	bool bIsAttacking;
 };

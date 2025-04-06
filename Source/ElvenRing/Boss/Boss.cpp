@@ -8,8 +8,10 @@
 #include "BossState/BossSpecialAttackState.h"
 #include "BossState/BossStateInterface.h"
 #include "Components/AudioComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABoss::ABoss()
 {
@@ -25,12 +27,17 @@ ABoss::ABoss()
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>("BGM");
 
+	AttackCollision = CreateDefaultSubobject<UCapsuleComponent>("Attack Collision");
+	AttackCollision->SetupAttachment(GetMesh());
+
 	AnimInstance = nullptr;
 	TargetPlayer = nullptr;
 
 	MinMoveRadius = 500.0f;
 	MinAttackRadius = 500.0f;
 	MinIdleRadius = 300.0f;
+
+	bIsAttacking = false;
 }
 
 
@@ -39,10 +46,19 @@ void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
 
+	CurHealth = MaxHealth;
+
 	AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->OnMontageEnded.AddDynamic(this, &ABoss::OnMontageEnded);
 
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+
+	if (GetMesh()->DoesSocketExist(CollisionSocketName))
+	{
+		AttackCollision->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, CollisionSocketName);
+		AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &ABoss::OnMeshOverlapBegin);
+		AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 
@@ -55,6 +71,15 @@ void ABoss::Tick(float DeltaTime)
 	UpdateState();
 }
 
+void ABoss::OnDeath()
+{
+	Super::OnDeath();
+
+	LOG(TEXT("Begin"));
+	Destroy();
+
+	// 컷신 재생 로직 구현 필요
+}
 
 
 void ABoss::UpdateState()
@@ -142,7 +167,6 @@ float ABoss::PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate, FName 
 	{
 		if (IsValid(MontageToPlay))
 		{
-			LOG(TEXT("Begin!"));
 			AnimInstance->Montage_Play(MontageToPlay, PlayRate);
 
 			// 애니메이션 길이를 가져와서 25% 시점 계산
@@ -162,6 +186,44 @@ float ABoss::PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate, FName 
 	return 0.f;
 }
 
+void ABoss::OnAttackStarted()
+{
+	LOG(TEXT("Begin"));
+	bIsAttacking = true;
+	AttackCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+}
+
+void ABoss::OnAttackEnded()
+{
+	LOG(TEXT("Begin"));
+	bIsAttacking = false;
+	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ABoss::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                               int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	LOG(TEXT("Mesh Overlap Begin with!: %s"), *OtherActor->GetName());
+
+	if (!bIsAttacking) return;
+
+	AElvenRingCharacter* Player = Cast<AElvenRingCharacter>(OtherActor);
+	
+	if (Player)
+	{
+		LOG(TEXT("Mesh Overlap Begin with Player!"));
+		UGameplayStatics::ApplyDamage(Player, AttackPower, GetInstigatorController(), this, UDamageType::StaticClass());
+		bIsAttacking = false;	
+	}	
+	
+}
+
+void ABoss::OnMeshOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	int32 OtherBodyIndex)
+{
+	LOG(TEXT("Mesh Overlap End: %s"), *OtherActor->GetName());
+
+}
 
 
 void ABoss::SetAttackTimer()
@@ -190,7 +252,7 @@ void ABoss::SetAttackTarget()
 	{
 			if (IsValid(Player)) // NewTarget이 유효한지 체크
 			{
-				LOG(TEXT("Target set to: %s"), *Player->GetName());
+				//LOG(TEXT("Target set to: %s"), *Player->GetName());
 				TargetPlayer = Player;
 				break;
 			}
