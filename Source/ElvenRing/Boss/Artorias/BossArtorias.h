@@ -29,27 +29,27 @@ private:
 	void Dodge();
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> HorizontalSlashAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> VerticalSlashAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> RotationAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> DodgeAttackAnim;
 	
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> JumpAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> DodgeAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> ThrustAnim;
-
+	
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	float MinJumpAttackRadius;
 
