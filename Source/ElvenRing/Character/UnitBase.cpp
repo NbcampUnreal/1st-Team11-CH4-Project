@@ -2,6 +2,8 @@
 
 
 #include "UnitBase.h"
+
+#include "ElvenRing/ElvenRing.h"
 #include "Kismet/GameplayStatics.h"
 // Sets default values
 AUnitBase::AUnitBase()
@@ -47,7 +49,11 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 	float HitDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage > 0 && !bIsDie)
 	{
-		CurHealth -= Damage;
+		// 연출을 위해 원래 데미지 주변 값으로 계산
+		const float InterpDamage =  FMath::RandRange(Damage-Damage/5, Damage+Damage/5);
+		
+		CurHealth -= InterpDamage;
+		LOG(TEXT("Get Damaged ! Current Health : %f"), CurHealth);
 		if (CurHealth <= 0.f) OnDeath();
 		else
 		{
