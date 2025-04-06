@@ -26,6 +26,10 @@ public:
 
 	void ChangeState(IBossStateInterface* State);
 
+	/** 공격 시 카메라를 원하는 강도로 쉐이킹 하는 함수 */
+	UFUNCTION(BlueprintCallable)
+	void ApplyShakeCamera(TSubclassOf<UCameraShakeBase> CameraShakeClass, const float CameraShakeScale);
+
 	/** 타겟과의 거리를 구하는 함수 */
 	float GetDistanceBetweenTarget() const;
 
@@ -37,18 +41,41 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetBossBattleMode();
 
+	/** 특정 구간동안 빠르게 이동시키고 싶을 때 사용 */
+	UFUNCTION(BlueprintCallable)
+	void MoveForward(float MoveMultiflier);
+
+	/** 공격이 끝났을 때 호출하여 보스 상태 및 이동속도 초기화 */
+	UFUNCTION(BlueprintCallable)
+	void InitMoveSpeed();
+
 	/** 공격 패턴 타이머 설정하는 함수 */
 	void SetAttackTimer();
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
+	virtual void OnDeath() override;
 	virtual float PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate = 1.0f, FName StartSectionName = NAME_None) override;
+
+	UFUNCTION(BlueprintCallable)
+	void OnAttackStarted();
+
+	UFUNCTION(BlueprintCallable)
+	void OnAttackEnded();
+
+	UFUNCTION()
+	void OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
+							UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
+							bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnMeshOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
+						  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	
 	UFUNCTION()
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-private:
 	/** 공격할 대상 탐색 주기 설정 함수 */
 	void SetAttackTargetTimer();
 
@@ -68,6 +95,7 @@ private:
 public:
 	TObjectPtr<class UBossNormalPatternComponent> NormalPattern;
 	TObjectPtr<class UBossSpecialPatternComponent> SpecialPattern;
+	TObjectPtr<class UCameraControllerComponent> CameraController;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|BGM")
 	USoundBase* BossBattleBGM;
@@ -104,6 +132,10 @@ public:
 
 	IBossStateInterface* CurrentState, *IdleState, *MoveState, *AttackState, *SpecialAttackState;
 
+protected:
+	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
+	FName CollisionSocketName;
+
 private:
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle GetAttackTargetTimerHandle;
@@ -112,4 +144,8 @@ private:
 	UPROPERTY()
 	UAudioComponent* AudioComponent;
 	
+	UPROPERTY(EditAnywhere)
+	UCapsuleComponent* AttackCollision;
+
+	bool bIsAttacking;
 };
