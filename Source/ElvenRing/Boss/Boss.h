@@ -37,6 +37,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetBossBattleMode();
 
+	/** 특정 구간동안 빠르게 이동시키고 싶을 때 사용 */
+	UFUNCTION(BlueprintCallable)
+	void MoveForward(float MoveMultiflier);
+
+	/** 공격이 끝났을 때 호출하여 보스 상태 및 이동속도 초기화 */
+	UFUNCTION(BlueprintCallable)
+	void InitMoveSpeed();
+
 	/** 공격 패턴 타이머 설정하는 함수 */
 	void SetAttackTimer();
 
@@ -48,7 +56,6 @@ protected:
 	UFUNCTION()
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
-private:
 	/** 공격할 대상 탐색 주기 설정 함수 */
 	void SetAttackTargetTimer();
 

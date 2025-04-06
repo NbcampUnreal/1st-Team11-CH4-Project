@@ -30,6 +30,14 @@ void ABossArtorias::BeginPlay()
 
 
 
+void ABossArtorias::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	RotateToTarget(DeltaTime);
+}
+
+
 void ABossArtorias::HorizonSlashAttack()
 {
 	PlayAnimMontage(HorizontalSlashAnim);

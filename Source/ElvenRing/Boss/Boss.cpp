@@ -9,6 +9,7 @@
 #include "BossState/BossStateInterface.h"
 #include "Components/AudioComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 ABoss::ABoss()
 {
@@ -40,6 +41,8 @@ void ABoss::BeginPlay()
 
 	AnimInstance = GetMesh()->GetAnimInstance();
 	AnimInstance->OnMontageEnded.AddDynamic(this, &ABoss::OnMontageEnded);
+
+	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 }
 
 
@@ -50,9 +53,6 @@ void ABoss::Tick(float DeltaTime)
 
 	// 현재 상태에 해당하는 OnStateUpdate 함수 호출
 	UpdateState();
-
-	// 공격 중이 아닐 때만 타겟을 향해 회전
-	RotateToTarget(DeltaTime);
 }
 
 
@@ -112,6 +112,17 @@ void ABoss::SetBossBattleMode()
 	// 4. 보스 BGM 활성화
 	AudioComponent->SetSound(BossBattleBGM);
 	AudioComponent->Play();
+}
+
+void ABoss::MoveForward(const float MoveMultiflier)
+{
+	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed * MoveMultiflier;
+	AddMovementInput(GetActorForwardVector());
+}
+
+void ABoss::InitMoveSpeed()
+{
+	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 }
 
 
