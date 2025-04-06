@@ -9,10 +9,18 @@ UCLASS()
 class ELVENRING_API ANormalMonster : public AUnitBase
 {
 	GENERATED_BODY()
+
 public:
 	ANormalMonster();
+	
+	UFUNCTION(BlueprintCallable, Category="AI")
+	virtual void Attack(AActor* Target) override;
 
-
-	// UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category="AI")
-	// TArray<AActor*> PatrolPoints;
+	virtual void BeginPlay() override;
 };
+
+
+
+
+
+

@@ -15,6 +15,9 @@ public:
 	// Sets default values for this character's properties
 	AUnitBase();
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathDelegate, AUnitBase*, Unit);
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnDeathDelegate OnDeathEvent;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -35,7 +38,7 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void Attack();
+	virtual void Attack(AActor* Target);
 	virtual void OnAttacked();
 	virtual void OnDeath();
 	virtual void OnHealthChanged();
@@ -43,7 +46,7 @@ public:
 	(
 		float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser
 	) override;
-	float MaxGetHealth() const
+	float GetMaxHealth() const
 	{
 		return MaxHealth;
 	}

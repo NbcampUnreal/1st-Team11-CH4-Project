@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UnitBase.h"
+#include "ElvenRing/Interaction/InteractionComponent.h"
 #include "ElvenRingCharacter.generated.h"
 
 class UCameraComponent;
@@ -23,6 +24,10 @@ public:
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
+	UInteractionComponent* InteractionComponent;
+
+protected:
 	protected:
 	//애니 몽타주(근데 이거 맞음??너무 더러운거보니까 잘못쓰고 있는거같은데)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
@@ -95,5 +100,6 @@ public:
 	void StartDefence(const FInputActionValue& value);
 	UFUNCTION()
 	void StopDefence(const FInputActionValue& value);
+	void Interact(const FInputActionValue& InputActionValue);
 };
 
