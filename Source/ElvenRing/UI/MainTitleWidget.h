@@ -36,7 +36,7 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void OnUnhovered();
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void OnReleaseed();
+	void OnReleased();
 private:
 	FTimerHandle AlphaPingpongTimerHandle;
 	FTimerHandle OnClickTimerHandle;

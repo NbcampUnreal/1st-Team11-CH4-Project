@@ -8,10 +8,13 @@
 
 class UProgressBar;
 class UImage;
+class UTextBlock;
+class UCanvasPanel;
 
 struct FMRamdaElement
 {
 	bool Recover = false;
+	FText DamageTextValue;
 	float TargetHp = 0.f;
 	float HpMax = 0.f;
 	float CurProgressBarPer = 0.f;
@@ -34,6 +37,12 @@ class ELVENRING_API UMonsterWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	UPROPERTY(meta = (BindWidget))
+	UCanvasPanel* CanvasPanelSlot;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* DamageText;
+
+	UPROPERTY(meta = (BindWidget))
 	UProgressBar* HpProgressBar;
 
 	UPROPERTY(meta = (BindWidget))
@@ -43,9 +52,12 @@ public:
 	UImage* HpFrameImg;
 
 	UFUNCTION(BlueprintCallable, Category =  "UI")
-	void SetUiSize(float UiSize);
-	void DecreaseHp(float CurHp, float HpMax);
+	void SetUiSize(FVector2D  Scale, FVector2D Pos);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void DecreaseHp(float TargetHp, float HpMax);
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void RecoverHp(float TargetHp, float HpMax);
+
 
 private:
 	FTimerHandle HpTimerHandle;

@@ -15,7 +15,7 @@ void UMainTitleWidget::NativeConstruct()
         StartButton->OnPressed.AddDynamic(this, &UMainTitleWidget::OnPressed);
         StartButton->OnHovered.AddDynamic(this, &UMainTitleWidget::OnHovered);
         StartButton->OnUnhovered.AddDynamic(this, &UMainTitleWidget::OnUnhovered);
-        StartButton->OnUnhovered.AddDynamic(this, &UMainTitleWidget::OnReleaseed);
+        StartButton->OnReleased.AddDynamic(this, &UMainTitleWidget::OnReleased);
 
         Dir = 1.f;
         GetWorld()->GetTimerManager().SetTimer(AlphaPingpongTimerHandle, this, &UMainTitleWidget::PingpongText, 0.05f, true);
@@ -24,6 +24,7 @@ void UMainTitleWidget::NativeConstruct()
 
 void UMainTitleWidget::NativeDestruct()
 {
+    Super::NativeDestruct();
     GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
 }
 
@@ -63,7 +64,7 @@ void UMainTitleWidget::OnUnhovered()
     //GetWorld()->GetTimerManager().ClearTimer(OnHoverTimerHandle);
     //GetWorld()->GetTimerManager().SetTimer(OnUnHoverTimerHandle, this, &UMainTitleWidget::UnhoverText, 0.05f, true);
 }
-void UMainTitleWidget::OnReleaseed()
+void UMainTitleWidget::OnReleased()
 {
     UE_LOG(LogTemp, Warning, TEXT("OnReleaseed"));
     GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);

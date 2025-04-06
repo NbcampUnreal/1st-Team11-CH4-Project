@@ -5,28 +5,39 @@
 #include "Components/ProgressBar.h"
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
+#include "Components/CanvasPanel.h"
 
-void UMonsterWidget::SetUiSize(float UiSize)
+void UMonsterWidget::SetUiSize(FVector2D  Scale, FVector2D Pos)
 {
+	//CanvasPanel->SetRenderTransform(FVector2D(UiSize, UiSize));
+	if (UWidget* CanvasAsWidget = Cast<UWidget>(CanvasPanelSlot))
+	{
+		CanvasAsWidget->SetRenderScale( Scale ); // ✅ 전체 UI 스케일 줄이기
+		CanvasAsWidget->SetRenderTranslation( Pos );
+	}
+	if (true)
+		return;
+
 	if (UCanvasPanelSlot* ProgressBarCanvasSlot = Cast<UCanvasPanelSlot>(HpProgressBar->Slot))
 	{
 		FVector2D CurrentSize = ProgressBarCanvasSlot->GetSize();
 		
-		ProgressBarCanvasSlot->SetSize(FVector2D(CurrentSize.X * UiSize, CurrentSize.Y * UiSize));
+		ProgressBarCanvasSlot->SetSize(CurrentSize* Scale);
 	}
 
 	if (UCanvasPanelSlot* ProgressBarCanvasSlot = Cast<UCanvasPanelSlot>(HpProgressYellowBar->Slot))
 	{
 		FVector2D CurrentSize = ProgressBarCanvasSlot->GetSize();
 
-		ProgressBarCanvasSlot->SetSize(FVector2D(CurrentSize.X * UiSize, CurrentSize.Y * UiSize));
+		ProgressBarCanvasSlot->SetSize(CurrentSize * Scale);
 	}
 
 	if (UCanvasPanelSlot* HpBarCanvasSlot = Cast<UCanvasPanelSlot>(HpFrameImg->Slot))
 	{
 		FVector2D CurrentSize = HpBarCanvasSlot->GetSize();
 
-		HpBarCanvasSlot->SetSize(FVector2D(CurrentSize.X * UiSize, CurrentSize.Y * UiSize));
+		HpBarCanvasSlot->SetSize(CurrentSize * Scale);
 	}
 }
 void UMonsterWidget::DecreaseHp(float TargetHp, float HpMax)
@@ -39,6 +50,12 @@ void UMonsterWidget::DecreaseHp(float TargetHp, float HpMax)
 	FElement.TargetProgressBarPer = TargetHp / HpMax;
 	FElement.CurProgressBarPer = HpProgressYellowBar->GetPercent();
 	FElement.MyProgressBar = HpProgressYellowBar;
+
+	float Damage = FElement.CurProgressBarPer * HpMax - FElement.TargetProgressBarPer * HpMax;
+
+	//UE_LOG(LogTemp, Warning, TEXT("ElapsedTime : %f / PrevTime :  %f / TimeSeconds :  %f "), FEmt.ElapsedTime, FEmt.PrevTime, GetWorld()->GetTimeSeconds());
+
+	FElement.DamageTextValue = FText::AsNumber(FMath::RoundToInt(Damage));
 
 	HpProgressBar->SetPercent(FElement.TargetProgressBarPer);
 	UpdateProgressBar(FElement);
@@ -59,8 +76,12 @@ void UMonsterWidget::RecoverHp(float TargetHp, float HpMax)
 	HpProgressBar->SetPercent(FElement.TargetProgressBarPer);
 	UpdateProgressBar(FElement);
 }
+
 void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 {
+	if (!FElement.Recover)
+		DamageText->SetText( FElement.DamageTextValue );
+
 	GetWorld()->GetTimerManager().SetTimer
 	(
 		HpTimerDelayHandle,
@@ -83,6 +104,8 @@ void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 							FElement.MyProgressBar->SetPercent(FElement.TargetProgressBarPer);
 							if (FElement.Recover)
 								FElement.MyProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
+							else 
+								DamageText->SetText( FText::GetEmpty());
 
 							FElement.ClearPointer();
 							GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);

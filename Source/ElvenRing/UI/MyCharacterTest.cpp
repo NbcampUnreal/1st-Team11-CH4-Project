@@ -17,11 +17,15 @@ AMyCharacterTest::AMyCharacterTest()
         // 위젯 컴포넌트 생성 및 설정
         HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget"));
         HPWidgetComponent->SetupAttachment(RootComponent);
+        //HPWidgetComponent->SetDrawSize(FVector2D(50.f, 10.f)); // 초기 크기
         HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World);
-        HPWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f)); // 머리 위에 위치
+        HPWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 80.f)); // 머리 위에 위치
         HPWidgetComponent->SetTwoSided(true);
         HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World);
         HPWidgetComponent->SetPivot(FVector2D(0.5f, 0.5f));
+        HPWidgetComponent->SetDrawAtDesiredSize(true); // 위젯 자체 사이즈 기준으로 그리기
+        //HPWidgetComponent->SetWidgetClass(HpBarWidgetClass); // WBP_MonsterHpBar
+   
     }
 
 }
@@ -31,7 +35,7 @@ void AMyCharacterTest::BeginPlay()
 {
 	Super::BeginPlay();
     UMonsterWidget* Uiwedget = Cast<UMonsterWidget>(HPWidgetComponent->GetUserWidgetObject());
-    Uiwedget->SetUiSize(0.8f);
+    Uiwedget->SetUiSize(FVector2D(0.35f), FVector2D(0.f, 40.f));//Uiwedget->SetUiSize(0.4f);
     Uiwedget->DecreaseHp(80.f,100.f);
 }
 
