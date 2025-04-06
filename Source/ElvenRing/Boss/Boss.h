@@ -26,6 +26,10 @@ public:
 
 	void ChangeState(IBossStateInterface* State);
 
+	/** 공격 시 카메라를 원하는 강도로 쉐이킹 하는 함수 */
+	UFUNCTION(BlueprintCallable)
+	void ApplyShakeCamera(TSubclassOf<UCameraShakeBase> CameraShakeClass, const float CameraShakeScale);
+
 	/** 타겟과의 거리를 구하는 함수 */
 	float GetDistanceBetweenTarget() const;
 
@@ -91,6 +95,7 @@ protected:
 public:
 	TObjectPtr<class UBossNormalPatternComponent> NormalPattern;
 	TObjectPtr<class UBossSpecialPatternComponent> SpecialPattern;
+	TObjectPtr<class UCameraControllerComponent> CameraController;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|BGM")
 	USoundBase* BossBattleBGM;
