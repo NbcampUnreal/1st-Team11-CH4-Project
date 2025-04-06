@@ -13,7 +13,7 @@ void UWaitingRoomWidget::OnStartButtonClicked()
 
     if (UElvenringGameInstance* ElvenringGameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
     {
-        ElvenringGameInstance->SetNickname(InputName);
+       // ElvenringGameInstance->SetNickname(InputName);
     }
     UE_LOG(LogTemp, Warning, TEXT("OpenLevel(this, TEXT(BattleMap))"));
    // UGameplayStatics::OpenLevel(this, TEXT("BattleMap"));
