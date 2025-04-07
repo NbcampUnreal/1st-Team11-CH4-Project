@@ -17,6 +17,7 @@ class ELVENRING_API AElvenRingGameMode : public AGameMode
 public:
 	AElvenRingGameMode();
 protected:
+	virtual void BeginPlay() override;
 	virtual void StartPlay() override;
 	
 public:
@@ -31,6 +32,6 @@ public:
 		return EventManager;
 	}
 protected:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	class UEventManager* EventManager;
 };
