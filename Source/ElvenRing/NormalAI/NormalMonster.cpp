@@ -118,6 +118,8 @@ void ANormalMonster::OnDeath()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	bIsDie = true;
+	HPWidgetComponent->DestroyComponent();
+
 }
 void ANormalMonster::SetWidget(UUserWidget* Widget)
 {
