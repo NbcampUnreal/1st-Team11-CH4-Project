@@ -38,7 +38,7 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void Attack();
+	virtual void Attack(AActor* Target);
 	virtual void OnAttacked();
 	virtual void OnDeath();
 	virtual void OnHealthChanged();
@@ -46,7 +46,7 @@ public:
 	(
 		float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser
 	) override;
-	float MaxGetHealth() const
+	float GetMaxHealth() const
 	{
 		return MaxHealth;
 	}
