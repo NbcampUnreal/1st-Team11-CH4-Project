@@ -10,6 +10,7 @@ class UProgressBar;
 class UImage;
 class UTextBlock;
 class UCanvasPanel;
+class AUnitBase;
 
 struct FMRamdaElement
 {
@@ -21,6 +22,7 @@ struct FMRamdaElement
 	float TargetProgressBarPer = 0.f;
 	float ElapsedTime = 0.f;
 	float Duration = 1.f;
+	float DelayTime = 0.1f;
 	float PrevTime = 0.f;
 	UProgressBar* MyProgressBar = nullptr;
 	UProgressBar* MyProgressYellowBar = nullptr;
@@ -58,7 +60,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void RecoverHp(float TargetHp, float HpMax);
 
+	UFUNCTION()
+	void UpdateHp(float TargetHp, float HpMax, int32 State);
 
+	void BindToMonster(AUnitBase* Monster);
 private:
 	FTimerHandle HpTimerHandle;
 	FTimerHandle HpTimerDelayHandle;

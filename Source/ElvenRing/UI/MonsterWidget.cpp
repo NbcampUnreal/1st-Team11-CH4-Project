@@ -7,13 +7,16 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/CanvasPanel.h"
+#include "ElvenRing/Character/UnitBase.h"
+#include "ElvenRing/NormalAI/NormalMonster.h"
+#include "Components/WidgetComponent.h" //ksw
 
 void UMonsterWidget::SetUiSize(FVector2D  Scale, FVector2D Pos)
 {
 	//CanvasPanel->SetRenderTransform(FVector2D(UiSize, UiSize));
 	if (UWidget* CanvasAsWidget = Cast<UWidget>(CanvasPanelSlot))
 	{
-		CanvasAsWidget->SetRenderScale( Scale ); // ✅ 전체 UI 스케일 줄이기
+		CanvasAsWidget->SetRenderScale( Scale );
 		CanvasAsWidget->SetRenderTranslation( Pos );
 	}
 	if (true)
@@ -42,6 +45,9 @@ void UMonsterWidget::SetUiSize(FVector2D  Scale, FVector2D Pos)
 }
 void UMonsterWidget::DecreaseHp(float TargetHp, float HpMax)
 {
+	if (0 >= HpProgressBar->GetPercent())
+		return;
+
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
 
@@ -50,6 +56,8 @@ void UMonsterWidget::DecreaseHp(float TargetHp, float HpMax)
 	FElement.TargetProgressBarPer = TargetHp / HpMax;
 	FElement.CurProgressBarPer = HpProgressYellowBar->GetPercent();
 	FElement.MyProgressBar = HpProgressYellowBar;
+	FElement.Duration = 1.f;
+	FElement.DelayTime = 1.f;
 
 	float Damage = FElement.CurProgressBarPer * HpMax - FElement.TargetProgressBarPer * HpMax;
 
@@ -62,23 +70,44 @@ void UMonsterWidget::DecreaseHp(float TargetHp, float HpMax)
 }
 void UMonsterWidget::RecoverHp(float TargetHp, float HpMax)
 {
+	if (1.f <= HpProgressBar->GetPercent())
+		return;
+
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
-
+	
 	FMRamdaElement FElement;
 	FElement.Recover = true;
 	FElement.Duration = 1.f;
 	FElement.TargetProgressBarPer = TargetHp / HpMax;
-	FElement.CurProgressBarPer = HpProgressYellowBar->GetPercent();
+	FElement.CurProgressBarPer = HpProgressBar->GetPercent();
 	FElement.MyProgressBar = HpProgressBar;
 	FElement.MyProgressYellowBar = HpProgressYellowBar;
-
-	HpProgressBar->SetPercent(FElement.TargetProgressBarPer);
 	UpdateProgressBar(FElement);
+	//HpProgressBar->SetPercent(FElement.TargetProgressBarPer);
+	//HpProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
+	UpdateProgressBar(FElement);
+}
+void UMonsterWidget::UpdateHp(float TargetHp, float HpMax, int32 State)
+{
+	if (State == 0)
+		DecreaseHp(TargetHp, HpMax);
+	else
+		RecoverHp(TargetHp, HpMax);
+}
+void UMonsterWidget::BindToMonster(AUnitBase* Monster)
+{
+	if (Monster)
+	{
+		Cast< ANormalMonster >(Monster)->SetWidget(this);
+		Monster->OnHpChanged.AddDynamic(this, &UMonsterWidget::UpdateHp);
+	}
 }
 
 void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 {
+	if (FElement.DelayTime <= 0.f) //람다 DelayTime이 0이면 진입을 못한다.
+		FElement.DelayTime = 0.01f;
 	if (!FElement.Recover)
 		DamageText->SetText( FElement.DamageTextValue );
 
@@ -113,6 +142,6 @@ void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 						FElement.PrevTime = GetWorld()->GetTimeSeconds();
 					}), 0.05f, true
 				);
-			}), 1.5f, false
+			}), FElement.DelayTime, false
 	);
 }

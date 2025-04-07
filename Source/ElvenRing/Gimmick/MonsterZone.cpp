@@ -25,23 +25,33 @@ void AMonsterZone::OnMonsterDeath(AUnitBase* Unit)
 	}
 }
 
-// Called when the game starts or when spawned
-void AMonsterZone::BeginPlay()
+void AMonsterZone::CountMonsters()
 {
-	Super::BeginPlay();
-
-	// Collect All Monster in this zone
 	TArray<AActor*> OverlappingActors;
 	GetCollisionComponent()->GetOverlappingActors(OverlappingActors, ANormalMonster::StaticClass());
 	for (AActor* Actor : OverlappingActors)
 	{
 		if (ANormalMonster* Monster = Cast<ANormalMonster>(Actor))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Monster found: %s"), *Monster->GetName());
 			Monster->OnDeathEvent.AddDynamic(this, &AMonsterZone::OnMonsterDeath);
 			MonsterCount++;
 		}
 	}
+}
+
+// Called when the game starts or when spawned
+void AMonsterZone::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (!HasAuthority())
+	{
+		return;
+	}
+	
+	// Begin Play 시점에서는 초기화가 다 끝나지 않아서 Overlap 이벤트가 제대로 동작하지 않는다.
+	// 일단은 다음 프레임에서 검출하기로 한다.
+	GetWorldTimerManager().SetTimerForNextTick(this, &AMonsterZone::CountMonsters);
 }
 
 void AMonsterZone::OnMonsterZoneClear() const

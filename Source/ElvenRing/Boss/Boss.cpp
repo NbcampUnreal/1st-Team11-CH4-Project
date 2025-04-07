@@ -61,6 +61,7 @@ void ABoss::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 	
 	RegisterCollision(AttackCollision, CollisionSocketName);
+	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 }
 
 

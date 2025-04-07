@@ -3,11 +3,31 @@
 
 #include "ElvenRingGameMode.h"
 
+#include "ElvenringGameInstance.h"
 #include "ElvenRing/Character/ElvenRingController.h"
+#include "ElvenRing/Gimmick/EventManager.h"
 
 AElvenRingGameMode::AElvenRingGameMode()
 {
 	bActorSeamlessTraveled = true;
+	EventManager = CreateDefaultSubobject<UEventManager>(TEXT("EventManager"));
+}
+
+void AElvenRingGameMode::StartPlay()
+{
+	Super::StartPlay();
+
+	// Start Play는 Begin Play 이훙에 호출된다.
+}
+
+void AElvenRingGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
+	{
+		EventManager->Init(GameInstance->GetGameFlags());
+	}
 }
 
 void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const

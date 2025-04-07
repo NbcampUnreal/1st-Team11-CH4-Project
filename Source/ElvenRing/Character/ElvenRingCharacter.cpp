@@ -293,7 +293,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     const float DodgeUpdate = 0.01f;
     GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::UpdateDodge, DodgeUpdate, true);
     GetWorld()->GetTimerManager().SetTimer(DodgeStopTimerHandle, this, &AElvenRingCharacter::StopDodge, DodgeDuration, false);
-    
+    GetWorld()->GetTimerManager().SetTimer(DodgeStopTestTimerHandle, this, &AElvenRingCharacter::DodgeCollDown, DodgeDuration+DodgeCool, false);
 }
 
 void AElvenRingCharacter::UpdateDodge()
@@ -313,9 +313,14 @@ void AElvenRingCharacter::Interact(const FInputActionValue& InputActionValue)
 
 void AElvenRingCharacter::StopDodge()
 {
-    bIsDodging = false;
     GetWorld()->GetTimerManager().ClearTimer(DodgeTimerHandle);
 }
+
+void AElvenRingCharacter::DodgeCollDown()
+{
+    bIsDodging = false;
+}
+
 void AElvenRingCharacter::StartAttack(const FInputActionValue& value)
 {
     if (bAttack)
@@ -348,4 +353,25 @@ void AElvenRingCharacter::StopDefence(const FInputActionValue& value)
 {
     bDefence = false;
     GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
+}
+void AElvenRingCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    //sprint Test ksw
+    if (GetCharacterMovement()->MaxWalkSpeed == SprintSpeed)
+    {
+        if (5.f < GetVelocity().Size())
+            bSprint = true;
+        else
+            bSprint = false;
+    }
+    else
+        bSprint = false;
+}
+
+void AElvenRingCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+    AttachDelegateToWidget(ECharacterType::Player);
 }
