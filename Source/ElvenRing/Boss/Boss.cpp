@@ -59,13 +59,8 @@ void ABoss::BeginPlay()
 	AnimInstance->OnMontageEnded.AddDynamic(this, &ABoss::OnMontageEnded);
 
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
-
-	if (GetMesh()->DoesSocketExist(CollisionSocketName))
-	{
-		AttackCollision->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, CollisionSocketName);
-		AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &ABoss::OnMeshOverlapBegin);
-		AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	
+	RegisterCollision(AttackCollision, CollisionSocketName);
 }
 
 
@@ -193,18 +188,36 @@ float ABoss::PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate, FName 
 	return 0.f;
 }
 
-void ABoss::OnAttackStarted()
+void ABoss::RegisterCollision(UCapsuleComponent* Collision, const FName SocketName)
+{
+	if (GetMesh()->DoesSocketExist(SocketName))
+	{
+		Collision->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+		Collision->OnComponentBeginOverlap.AddDynamic(this, &ABoss::OnMeshOverlapBegin);
+		Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
+
+void ABoss::OnAttackStarted(TArray<UCapsuleComponent*> Collision)
 {
 	LOG(TEXT("Begin"));
 	bIsAttacking = true;
-	AttackCollision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	for (UCapsuleComponent* Coll : Collision)
+	{
+		Coll->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	}
+	//Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
-void ABoss::OnAttackEnded()
+void ABoss::OnAttackEnded(TArray<UCapsuleComponent*> Collision)
 {
 	LOG(TEXT("Begin"));
 	bIsAttacking = false;
-	AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	for (UCapsuleComponent* Coll : Collision)
+	{
+		Coll->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+	//Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABoss::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
