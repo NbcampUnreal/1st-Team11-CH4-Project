@@ -22,7 +22,7 @@ public:
 	void ShowLoadingScreen();
 	UFUNCTION(BlueprintCallable)
 	void HideLoadingScreen();
-	
+
 private:
 	UPROPERTY()
 	TObjectPtr<UUserWidget> LoadingScreenWidget;;
@@ -56,4 +56,15 @@ private://ksw
 
 	UPROPERTY()
 	FString Nickname;
+
+public:
+	TArray<class UGameFlag*>* GetGameFlags()
+	{
+		return &GameFlags;
+	}
+	
+protected:
+	// TO-DO : 추후에 데이터테이블로 변경
+	UPROPERTY(EditDefaultsOnly)
+	TArray<class UGameFlag*> GameFlags;
 };
