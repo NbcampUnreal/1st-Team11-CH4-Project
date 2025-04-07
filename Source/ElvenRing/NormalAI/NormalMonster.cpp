@@ -2,10 +2,13 @@
 
 
 #include "ElvenRing/NormalAI/NormalMonster.h"
+
+#include "Components/CapsuleComponent.h"
 #include "ElvenRing/NormalAI/NormalAIController.h"
 #include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "Engine/DamageEvents.h"
 
+#include "ElvenRing/ElvenRing.h"
 #include "GameFramework/DamageType.h"
 #include "Engine/EngineTypes.h"
 #include "kismet/GameplayStatics.h"
@@ -44,22 +47,14 @@ void ANormalMonster::BeginPlay()
 		Uiwedget->SetUiSize(FVector2D(0.8f), FVector2D(0.f, 0.5f));//ksw
 }
 
-float ANormalMonster::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
-                                 class AController* EventInstigator, AActor* DamageCauser)
+
+float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+                                 AActor* DamageCauser)
 {
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	// 데미지 처리
-	CurHealth -= ActualDamage;
-	UE_LOG(LogTemp, Warning, TEXT("몬스터 체력: %f"), CurHealth);
-	PlayDamageAnim();
-	if (CurHealth <= 0)
-	{
-		OnDeath(); // 체력이 0 이하이면 사망 처리
-	}
-
-	return ActualDamage;
+	 Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	return Damage;
 }
+
 
 void ANormalMonster::Attack(AActor* Target)
 {
@@ -70,7 +65,9 @@ void ANormalMonster::Attack(AActor* Target)
 		UE_LOG(LogTemp, Warning, TEXT("몬스터가 %f 데미지를 적용"), AttackPower);
 
 		// 애니메이션 적용 (AnimSequence 타입)
-		UAnimSequence* AttackAnim = LoadObject<UAnimSequence>(nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/DoublePain.DoublePain'"));
+		UAnimSequence* AttackAnim = LoadObject<UAnimSequence>(
+			nullptr, TEXT(
+				"/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/DoublePain.DoublePain'"));
 		if (AttackAnim && GetMesh())
 		{
 			GetMesh()->PlayAnimation(AttackAnim, false);
@@ -98,11 +95,13 @@ void ANormalMonster::PlayDeathAnim()
 	Super::PlayDeathAnim();
 
 	// 애니메이션 로드
-	UAnimSequence* DeathAnim = LoadObject<UAnimSequence>(nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Death_B.Death_B'"));
+	UAnimSequence* DeathAnim = LoadObject<UAnimSequence>(
+		nullptr, TEXT(
+			"/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Death_B.Death_B'"));
 
 	if (DeathAnim && GetMesh())
 	{
-		GetMesh()->PlayAnimation(DeathAnim, false);  // 애니메이션 실행
+		GetMesh()->PlayAnimation(DeathAnim, false); // 애니메이션 실행
 	}
 }
 
@@ -110,8 +109,17 @@ void ANormalMonster::OnDeath()
 {
 	Super::OnDeath();
 	PlayDeathAnim();
+	if (GetController())
+	{
+		GetController()->UnPossess();
+	}
 
-	
+	// 콜리전 제거
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	bIsDie = true;
+	HPWidgetComponent->DestroyComponent();
+
 }
 void ANormalMonster::SetWidget(UUserWidget* Widget)
 {
@@ -127,7 +135,7 @@ void ANormalMonster::Tick(float DeltaTime)//ksw
 
 		FRotator LookRot = (CamLoc - MyLoc).Rotation();
 		// LookRot.Pitch = 0.f;
-		 //LookRot.Roll = 0.f; // 수직 회전 제거해서 평면 유지
+		//LookRot.Roll = 0.f; // 수직 회전 제거해서 평면 유지
 
 		HPWidgetComponent->SetWorldRotation(LookRot);
 	}

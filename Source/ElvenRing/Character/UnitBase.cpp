@@ -74,6 +74,7 @@ void AUnitBase::OnAttacked()
 void AUnitBase::OnDeath()
 {
 	OnDeathEvent.Broadcast(this);
+	bIsDie = true;
 }
 
 void AUnitBase::OnHealthChanged()
@@ -100,6 +101,7 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 	}
 	return Damage;
 }
+
 
 
 void AUnitBase::PlayDamageAnim()
