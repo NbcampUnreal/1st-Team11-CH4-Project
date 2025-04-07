@@ -26,6 +26,8 @@ void ABossArtorias::BeginPlay()
 	//NormalPattern->AddAttackPattern(this, &ABossArtorias::Dodge, FString("Dodge"));
 	
 	Super::BeginPlay();
+
+	//SetBossBattleMode();
 }
 
 

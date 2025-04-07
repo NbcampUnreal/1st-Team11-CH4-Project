@@ -11,6 +11,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Effect/CameraControllerComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
+#include "ElvenRing/LevelSequence/NormalLevelSequenceActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -79,9 +80,8 @@ void ABoss::OnDeath()
 	Super::OnDeath();
 
 	LOG(TEXT("Begin"));
+	StartDeadSequence();
 	Destroy();
-
-	// 컷신 재생 로직 구현 필요
 }
 
 

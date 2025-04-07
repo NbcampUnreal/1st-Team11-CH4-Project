@@ -43,7 +43,14 @@ void ANormalLevelSequenceActor::OnSequenceEnded()
 	SetAllPlayerUnhidden();
 
 	// 2. 보스를 약간의 지연시간 후 전투 상태로 전환
-	SetBossBattleModeWithDelay();
+	if (SequenceType == ESequenceType::Battle)
+	{
+		SetBossBattleModeWithDelay();	
+	}
+	else if (SequenceType == ESequenceType::Dead)
+	{
+		
+	}
 }
 
 

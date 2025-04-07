@@ -34,8 +34,8 @@ void ABossTenebris::BeginPlay()
 	LOG(TEXT("Begin!"));
 
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::GrabAttack, FString("GrabAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::TailAttack, FString("TailAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::EarthquakeAttack, FString("EarthquakeAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossTenebris::TailAttack, FString("TailAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossTenebris::EarthquakeAttack, FString("EarthquakeAttack"));
 
 	//NormalPattern->AddAttackPattern(this, &ABossTenebris::BressAttackFront, FString("BressAttackFront"));
 	//NormalPattern->AddAttackPattern(this, &ABossTenebris::EnergyAttack, FString("EnergyAttack"));
@@ -60,10 +60,8 @@ void ABossTenebris::BeginPlay()
 
 	Super::BeginPlay();
 
-	SetBossBattleMode();
-
-	/*PlayAnimMontage(BressAfterMoveFrontAnim);
-	SetSpecialAttackTimer(0);*/
+	PlayAnimMontage(BressAfterMoveFrontAnim);
+	SetSpecialAttackTimer(0);
 }
 
 float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,

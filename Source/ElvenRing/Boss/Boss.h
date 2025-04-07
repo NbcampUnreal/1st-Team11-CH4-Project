@@ -5,6 +5,7 @@
 #include "Boss.generated.h"
 
 
+class ANormalLevelSequenceActor;
 class IBossStateInterface;
 class AElvenRingCharacter;
 
@@ -29,6 +30,9 @@ public:
 	/** 공격 시 카메라를 원하는 강도로 쉐이킹 하는 함수 */
 	UFUNCTION(BlueprintCallable)
 	void ApplyShakeCamera(TSubclassOf<UCameraShakeBase> CameraShakeClass, const float CameraShakeScale);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartDeadSequence();
 
 	/** 타겟과의 거리를 구하는 함수 */
 	float GetDistanceBetweenTarget() const;
