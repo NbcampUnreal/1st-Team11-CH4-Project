@@ -5,6 +5,7 @@
 #include "Boss.generated.h"
 
 
+class ANormalLevelSequenceActor;
 class IBossStateInterface;
 class AElvenRingCharacter;
 
@@ -30,6 +31,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ApplyShakeCamera(TSubclassOf<UCameraShakeBase> CameraShakeClass, const float CameraShakeScale);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void StartDeadSequence();
+
 	/** 타겟과의 거리를 구하는 함수 */
 	float GetDistanceBetweenTarget() const;
 
@@ -52,18 +56,6 @@ public:
 	/** 공격 패턴 타이머 설정하는 함수 */
 	void SetAttackTimer();
 
-protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
-	virtual void OnDeath() override;
-	virtual float PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate = 1.0f, FName StartSectionName = NAME_None) override;
-
-	UFUNCTION(BlueprintCallable)
-	void OnAttackStarted();
-
-	UFUNCTION(BlueprintCallable)
-	void OnAttackEnded();
-
 	UFUNCTION()
 	void OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 							UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
@@ -72,6 +64,20 @@ protected:
 	UFUNCTION()
 	void OnMeshOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 						  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual void OnDeath() override;
+	virtual float PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate = 1.0f, FName StartSectionName = NAME_None) override;
+	
+	void RegisterCollision(UCapsuleComponent* Collision, const FName SocketName);
+	
+	UFUNCTION(BlueprintCallable)
+	void OnAttackStarted(TArray<UCapsuleComponent*> Collision);
+
+	UFUNCTION(BlueprintCallable)
+	void OnAttackEnded(TArray<UCapsuleComponent*> Collision);
 	
 	UFUNCTION()
 	virtual void OnMontageEnded(UAnimMontage* Montage, bool bInterrupted);
@@ -135,6 +141,9 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	FName CollisionSocketName;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCapsuleComponent* AttackCollision;
 
 private:
 	FTimerHandle AttackTimerHandle;
@@ -143,9 +152,6 @@ private:
 
 	UPROPERTY()
 	UAudioComponent* AudioComponent;
-	
-	UPROPERTY(EditAnywhere)
-	UCapsuleComponent* AttackCollision;
 
 	bool bIsAttacking;
 };
