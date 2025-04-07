@@ -19,6 +19,7 @@ AMonsterZone::AMonsterZone()
 void AMonsterZone::OnMonsterDeath(AUnitBase* Unit)
 {
 	MonsterCount--;
+	UE_LOG(LogTemp, Display, TEXT("Monster %s is dead, Unit Remain : %d"), *Unit->GetName(), MonsterCount);
 	if (MonsterCount == 0)
 	{
 		OnMonsterZoneClear();
@@ -37,6 +38,8 @@ void AMonsterZone::CountMonsters()
 			MonsterCount++;
 		}
 	}
+
+	UE_LOG(LogTemp, Display, TEXT("Monster Count: %d"), MonsterCount);
 }
 
 // Called when the game starts or when spawned
