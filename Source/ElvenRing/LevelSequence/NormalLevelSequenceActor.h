@@ -7,6 +7,13 @@
 class ULevelSequence;
 class ABoss;
 
+UENUM(BlueprintType)
+enum class ESequenceType : uint8
+{
+	Battle,
+	Dead
+};
+
 UCLASS()
 class ELVENRING_API ANormalLevelSequenceActor : public ALevelSequenceActor
 {
@@ -32,4 +39,7 @@ private:
 	
 	UPROPERTY(VisibleAnywhere, Category = "Boss")
 	ULevelSequence* CurrentLevelSequence;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Boss")
+	ESequenceType SequenceType;
 };
