@@ -26,10 +26,16 @@ void UEventManager::SetGameFlag(FName FlagName, bool bNewValue)
 		if (*OldValue != bNewValue)
 		{
 			GameFlagStates[FlagName] = bNewValue;
-			if (UGameFlag** GameFlag = GameFlagAssets.FindByPredicate([&FlagName](const UGameFlag* Flag) { return Flag->FlagName == FlagName; }))
-			{
-				(*GameFlag)->bDefaultValue = bNewValue;
-			}
+			// Editor 모드에서 이렇게 동작시키면 Editor Asset의 값을 수정해버린다.
+			// if (UGameFlag** GameFlag = GameFlagAssets.FindByPredicate([&FlagName](const UGameFlag* Flag) { return Flag->FlagName == FlagName; }))
+			// {
+			// 	UE_LOG(LogTemp, Display, TEXT("Find Flag in GameFlagAssets"));
+			// 	(*GameFlag)->bDefaultValue = bNewValue;
+			// }
+			// else
+			// {
+			// 	UE_LOG(LogTemp,Display,TEXT("Event Manager: SetGameFlag: %s not found in GameFlagAssets"), *FlagName.ToString());
+			// }
 
 			// Delegate 호출
 			if (FOnFlagChanged* Delegate = Delegates.Find(FlagName))
@@ -37,6 +43,10 @@ void UEventManager::SetGameFlag(FName FlagName, bool bNewValue)
 				Delegate->Broadcast(bNewValue, *OldValue);
 			}
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp,Warning, TEXT("Event Manager: SetGameFlag: %s not found"), *FlagName.ToString());
 	}
 }
 
