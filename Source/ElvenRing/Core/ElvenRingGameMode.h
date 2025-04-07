@@ -31,6 +31,6 @@ public:
 		return EventManager;
 	}
 protected:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	class UEventManager* EventManager;
 };
