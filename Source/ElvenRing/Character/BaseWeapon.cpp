@@ -38,7 +38,7 @@ void ABaseWeapon::Tick(float DeltaTime)
 void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor->GetOwner())
+	if (OtherActor && OtherActor->IsOwnedBy(GetOwner()))
 	{
 		return;
 	}
