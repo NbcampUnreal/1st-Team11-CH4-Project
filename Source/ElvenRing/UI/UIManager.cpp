@@ -14,6 +14,7 @@
 #include "BossWidget.h"
 #include "MonsterWidget.h"
 #include "MessageWidgetBase.h"
+#include "ElvenRing/Character/UnitBase.h"
 
 UUIManager::UUIManager()
 {
@@ -115,7 +116,14 @@ void UUIManager::ShowInGameUi()
     if (InGameWidget)
         InGameWidget->AddToViewport();
 }
+void UUIManager::ShowPlayerMainUi()
+{
+    if (!PlayerMainUiWedget && PlayerMainUiClass && CachedWorld)
+        PlayerMainUiWedget = CreateWidget<UPlayerMainUi>(CachedWorld, PlayerMainUiClass);
 
+    if (PlayerMainUiWedget)
+        PlayerMainUiWedget->AddToViewport();
+}
 void UUIManager::ShowMessage(const FString& Message, EMessageType MsgType)
 {
    UMessageWidgetBase* Widget = GetMessageWidgetSafe(MsgType);
@@ -153,6 +161,7 @@ void UUIManager::ClearAllWidgets()
     SystemMessageWidget = nullptr;
     BattleMessageWidget = nullptr;
     PlayerMainUiWedget = nullptr;
+    MonsterWidget = nullptr;
     BossWidget = nullptr;
 }
 
@@ -160,6 +169,39 @@ void UUIManager::RegisterMessageWidgets()
 {
     MessageWidgets.Add( SystemMessageWidget);
     MessageWidgets.Add( BattleMessageWidget);
+}
+
+void UUIManager::BindPlayerMainUi(AUnitBase* Unit)
+{
+    ShowPlayerMainUi();
+    if(GetPlayerMainUi())
+         GetPlayerMainUi()->BindToPlayer(Unit);
+    else
+        UE_LOG(LogTemp, Warning, TEXT("Error!! BindPlayerMainUi"));
+}
+
+void UUIManager::BindBossWidgetUi(AUnitBase* Unit)
+{
+    ShowBossWidget();
+    if(BossWidget)
+        BossWidget->BindToBoss(Unit);
+    else
+        UE_LOG(LogTemp, Warning, TEXT("Error!! BindBossWidgetUi"));
+}
+
+void UUIManager::CreateBindNormalMonsterWidgetUi(AUnitBase* Unit)
+{
+    UMonsterWidget* MonsterUiWidget = nullptr;
+    if (MonsterWidgetClass && CachedWorld)
+    {
+        MonsterUiWidget = CreateWidget<UMonsterWidget>(CachedWorld, MonsterWidgetClass);
+        if(MonsterUiWidget)
+            MonsterUiWidget->BindToMonster(Unit);
+        else
+            UE_LOG(LogTemp, Warning, TEXT("Error!! CreateBindNormalMonsterWidgetUi"));
+    }
+    else
+        UE_LOG(LogTemp, Warning, TEXT("Error!! CreateBindNormalMonsterWidgetUi MonsterWidgetClass CachedWorld"));
 }
 
 UMessageWidgetBase* UUIManager::GetMessageWidgetSafe(EMessageType MsgType) const
