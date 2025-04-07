@@ -12,6 +12,8 @@
 #include "GameFramework/DamageType.h"
 #include "Engine/EngineTypes.h"
 #include "kismet/GameplayStatics.h"
+#include "Components/WidgetComponent.h" //ksw
+#include "ElvenRing//UI/MonsterWidget.h"//ksw
 
 ANormalMonster::ANormalMonster()
 {
@@ -25,11 +27,24 @@ ANormalMonster::ANormalMonster()
 	bIsDie = false;
 
 	AIControllerClass = ANormalAIController::StaticClass();
+
+	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget")); //ksw
+	HPWidgetComponent->SetupAttachment(RootComponent);//ksw
+	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World);//ksw
+	HPWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f)); //ksw
+	HPWidgetComponent->SetTwoSided(true);//ksw
+	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World);//ksw
+	HPWidgetComponent->SetPivot(FVector2D(0.5f, 0.5f));//ksw
+	PrimaryActorTick.bCanEverTick = true;//ksw
 }
 
 void ANormalMonster::BeginPlay()
 {
 	Super::BeginPlay();
+	AttachDelegateToWidget(ECharacterType::NormalMonster);//ksw
+	UMonsterWidget* Uiwedget = Cast<UMonsterWidget>(HPWidgetComponent->GetUserWidgetObject());//ksw
+	if (Uiwedget) //순서중요! AttachDelegateToWidget() > SetWidget()로 hp위젯을 먼저 얻어와야함.
+		Uiwedget->SetUiSize(FVector2D(0.8f), FVector2D(0.f, 0.5f));//ksw
 }
 
 
@@ -103,4 +118,23 @@ void ANormalMonster::OnDeath()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	bIsDie = true;
+}
+void ANormalMonster::SetWidget(UUserWidget* Widget)
+{
+	HPWidgetComponent->SetWidget(Widget);
+}
+void ANormalMonster::Tick(float DeltaTime)//ksw
+{
+	Super::Tick(DeltaTime);
+	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	{
+		FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
+		FVector MyLoc = HPWidgetComponent->GetComponentLocation();
+
+		FRotator LookRot = (CamLoc - MyLoc).Rotation();
+		// LookRot.Pitch = 0.f;
+		//LookRot.Roll = 0.f; // 수직 회전 제거해서 평면 유지
+
+		HPWidgetComponent->SetWorldRotation(LookRot);
+	}
 }
