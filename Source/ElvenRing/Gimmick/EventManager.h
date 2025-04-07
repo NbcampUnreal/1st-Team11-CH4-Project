@@ -11,7 +11,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnFlagChanged, bool, bNewValue, bo
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class ELVENRING_API UEventManager : public UObject
 {
 	GENERATED_BODY()

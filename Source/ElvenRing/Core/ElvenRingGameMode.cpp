@@ -17,6 +17,13 @@ void AElvenRingGameMode::StartPlay()
 {
 	Super::StartPlay();
 
+	// Start Play는 Begin Play 이훙에 호출된다.
+}
+
+void AElvenRingGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
 	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
 	{
 		EventManager->Init(GameInstance->GetGameFlags());

@@ -95,8 +95,13 @@ void UEventListenerComponent::BeginPlay()
 			{
 				Delegate->AddDynamic(this, &UEventListenerComponent::OnFlagChanged);
 			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Event: %s not found"), *Flag->FlagName.ToString());
+			}
 		}
 	}
 
-	Requirement.UpdateCondition(EventManager);
+	// @To-DO: 초기값 핸들링
+	// Requirement.UpdateCondition(EventManager);
 }
