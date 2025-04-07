@@ -23,6 +23,7 @@ public:
 protected:
 	UFUNCTION()
 	void OnMonsterDeath(AUnitBase* Unit);
+	void CountMonsters();
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
