@@ -4,8 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "MonsterHpBaseWidget.h" 
+
 #include "BossWidget.generated.h"
 
+class AUnitBase;
 
 UCLASS()
 class ELVENRING_API UBossWidget : public UUserWidget
@@ -16,6 +18,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetUiSize(FVector2D  Scale, FVector2D Pos);
+	UFUNCTION()
+	void UpdateHp(float TargetHp, float HpMax, int32 State);
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void DecreaseHp(float TargetHp, float HpMax);
 	UFUNCTION(BlueprintCallable, Category = "UI")
@@ -41,8 +45,11 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* HpFrameImg3;
 
+	void BindToBoss(AUnitBase* Boss);
 private:
 	void UpdateProgressBar(FMRamdaElement& FElement);
+
+	
 
 	FTimerHandle HpTimerHandle;
 	FTimerHandle HpTimerDelayHandle;

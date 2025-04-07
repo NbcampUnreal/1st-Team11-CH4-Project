@@ -101,7 +101,11 @@ void ADoor::OnRep_IsOpen()
 
 FString ADoor::GetInteractText()
 {
-	return TEXT("Open Door");
+	if (IsLocked())
+	{
+		return TEXT("Locked");
+	}
+	return bIsOpen ? TEXT("Close Door") : TEXT("Open Door");
 }
 
 void ADoor::Interact(APlayerController* Player)

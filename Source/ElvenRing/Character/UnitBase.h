@@ -6,6 +6,14 @@
 #include "GameFramework/Character.h"
 #include "UnitBase.generated.h"
 
+UENUM(BlueprintType)
+enum class ECharacterType : uint8 //ksw
+{
+	Player = 0,
+	NormalMonster = 1,
+	Boss = 2
+};
+
 UCLASS()
 class ELVENRING_API AUnitBase : public ACharacter
 {
@@ -18,6 +26,19 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathDelegate, AUnitBase*, Unit);
 	UPROPERTY(BlueprintAssignable, Category = "Event")
 	FOnDeathDelegate OnDeathEvent;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnHpChangedDelegate, float, CurHp, float, MaxHp, int, State);
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnHpChangedDelegate OnHpChanged;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnStChangedDelegate, float, CurStamina, float, MaxStamina, int, State);
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnHpChangedDelegate OnStaminaChanged;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMpChangedDelegate, float, CurMp, float, MaxMp, int, State);
+	UPROPERTY(BlueprintAssignable, Category = "Event")
+	FOnHpChangedDelegate OnMpChanged;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -25,6 +46,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MaxHealth;
 	float CurHealth;
+
+	float CurStamina; //ksw
+	float MaxStamina;//ksw
+	float StaminaTime;//ksw
+	float CurMana; //ksw
+	float MaxMana; //ksw
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float AttackPower;
@@ -35,7 +62,8 @@ protected:
 	bool bCanMove;
 	bool bIsHit;
 	bool bIsDie;
-
+	bool bSprint; //ksw;
+	void AttachDelegateToWidget(ECharacterType Type);//ksw;
 public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void Attack(AActor* Target);

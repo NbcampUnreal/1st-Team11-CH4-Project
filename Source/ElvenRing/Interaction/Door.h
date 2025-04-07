@@ -79,7 +79,6 @@ protected:
 	void OnRep_IsOpen();
 public:
 	// IInteractable interface Start
-	
 	virtual FString GetInteractText() override;
 	virtual void Interact(APlayerController* Player) override;
 	virtual bool CanInteract() override;
