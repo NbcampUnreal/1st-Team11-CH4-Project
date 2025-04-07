@@ -46,6 +46,8 @@ protected:
 
 	//구르기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
+	float DodgeCool = 0.3f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
 	float DodgeDuration = 0.8f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
 	float DodgeDistance = 1000.0f;
@@ -65,7 +67,7 @@ protected:
 	
 	FTimerHandle DodgeTimerHandle;  
 	FTimerHandle DodgeStopTimerHandle;
-
+	FTimerHandle DodgeStopTestTimerHandle;
 	void PlayDodgeAnimation(float _Duration);
 	void PlayAttackAnimation(float _AttackSpeed);
 	void PlayDefenceAnimation(float _DefenceSpeed);
@@ -87,7 +89,9 @@ protected:
 	UFUNCTION()
 	void StartDodge(const FInputActionValue& value);
 	UFUNCTION()
-	void StopDodge(); //혹시나 필요할거 같아서 일단 만듬
+	void StopDodge();
+	UFUNCTION()
+	void DodgeCollDown();
 	UFUNCTION()
 	void StartAttack(const FInputActionValue& value);
 	UFUNCTION()
@@ -97,5 +101,8 @@ protected:
 	UFUNCTION()
 	void StopDefence(const FInputActionValue& value);
 	void Interact(const FInputActionValue& InputActionValue);
+
+	virtual void Tick(float DeltaTime) override;//ksw
+	virtual void BeginPlay() override;//ksw
 };
 

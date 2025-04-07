@@ -8,6 +8,7 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Components/CanvasPanel.h"
+#include "ElvenRing/Character/UnitBase.h"
 
 void UBossWidget::SetUiSize(FVector2D Scale, FVector2D Pos)
 {
@@ -17,7 +18,13 @@ void UBossWidget::SetUiSize(FVector2D Scale, FVector2D Pos)
 		CanvasAsWidget->SetRenderTranslation(Pos);
 	}
 }
-
+void UBossWidget::UpdateHp(float TargetHp, float HpMax, int32 State)
+{
+	if (State == 0)
+		DecreaseHp(TargetHp, HpMax);
+	else
+		RecoverHp(TargetHp, HpMax);
+}
 void UBossWidget::DecreaseHp(float TargetHp, float HpMax)
 {
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
@@ -28,6 +35,8 @@ void UBossWidget::DecreaseHp(float TargetHp, float HpMax)
 	FElement.TargetProgressBarPer = TargetHp / HpMax;
 	FElement.CurProgressBarPer = HpProgressYellowBar->GetPercent();
 	FElement.MyProgressBar = HpProgressYellowBar;
+	FElement.Duration = 1.f;
+	FElement.DelayTime = 1.f;
 
 	float Damage = FElement.CurProgressBarPer * HpMax - FElement.TargetProgressBarPer * HpMax;
 
@@ -47,17 +56,21 @@ void UBossWidget::RecoverHp(float TargetHp, float HpMax)
 	FMRamdaElement FElement;
 	FElement.Recover = true;
 	FElement.Duration = 1.f;
+	FElement.DelayTime = 0.1f;
 	FElement.TargetProgressBarPer = TargetHp / HpMax;
 	FElement.CurProgressBarPer = HpProgressYellowBar->GetPercent();
 	FElement.MyProgressBar = HpProgressBar;
 	FElement.MyProgressYellowBar = HpProgressYellowBar;
 
-	HpProgressBar->SetPercent(FElement.TargetProgressBarPer);
+	HpProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
 	UpdateProgressBar(FElement);
 }
 
 void UBossWidget::UpdateProgressBar(FMRamdaElement& FElement)
 {
+	if (FElement.DelayTime <= 0.f) //람다 DelayTime이 0이면 진입을 못한다.
+		FElement.DelayTime = 0.01f;
+
 	if (!FElement.Recover)
 		DamageText->SetText(FElement.DamageTextValue);
 
@@ -92,6 +105,11 @@ void UBossWidget::UpdateProgressBar(FMRamdaElement& FElement)
 							FElement.PrevTime = GetWorld()->GetTimeSeconds();
 						}), 0.05f, true
 				);
-			}), 1.5f, false
+			}), FElement.DelayTime, false
 	);
+}
+void UBossWidget::BindToBoss(AUnitBase* Boss)
+{
+	if (Boss)
+		Boss->OnHpChanged.AddDynamic(this, &UBossWidget::UpdateHp);
 }

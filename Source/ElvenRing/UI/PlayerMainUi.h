@@ -8,7 +8,7 @@
 
 class UProgressBar;
 class UImage;
-
+class AUnitBase;
 
 struct FRamdaElement
 {
@@ -17,8 +17,10 @@ struct FRamdaElement
 	float ElapsedTime = 0.f;
 	float Duration = 1.f;
 	float PrevTime = 0.f;
+	float DelayTime = 1.f;
 	float CurProgressBarPer = 0.f;
 	float TargetProgressBarPer = 0.f;
+	
 	FTimerHandle* DelayTimerHandle = nullptr;
 	FTimerHandle* TimerHandle = nullptr;
 
@@ -109,12 +111,23 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerMainUi")
 	void LevelUp(float Hp, float St, float Mp);
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerMainUi")
+	void UpdateHp(float CurHp, float HpMax,int32 State);
+	UFUNCTION(BlueprintCallable, Category = "PlayerMainUi")
+	void UpdateMp(float CurMp, float MpMax, int32 State);
+	UFUNCTION(BlueprintCallable, Category = "PlayerMainUi")
+	void UpdateSt(float CurSt, float StMax, int32 State);
+
+	void BindToPlayer(AUnitBase* Player);
 private:
 	void UpdateFrameSize(UProgressBar* ProgressBar, UProgressBar* ProgressBar2, UImage* FrameImage2, UImage* FrameImage3, float LevelHp);
 	void UpdateProgressBarSize(UProgressBar* ProgressBar, float XSize);
 
 	void DecreaseProgressBar(FRamdaElement& FEmt);
 	void RecoverProgressBar(FRamdaElement2& FEmt );
+	void RecoverProgressBar1(FRamdaElement& FEmt);
+
 protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
@@ -130,6 +143,12 @@ protected:
 	float ElapsedTime1 = 0.f;
 	float PrevTime1 = 0.f;
 	
+	float CurrentHp;
+	float MaxHp;
 
+	float CurrentMp;
+	float MaxMp;
 
+	float CurrentSt;
+	float MaxSt;
 };
