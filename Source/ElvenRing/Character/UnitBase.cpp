@@ -78,6 +78,7 @@ void AUnitBase::OnDeath()
 
 void AUnitBase::OnHealthChanged()
 {
+	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
 }
 
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
