@@ -15,6 +15,9 @@ ABossTenebris::ABossTenebris()
 	// 보스 Bress 공격 판정 콜리전
 	BressAttackCollision = CreateDefaultSubobject<UCapsuleComponent>("BressAttack Collision");
 	BressAttackCollision->SetupAttachment(GetMesh());
+
+	GrabAttackCollision = CreateDefaultSubobject<UCapsuleComponent>("GrabAttack Collision");
+	GrabAttackCollision->SetupAttachment(GetMesh());
 	
 	UCapsuleComponent* TailAttackCollision1 = CreateDefaultSubobject<UCapsuleComponent>("TailAttack Collision1");
 	TailAttackCollision1->SetupAttachment(GetMesh());
@@ -24,15 +27,14 @@ ABossTenebris::ABossTenebris()
 
 	TailAttackCollisions.Add(TailAttackCollision1);
 	TailAttackCollisions.Add(TailAttackCollision2);
-
 }
 
 void ABossTenebris::BeginPlay()
 {
 	LOG(TEXT("Begin!"));
 
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::GrabAttack, FString("GrabAttack"));
-	NormalPattern->AddAttackPattern(this, &ABossTenebris::TailAttack, FString("TailAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossTenebris::GrabAttack, FString("GrabAttack"));
+	//NormalPattern->AddAttackPattern(this, &ABossTenebris::TailAttack, FString("TailAttack"));
 	//NormalPattern->AddAttackPattern(this, &ABossTenebris::EarthquakeAttack, FString("EarthquakeAttack"));
 
 	//NormalPattern->AddAttackPattern(this, &ABossTenebris::BressAttackFront, FString("BressAttackFront"));
@@ -54,6 +56,7 @@ void ABossTenebris::BeginPlay()
 	RegisterCollision(BressAttackCollision, BressCollisionSocketName);
 	RegisterCollision(TailAttackCollisions[0], TailCollisionSocketName[0]);
 	RegisterCollision(TailAttackCollisions[1], TailCollisionSocketName[1]);
+	RegisterCollision(GrabAttackCollision, GrabCollisionSocketName);
 
 	Super::BeginPlay();
 

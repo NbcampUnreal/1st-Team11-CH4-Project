@@ -76,6 +76,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<UCapsuleComponent*> TailAttackCollisions;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
+	FName GrabCollisionSocketName;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCapsuleComponent* GrabAttackCollision;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> BressAfterMoveFrontAnim;
