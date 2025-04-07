@@ -18,6 +18,7 @@ public:
 	AMonsterZone();
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMonsterZoneClearDelegate);
+	UPROPERTY(BlueprintAssignable)
 	FOnMonsterZoneClearDelegate OnMonsterZoneClearEvent;
 	
 protected:

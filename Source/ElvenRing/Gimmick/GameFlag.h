@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class ELVENRING_API UGameFlag : public UDataAsset
 {
 	GENERATED_BODY()
