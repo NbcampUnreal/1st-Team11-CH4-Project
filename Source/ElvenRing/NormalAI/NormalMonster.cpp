@@ -8,6 +8,7 @@
 
 #include "GameFramework/DamageType.h"
 #include "Engine/EngineTypes.h"
+#include "kismet/GameplayStatics.h"
 
 ANormalMonster::ANormalMonster()
 {
@@ -28,18 +29,73 @@ void ANormalMonster::BeginPlay()
 	Super::BeginPlay();
 }
 
+float ANormalMonster::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+                                 class AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	// 데미지 처리
+	CurHealth -= ActualDamage;
+	UE_LOG(LogTemp, Warning, TEXT("몬스터 체력: %f"), CurHealth);
+	PlayDamageAnim();
+	if (CurHealth <= 0)
+	{
+		OnDeath(); // 체력이 0 이하이면 사망 처리
+	}
+
+	return ActualDamage;
+}
+
 void ANormalMonster::Attack(AActor* Target)
 {
-	Super::Attack(Target);
-
-	AElvenRingCharacter* Character = Cast<AElvenRingCharacter>(Target);
-	AController* LocalController = GetController();
-	ANormalAIController* AIController = Cast<ANormalAIController>(LocalController);
-
-	FPointDamageEvent DamageEvent;
-	if (Character && AIController)
+	if (Target)
 	{
-		Character->TakeDamage(AttackPower, DamageEvent, AIController, this);	
+		UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
+
+		UE_LOG(LogTemp, Warning, TEXT("몬스터가 %f 데미지를 적용"), AttackPower);
+
+		// 애니메이션 적용 (AnimSequence 타입)
+		UAnimSequence* AttackAnim = LoadObject<UAnimSequence>(nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/DoublePain.DoublePain'"));
+		if (AttackAnim && GetMesh())
+		{
+			GetMesh()->PlayAnimation(AttackAnim, false);
+		}
 	}
+}
+
+
+void ANormalMonster::PlayDamageAnim()
+{
+	Super::PlayDamageAnim();
+
+	// 애니메이션 로드
+	UAnimSequence* DamageAnim = LoadObject<UAnimSequence>(
+		nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/HitReact_Front.HitReact_Front'"));
+
+	if (DamageAnim && GetMesh())
+	{
+		GetMesh()->PlayAnimation(DamageAnim, false); // 애니메이션 실행
+	}
+}
+
+void ANormalMonster::PlayDeathAnim()
+{
+	Super::PlayDeathAnim();
+
+	// 애니메이션 로드
+	UAnimSequence* DeathAnim = LoadObject<UAnimSequence>(nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Death_B.Death_B'"));
+
+	if (DeathAnim && GetMesh())
+	{
+		GetMesh()->PlayAnimation(DeathAnim, false);  // 애니메이션 실행
+	}
+}
+
+void ANormalMonster::OnDeath()
+{
+	Super::OnDeath();
+	PlayDeathAnim();
+
 	
 }
+
