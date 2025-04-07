@@ -354,3 +354,24 @@ void AElvenRingCharacter::StopDefence(const FInputActionValue& value)
     bDefence = false;
     GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
 }
+void AElvenRingCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+
+    //sprint Test ksw
+    if (GetCharacterMovement()->MaxWalkSpeed == SprintSpeed)
+    {
+        if (5.f < GetVelocity().Size())
+            bSprint = true;
+        else
+            bSprint = false;
+    }
+    else
+        bSprint = false;
+}
+
+void AElvenRingCharacter::BeginPlay()
+{
+    Super::BeginPlay();
+    AttachDelegateToWidget(ECharacterType::Player);
+}

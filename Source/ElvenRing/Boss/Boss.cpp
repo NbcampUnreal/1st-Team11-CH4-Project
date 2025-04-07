@@ -66,6 +66,7 @@ void ABoss::BeginPlay()
 		AttackCollision->OnComponentBeginOverlap.AddDynamic(this, &ABoss::OnMeshOverlapBegin);
 		AttackCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 }
 
 

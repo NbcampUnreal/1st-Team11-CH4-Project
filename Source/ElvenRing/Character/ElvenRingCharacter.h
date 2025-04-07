@@ -101,5 +101,8 @@ protected:
 	UFUNCTION()
 	void StopDefence(const FInputActionValue& value);
 	void Interact(const FInputActionValue& InputActionValue);
+
+	virtual void Tick(float DeltaTime) override;//ksw
+	virtual void BeginPlay() override;//ksw
 };
 
