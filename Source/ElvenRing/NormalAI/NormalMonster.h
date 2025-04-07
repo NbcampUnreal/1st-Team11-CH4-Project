@@ -31,8 +31,9 @@ public:
 	void SetWidget(UUserWidget* Widget);//ksw
 	virtual void Tick(float DeltaTime) override;//ksw
 	
-private:
-	UWidgetComponent* HPWidgetComponent; //ksw
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
+	UWidgetComponent* HPWidgetComponent;
 };	
 
 
