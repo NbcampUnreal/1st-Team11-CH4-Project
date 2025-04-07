@@ -15,13 +15,13 @@ class UBattleMessageWidget;
 class UBossWidget;
 class UMonsterWidget;
 class UMessageWidgetBase;
+class AUnitBase;
 
 UENUM(BlueprintType)
 enum class EMessageType : uint8
 {
     SystemMessage = 0,
     BattleMessage = 1,
-    // 확장 가능: BossMessage = 2, WarningMessage = 3 등
 };
 
 UCLASS(Blueprintable)
@@ -38,6 +38,8 @@ public:
     void ShowWaitingRoom();
     void ShowInGameUi();
 
+    void ShowPlayerMainUi();
+
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowMessage(const FString& Message, EMessageType MsgType);
 
@@ -47,7 +49,19 @@ public:
 
     void RegisterMessageWidgets();
 
-  
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    UPlayerMainUi* GetPlayerMainUi() const { return PlayerMainUiWedget; };
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void BindPlayerMainUi(AUnitBase* Unit);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    UBossWidget* GetBossWidgetUi() const { return BossWidget; };
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void BindBossWidgetUi(AUnitBase* Unit);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void CreateBindNormalMonsterWidgetUi(AUnitBase* Unit);
+
     UFUNCTION(BlueprintCallable, Category = "UI")
     UMessageWidgetBase* GetMessageWidgetSafe(EMessageType MsgType) const;
 
@@ -69,6 +83,9 @@ protected:
 
     UPROPERTY()
     UPlayerMainUi* PlayerMainUiWedget;
+
+    UPROPERTY()
+    UMonsterWidget* MonsterWidget;
 
     UPROPERTY()
     UBossWidget* BossWidget;

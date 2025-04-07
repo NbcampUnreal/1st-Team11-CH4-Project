@@ -4,6 +4,7 @@
 #include "ElvenRing/Character/UnitBase.h"
 #include "NormalMonster.generated.h"
 
+class UWidgetComponent; //ksw
 
 UCLASS()
 class ELVENRING_API ANormalMonster : public AUnitBase
@@ -26,6 +27,12 @@ public:
 	virtual void PlayDeathAnim() override;
 
 	virtual void OnDeath() override;
+
+	void SetWidget(UUserWidget* Widget);//ksw
+	virtual void Tick(float DeltaTime) override;//ksw
+	
+private:
+	UWidgetComponent* HPWidgetComponent; //ksw
 };	
 
 
