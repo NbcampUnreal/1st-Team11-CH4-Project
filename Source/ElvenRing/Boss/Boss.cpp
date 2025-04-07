@@ -9,6 +9,7 @@
 #include "BossState/BossStateInterface.h"
 #include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Effect/CameraControllerComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -17,26 +18,32 @@ ABoss::ABoss()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	// 보스 패턴 및 카메라 컴포넌트
 	NormalPattern = CreateDefaultSubobject<UBossNormalPatternComponent>("Normal Pattern");
 	SpecialPattern = CreateDefaultSubobject<UBossSpecialPatternComponent>("Special Pattern");
+	CameraController = CreateDefaultSubobject<UCameraControllerComponent>("Camera Controller");
 
+	// 보스 상태
 	IdleState = CreateDefaultSubobject<UABossIdleState>("Idle State");
 	MoveState = CreateDefaultSubobject<UABossMoveState>("Move State");
 	AttackState = CreateDefaultSubobject<UBossAttackState>("Attack State");
 	SpecialAttackState = CreateDefaultSubobject<UBossSpecialAttackState>("Special Attack State");
 
+	// 보스 테마 전용 오디오 컴포넌트
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>("BGM");
 
+	// 보스 공격 판정 콜리전
 	AttackCollision = CreateDefaultSubobject<UCapsuleComponent>("Attack Collision");
 	AttackCollision->SetupAttachment(GetMesh());
 
+	// 기타 포인터
 	AnimInstance = nullptr;
 	TargetPlayer = nullptr;
 
+	// 보스 스탯
 	MinMoveRadius = 500.0f;
 	MinAttackRadius = 500.0f;
 	MinIdleRadius = 300.0f;
-
 	bIsAttacking = false;
 }
 
@@ -300,4 +307,10 @@ void ABoss::ChangeToAttackStateIfConditionSatisfied()
 	{
 		SetAttackTimer();
 	}
+}
+
+
+void ABoss::ApplyShakeCamera(TSubclassOf<UCameraShakeBase> CameraShakeClass, const float CameraShakeScale)
+{
+	CameraController->ShakeCamera(CameraShakeClass, CameraShakeScale);
 }
