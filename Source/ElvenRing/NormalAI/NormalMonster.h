@@ -13,6 +13,11 @@ class ELVENRING_API ANormalMonster : public AUnitBase
 
 public:
 	ANormalMonster();
+
+	void UpdateHPBar();
+
+
+
 	
 	UFUNCTION(BlueprintCallable, Category="AI")
 	virtual void Attack(AActor* Target) override;
@@ -29,11 +34,12 @@ public:
 	virtual void OnDeath() override;
 
 	void SetWidget(UUserWidget* Widget);//ksw
-	virtual void Tick(float DeltaTime) override;//ksw
 	
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
 	UWidgetComponent* HPWidgetComponent;
+	FTimerHandle UpdateHPBarTimer;
+
 };	
 
 
