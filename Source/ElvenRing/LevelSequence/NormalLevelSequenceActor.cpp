@@ -1,6 +1,7 @@
 #include "NormalLevelSequenceActor.h"
 #include "EngineUtils.h"
 #include "LevelSequencePlayer.h"
+#include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/Boss.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 
@@ -16,19 +17,19 @@ void ANormalLevelSequenceActor::BeginPlay()
 
 void ANormalLevelSequenceActor::StartSequence()
 {
-	// 1. 모든 플레이어를 hidden 처리
+	// 모든 플레이어를 hidden 처리
 	SetAllPlayerHidden();
 
-	// 2. 4번째 인자로 반환받을 시퀀스 액터 선언
+	// 4번째 인자로 반환받을 시퀀스 액터 선언
 	ALevelSequenceActor* OutActor = nullptr;
 
-	// 3. 시퀀스를 재생할 플레이어 선언
-	ULevelSequencePlayer* LevelSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), CurrentLevelSequence, FMovieSceneSequencePlaybackSettings(), OutActor);
+	// 시퀀스를 재생할 플레이어 지정
+	LevelSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), CurrentLevelSequence, FMovieSceneSequencePlaybackSettings(), OutActor);
 
-	// 4. 시퀀스가 끝날 때 호출할 함수 바인드
+	// 시퀀스가 끝날 때 호출할 함수 바인드
 	LevelSequencePlayer->OnFinished.AddDynamic(this, &ANormalLevelSequenceActor::OnSequenceEnded);
 
-	// 5. 시퀀스 재생
+	// 시퀀스 재생
 	if (IsValid(LevelSequencePlayer) && IsValid(OutActor))
 	{
 		LevelSequencePlayer->Play();
@@ -39,17 +40,23 @@ void ANormalLevelSequenceActor::StartSequence()
 
 void ANormalLevelSequenceActor::OnSequenceEnded()
 {
-	// 1. 모든 플레이어 Visible 처리
+	// 모든 플레이어 Visible 처리
 	SetAllPlayerUnhidden();
 
-	// 2. 보스를 약간의 지연시간 후 전투 상태로 전환
-	if (SequenceType == ESequenceType::Battle)
+	// 재생하는 LevelSequence 타입에 따라 로직 처리
+	FTimerHandle TimerHandle;
+	switch (SequenceType)
 	{
-		SetBossBattleModeWithDelay();	
-	}
-	else if (SequenceType == ESequenceType::Dead)
-	{
-		
+	case ESequenceType::Spawn:
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &ANormalLevelSequenceActor::OnSpawnSequenceEnded, SpawnSequenceDelegateDelay, false);
+		break;
+	case ESequenceType::Phase:
+			break;
+		// 시퀀스 끝난 후에는 보스가 존재하지 않으므로 시퀀스쪽에서 처리
+		// 물리침 UI와 Sound 출력
+	case ESequenceType::Dead:
+		LOG(TEXT("Dead"));
+		break;
 	}
 }
 
@@ -61,10 +68,8 @@ void ANormalLevelSequenceActor::SetAllPlayerHidden()
 	{
 		if (IsValid(Player))
 		{
-			if (!Player->IsHidden())
-			{
-				Player->SetActorHiddenInGame(true);		
-			}
+			LOG(TEXT("Player Hidden"));
+			Player->ToggleInput(false);
 		}
 	}
 }
@@ -77,27 +82,22 @@ void ANormalLevelSequenceActor::SetAllPlayerUnhidden()
 	{
 		if (IsValid(Player))
 		{
-			if (Player->IsHidden())
-			{
-				Player->SetActorHiddenInGame(false);		
-			}
+			LOG(TEXT("Player Unhidden"));
+			Player->ToggleInput(true);
 		}
 	}
 }
 
 
 
-void ANormalLevelSequenceActor::SetBossBattleModeWithDelay()
+void ANormalLevelSequenceActor::OnSpawnSequenceEnded()
 {
-	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([&]
+	for (ABoss* Boss : TActorRange<ABoss>(GetWorld()))
 	{
-		for (ABoss* Boss : TActorRange<ABoss>(GetWorld()))
+		if (IsValid(Boss))
 		{
-			if (IsValid(Boss))
-			{
-				Boss->SetBossBattleMode();
-			}
+			Boss->OnSpawnSequenceEnded();
+			return;
 		}
-	}), BattleModeDelay, false);
+	}
 }

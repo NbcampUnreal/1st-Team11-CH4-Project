@@ -456,5 +456,4 @@ void AElvenRingCharacter::BeginPlay()
     CurHealth = MaxHealth;
     
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
-    ToggleInput(bInput);
 }
