@@ -4,6 +4,7 @@
 #include "BossZone.h"
 
 #include "Components/ShapeComponent.h"
+#include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "ElvenRing/LevelSequence/NormalLevelSequenceActor.h"
 
 
@@ -41,6 +42,11 @@ void ABossZone::ResetBossSpawn()
 
 void ABossZone::SpawnBoss()
 {
+	if (!BossSequenceActor)
+	{
+		return;
+	}
+	
 	BossSequenceActor->StartSequence();
 	bIsBossSpawned = true;
 	GetCollisionComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -58,11 +64,8 @@ void ABossZone::BeginPlay()
 void ABossZone::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
 	class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (bCanSpawnBoss && !bIsBossSpawned)
+	if (bCanSpawnBoss && !bIsBossSpawned && OtherActor && OtherActor->IsA(AElvenRingCharacter::StaticClass()))
 	{
-		if (BossSequenceActor)
-		{
 			SpawnBoss();
-		}
 	}
 }
