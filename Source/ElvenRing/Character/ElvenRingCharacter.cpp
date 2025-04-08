@@ -20,10 +20,7 @@ AElvenRingCharacter::AElvenRingCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent , USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
-    SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
-
-    GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
-
+    
     InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
     
 }
@@ -372,4 +369,7 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
+    
+    GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+    SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }
