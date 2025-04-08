@@ -18,6 +18,8 @@ struct FCondition
 {
 	GENERATED_BODY()
 
+	FCondition();
+	
 	UPROPERTY(EditAnywhere)
 	class UGameFlag* TargetGameFlag;
 	UPROPERTY(EditAnywhere)
@@ -28,6 +30,8 @@ USTRUCT(Blueprintable)
 struct FRequirement
 {
 	GENERATED_BODY()
+
+	FRequirement();
 	
 	UPROPERTY(EditAnywhere)
 	TArray<FCondition> Conditions;
