@@ -284,6 +284,7 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
         UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
         if (AnimInstance)
         {
+            ResetCombo();
             // delegate 바인딩 후 몽타주에 등록
             FOnMontageEnded MontageEndedDelegate;
             MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
