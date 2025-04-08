@@ -18,9 +18,11 @@ struct FCondition
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditDefaultsOnly)
+	FCondition();
+	
+	UPROPERTY(EditAnywhere)
 	class UGameFlag* TargetGameFlag;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	bool bExpectedValue;
 };
 
@@ -28,10 +30,12 @@ USTRUCT(Blueprintable)
 struct FRequirement
 {
 	GENERATED_BODY()
+
+	FRequirement();
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	TArray<FCondition> Conditions;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	EConditionType ConditionType;
 
 	bool Evaluate(const class UEventManager* EventEvaluator) const;
@@ -58,6 +62,6 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditAnywhere)
 	FRequirement Requirement;
 };

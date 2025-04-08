@@ -26,9 +26,11 @@ public:
 	UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
 	UInteractionComponent* InteractionComponent;
+	void ToggleInput(bool bInput);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
+	bool bInput;
 
 protected:
-	protected:
 	//애니 몽타주(근데 이거 맞음??너무 더러운거보니까 잘못쓰고 있는거같은데)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DodgeMontage;
@@ -37,8 +39,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DefenceMontage;
 	//달리기
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float NormalSpeed; // 기본 걷기 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")

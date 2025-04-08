@@ -20,15 +20,40 @@ AElvenRingCharacter::AElvenRingCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent , USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
-    NormalSpeed = 600.0f;
-    SprintSpeedMultiplier = 1.5f;
-    SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
-
-    GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
-
+    
     InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
     
 }
+
+void AElvenRingCharacter::ToggleInput(bool _bInput)
+{
+    APlayerController* CharController = GetWorld()->GetFirstPlayerController();
+    if (CharController)
+    {
+        if (_bInput)
+        {
+            EnableInput(CharController);
+            SetActorHiddenInGame(false);
+        }
+        else
+        {
+            DisableInput(CharController);
+            SetActorHiddenInGame(true);
+        }
+
+        // 소유한 액터들도 같이 보이거나 숨기도록 처리합니다.
+        TArray<AActor*> OwnedActors;
+        GetAttachedActors(OwnedActors); 
+        for (AActor* OwnedActor : OwnedActors)
+        {
+            if (OwnedActor)
+            {
+                OwnedActor->SetActorHiddenInGame(!_bInput);
+            }
+        }
+    }
+}
+
 void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -262,7 +287,7 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
     {
-        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+        GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
     }
 }
 
@@ -374,4 +399,8 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
+    
+    
+    SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
+    ToggleInput(bInput);
 }

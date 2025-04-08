@@ -10,6 +10,17 @@
 #include "ElvenRing/Core/ElvenRingGameMode.h"
 
 
+FCondition::FCondition()
+{
+	TargetGameFlag = nullptr;
+	bExpectedValue = false;
+}
+
+FRequirement::FRequirement()
+{
+	ConditionType = EConditionType::All;
+}
+
 bool FRequirement::Evaluate(const UEventManager* Evaluator) const
 {
 	if (ConditionType == EConditionType::All)
