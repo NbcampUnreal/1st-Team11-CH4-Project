@@ -51,6 +51,7 @@ void ABossZone::BeginPlay()
 	Super::BeginPlay();
 
 	GetCollisionComponent()->OnComponentBeginOverlap.AddDynamic(this, &ABossZone::OnOverlapBegin);
+	SetCanSpawnBoss(bCanSpawnBoss);
 }
 
 void ABossZone::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor,
