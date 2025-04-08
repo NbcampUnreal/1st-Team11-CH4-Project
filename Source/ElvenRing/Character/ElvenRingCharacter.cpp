@@ -451,7 +451,8 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
-    
+
+    CurHealth = MaxHealth;
     
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
     ToggleInput(bInput);
