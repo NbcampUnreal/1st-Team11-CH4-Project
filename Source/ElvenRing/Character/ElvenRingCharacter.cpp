@@ -367,7 +367,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     {
         return;
     }
-    
+    ResetCombo();
     FVector DodgeDirection = GetLastMovementInputVector();
     if (DodgeDirection.IsNearlyZero())
     {
