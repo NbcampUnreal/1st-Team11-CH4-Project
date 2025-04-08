@@ -26,9 +26,10 @@ void UElvenringGameInstance::Init()
 		UIManager = NewObject<UUIManager>(this, UIManagerClass);
 		UIManager->InitUi(GetWorld());
 	}
+
 }
 
-void UElvenringGameInstance::ShowLoadingScreen()
+void UElvenringGameInstance::ShowLoadingScreen(const FString& TargetMapName)
 {
 	if (!LoadingScreenWidget && LoadingScreenClass)
 	{
@@ -37,6 +38,7 @@ void UElvenringGameInstance::ShowLoadingScreen()
 		{
 			LoadingScreenWidget->AddToViewport(9999);
 		}
+		StartTrackLoadProgress(TargetMapName);
 	}
 }
 
@@ -49,15 +51,36 @@ void UElvenringGameInstance::HideLoadingScreen()
 	}
 }
 
-void UElvenringGameInstance::OnPreLoadMap(const FString& String)
+void UElvenringGameInstance::OnPreLoadMap(const FString& MapName)
 {
-	ShowLoadingScreen();
+	StartTrackLoadProgress(MapName);
 }
 
 void UElvenringGameInstance::OnPostLoadMap(UWorld* World)
 {
+	UE_LOG(LogTemp, Display, TEXT("OnPostLoadMap: %s"), *World->GetName());
 	HideLoadingScreen();
+	GetTimerManager().ClearTimer(LoadTimerHandle);
 }
+
+void UElvenringGameInstance::StartTrackLoadProgress(const FString& MapName)
+{
+	TargetMapPackageName = FName(*MapName);
+	UE_LOG(LogTemp, Display, TEXT("StartTrackLoadProgress: %s"), *MapName);
+	
+	GetTimerManager().SetTimer(LoadTimerHandle, this, &UElvenringGameInstance::CheckLoadProgress, 0.01f, true);
+	UE_LOG(LogTemp, Display, TEXT("Set Timer"));
+}
+
+void UElvenringGameInstance::CheckLoadProgress()
+{
+	UE_LOG(LogTemp, Display, TEXT("Check Progress"));
+	// if (TargetMapPackageName.IsNone()) return;
+	
+	// float Percentage = GetAsyncLoadPercentage(TargetMapPackageName);
+	// UE_LOG(LogTemp, Display, TEXT("Loading %s: %.2f"), *TargetMapPackageName.ToString(), Percentage);
+}
+
 void UElvenringGameInstance::BindToCharacterOpenWidget(ECharacterType Type, AUnitBase* Unit)
 {
 	if (ECharacterType::Player == Type)

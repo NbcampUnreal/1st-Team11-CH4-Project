@@ -40,21 +40,22 @@ void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerControll
 	if (GetNetMode() == NM_Standalone)
 	{
 		PlayerController->ClientTravel(LevelName, TRAVEL_Absolute);
+		BroadcastLoadingScreen(LevelName);
 	}
 	else
 	{
 		GetWorld()->ServerTravel(LevelName);
-		BroadcastLoadingScreen();
+		BroadcastLoadingScreen(LevelName);
 	}
 }
 
-void AElvenRingGameMode::BroadcastLoadingScreen() const
+void AElvenRingGameMode::BroadcastLoadingScreen(const FString& MapName) const
 {
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(*It))
 		{
-			PlayerController->ClientShowLoadingScreen();
+			PlayerController->ClientShowLoadingScreen(MapName);
 		}
 	}
 }
