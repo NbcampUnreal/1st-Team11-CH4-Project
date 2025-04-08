@@ -20,9 +20,19 @@ ABaseWeapon::ABaseWeapon()
 	CollisionBox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	CollisionBox->SetCollisionObjectType(ECC_WorldDynamic);
 	CollisionBox->SetCollisionResponseToAllChannels(ECR_Overlap);
+	CollisionBox->SetGenerateOverlapEvents(false);
+
+
+}
+
+void ABaseWeapon::EnableCollision()
+{
 	CollisionBox->SetGenerateOverlapEvents(true);
+}
 
-
+void ABaseWeapon::DisableCollision()
+{
+	CollisionBox->SetGenerateOverlapEvents(false);
 }
 
 // Called when the game starts or when spawned
@@ -68,4 +78,7 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	UGameplayStatics::ApplyDamage(OtherActor, AttackPower, InstigatorController, this, UDamageType::StaticClass());
 	DamagedActors.Add(OtherActor);
 }
-
+void ABaseWeapon::ResetDamagedActors()
+{
+	DamagedActors.Empty();
+}
