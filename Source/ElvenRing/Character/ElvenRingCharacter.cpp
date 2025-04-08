@@ -28,15 +28,28 @@ AElvenRingCharacter::AElvenRingCharacter()
 void AElvenRingCharacter::ToggleInput(bool _bInput)
 {
     APlayerController* CharController = GetWorld()->GetFirstPlayerController();
-    if ( CharController)
+    if (CharController)
     {
-        if (bInput)
+        if (_bInput)
         {
             EnableInput(CharController);
+            SetActorHiddenInGame(false);
         }
         else
         {
             DisableInput(CharController);
+            SetActorHiddenInGame(true);
+        }
+
+        // 소유한 액터들도 같이 보이거나 숨기도록 처리합니다.
+        TArray<AActor*> OwnedActors;
+        GetAttachedActors(OwnedActors); 
+        for (AActor* OwnedActor : OwnedActors)
+        {
+            if (OwnedActor)
+            {
+                OwnedActor->SetActorHiddenInGame(!_bInput);
+            }
         }
     }
 }
