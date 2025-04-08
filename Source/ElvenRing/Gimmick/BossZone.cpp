@@ -16,6 +16,7 @@ ABossZone::ABossZone()
 
 	bCanSpawnBoss = false;
 	bIsBossSpawned = false;
+	SetReplicates(false); // Server Logic은 Replicate될 필요가 없다.
 }
 
 void ABossZone::SetCanSpawnBoss(const bool NewSpawn)
