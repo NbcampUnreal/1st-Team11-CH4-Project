@@ -20,11 +20,9 @@ AElvenRingCharacter::AElvenRingCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent , USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
-    NormalSpeed = 600.0f;
-    SprintSpeedMultiplier = 1.5f;
-    SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
+    SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 
-    GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+    GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 
     InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
     
@@ -262,7 +260,7 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
     {
-        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+        GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
     }
 }
 

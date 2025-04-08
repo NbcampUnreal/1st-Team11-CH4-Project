@@ -24,6 +24,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UBoxComponent* CollisionBox;
 
+	float AttackPower;
+
 	
 public:	
 	// Called every frame

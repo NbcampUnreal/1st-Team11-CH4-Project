@@ -2,6 +2,8 @@
 
 
 #include "BaseWeapon.h"
+
+#include "ElvenRingCharacter.h"
 #include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,6 +21,8 @@ ABaseWeapon::ABaseWeapon()
 	CollisionBox->SetCollisionObjectType(ECC_WorldDynamic);
 	CollisionBox->SetCollisionResponseToAllChannels(ECR_Overlap);
 	CollisionBox->SetGenerateOverlapEvents(true);
+
+
 }
 
 // Called when the game starts or when spawned
@@ -38,14 +42,22 @@ void ABaseWeapon::Tick(float DeltaTime)
 void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	AActor* RawOwner = GetOwner();
+	if (RawOwner)
+	{
+		AUnitBase* OwnerCharacter = Cast<AUnitBase>(RawOwner);
+		if (OwnerCharacter)
+		{
+			AttackPower = OwnerCharacter->GetAttackPower();
+		}
+	}
 	if (OtherActor && OtherActor->IsOwnedBy(GetOwner()))
 	{
 		return;
 	}
-	float Damage = 20.0f;
 
 	AController* InstigatorController = GetInstigatorController();
 
-	UGameplayStatics::ApplyDamage(OtherActor, Damage, InstigatorController, this, UDamageType::StaticClass());
+	UGameplayStatics::ApplyDamage(OtherActor, AttackPower, InstigatorController, this, UDamageType::StaticClass());
 }
 
