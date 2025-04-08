@@ -17,6 +17,7 @@ class ELVENRING_API AElvenRingGameMode : public AGameMode
 public:
 	AElvenRingGameMode();
 protected:
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void StartPlay() override;
 	
