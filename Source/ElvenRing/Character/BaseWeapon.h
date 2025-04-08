@@ -26,6 +26,8 @@ protected:
 
 	float AttackPower;
 
+private:
+	TSet<AActor*> DamagedActors;
 	
 public:	
 	// Called every frame

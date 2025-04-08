@@ -24,6 +24,23 @@ AElvenRingCharacter::AElvenRingCharacter()
     InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
     
 }
+
+void AElvenRingCharacter::ToggleInput(bool _bInput)
+{
+    APlayerController* CharController = GetWorld()->GetFirstPlayerController();
+    if ( CharController)
+    {
+        if (bInput)
+        {
+            EnableInput(CharController);
+        }
+        else
+        {
+            DisableInput(CharController);
+        }
+    }
+}
+
 void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -372,4 +389,5 @@ void AElvenRingCharacter::BeginPlay()
     
     
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
+    ToggleInput(bInput);
 }

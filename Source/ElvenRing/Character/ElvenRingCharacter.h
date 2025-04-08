@@ -26,9 +26,11 @@ public:
 	UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
 	UInteractionComponent* InteractionComponent;
+	void ToggleInput(bool bInput);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
+	bool bInput;
 
 protected:
-	protected:
 	//애니 몽타주(근데 이거 맞음??너무 더러운거보니까 잘못쓰고 있는거같은데)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DodgeMontage;
