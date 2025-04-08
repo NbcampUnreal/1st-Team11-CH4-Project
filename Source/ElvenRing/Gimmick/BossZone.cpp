@@ -13,9 +13,12 @@ ABossZone::ABossZone()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 	GetCollisionComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	bCanSpawnBoss = false;
+	bIsBossSpawned = false;
 }
 
-void ABossZone::SetCanSpawnBoss(bool NewSpawn)
+void ABossZone::SetCanSpawnBoss(const bool NewSpawn)
 {
 	bCanSpawnBoss = NewSpawn;
 
@@ -27,6 +30,19 @@ void ABossZone::SetCanSpawnBoss(bool NewSpawn)
 	{
 		GetCollisionComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+}
+
+void ABossZone::ResetBossSpawn()
+{
+	SetCanSpawnBoss(true);
+	bIsBossSpawned = false;
+}
+
+void ABossZone::SpawnBoss()
+{
+	BossSequenceActor->StartSequence();
+	bIsBossSpawned = true;
+	GetCollisionComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 // Called when the game starts or when spawned
@@ -44,7 +60,7 @@ void ABossZone::OnOverlapBegin(class UPrimitiveComponent* OverlappedComp, class 
 	{
 		if (BossSequenceActor)
 		{
-			BossSequenceActor->StartSequence();
+			SpawnBoss();
 		}
 	}
 }
