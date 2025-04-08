@@ -370,6 +370,6 @@ void AElvenRingCharacter::BeginPlay()
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
     
-    GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+    
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }
