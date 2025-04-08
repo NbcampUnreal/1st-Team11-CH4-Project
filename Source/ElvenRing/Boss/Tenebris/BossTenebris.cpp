@@ -76,10 +76,17 @@ void ABossTenebris::OnSpawnSequenceEnded()
 	), SpecialAttackInterval, false);
 }
 
+void ABossTenebris::OnPhaseSequenceEnded()
+{
+	Super::OnPhaseSequenceEnded();
+	LOG(TEXT("Begin"));
+	CurHealth = MaxHealth/2;
+	PhaseType = EPhaseType::Two;
+}
 
 
 float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                                AActor* DamageCauser)
 {
 	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 

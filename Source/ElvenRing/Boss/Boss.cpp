@@ -94,6 +94,10 @@ void ABoss::UpdateState()
 }
 
 
+void ABoss::OnPhaseSequenceEnded()
+{
+	LOG(TEXT("Begin"));
+}
 
 void ABoss::ChangeState(IBossStateInterface* State)
 {

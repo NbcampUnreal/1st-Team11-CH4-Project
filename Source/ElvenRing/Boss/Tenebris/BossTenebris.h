@@ -28,6 +28,7 @@ public:
 	ABossTenebris();
 
 	virtual void OnSpawnSequenceEnded() override;
+	virtual void OnPhaseSequenceEnded() override;
 	
 protected:
 	virtual void BeginPlay() override;
