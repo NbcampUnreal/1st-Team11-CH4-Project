@@ -90,7 +90,8 @@ float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		if (PhaseType == EPhaseType::One)
 		{
 			LOG(TEXT("Phase Two Begin"));
-			PhaseType = EPhaseType::Two;
+			Destroy();
+			// 다음 레벨 로드
 		}
 	}
 

@@ -140,8 +140,10 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Sequence")
 	TSubclassOf<ANormalLevelSequenceActor> LevelSequence;
 
+	UPROPERTY(EditInstanceOnly, Category = "Boss|Sequence")
+	EPhaseType PhaseType;
+
 	FTimerHandle SpecialAttackTimer;
 
 	ETenebrisSpecialAttackType AttackType;
-	EPhaseType PhaseType;
 };
