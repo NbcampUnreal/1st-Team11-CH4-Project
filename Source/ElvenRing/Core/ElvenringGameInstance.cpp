@@ -13,6 +13,7 @@ UElvenringGameInstance::UElvenringGameInstance()
 	if (BP_UIManager.Succeeded())
 		UIManagerClass = BP_UIManager.Class;
 }
+
 void UElvenringGameInstance::Init()
 {
 	Super::Init();
@@ -20,7 +21,7 @@ void UElvenringGameInstance::Init()
 	FCoreUObjectDelegates::PreLoadMap.AddUObject(this, &UElvenringGameInstance::OnPreLoadMap);
 	FCoreUObjectDelegates::PostLoadMapWithWorld.AddUObject(this, &UElvenringGameInstance::OnPostLoadMap);
 
-	if (UIManagerClass) //ksw
+	if (UIManagerClass)
 	{
 		UIManager = NewObject<UUIManager>(this, UIManagerClass);
 		UIManager->InitUi(GetWorld());

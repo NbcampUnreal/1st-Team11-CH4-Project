@@ -36,7 +36,7 @@ private:
 
 
 
-public://ksw
+public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	UUIManager* GetUIManager() const { return UIManager; };
 
@@ -47,7 +47,7 @@ public://ksw
 	void SetNickname(const FString& NewName) { Nickname = NewName; }
 
 	void BindToCharacterOpenWidget(ECharacterType Type, AUnitBase* Unit);
-private://ksw
+private:
 	UPROPERTY()
 	UUIManager* UIManager;
 
