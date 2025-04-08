@@ -1,9 +1,9 @@
 #include "BossTenebris.h"
-
 #include "Components/CapsuleComponent.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
 #include "ElvenRing/Boss/BossPattern/BossSpecialPatternComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABossTenebris::ABossTenebris()
 {
@@ -91,7 +91,7 @@ float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		{
 			LOG(TEXT("Phase Two Begin"));
 			Destroy();
-			// 다음 레벨 로드
+			UGameplayStatics::OpenLevel(this, FName("L_Tenebris2"));
 		}
 	}
 
