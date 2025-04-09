@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "ElvenRing/Character/UnitBase.h"
+#include "Perception/AIPerceptionTypes.h"
 #include "NormalMonster.generated.h"
 
 class UWidgetComponent; //ksw
@@ -31,7 +32,7 @@ public:
 
 	void SetWidget(UUserWidget* Widget);//ksw
 	void UpdateHPBar();
-	
+		
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
 	UWidgetComponent* HPWidgetComponent;
 
