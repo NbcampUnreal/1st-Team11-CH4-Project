@@ -117,6 +117,7 @@ void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 	BlackboardComp->SetValueAsBool(TEXT("PlayerDetectedKey"), true);
 	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
 	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
+
 }
 
 void ANormalMonster::PlayDeathAnim()
@@ -133,7 +134,6 @@ void ANormalMonster::OnDeath()
 	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 
 
-	GetController()->UnPossess();
 
 
 	// 콜리전 제거
@@ -142,6 +142,8 @@ void ANormalMonster::OnDeath()
 	bIsDie = true;
 	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
 	HPWidgetComponent->DestroyComponent();
+	GetController()->UnPossess();
+
 }
 
 void ANormalMonster::SetWidget(UUserWidget* Widget)
