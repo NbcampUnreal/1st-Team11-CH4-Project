@@ -66,11 +66,11 @@ void ANormalMonster::UpdateHPBar()
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
+	bisHit = true;
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	
 	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 	Grux_Anim->HitAnim();
-	
+	bisHit=false;
 	return Damage;
 }
 
@@ -79,12 +79,14 @@ void ANormalMonster::Attack(AActor* Target)
 {
 	if (Target)
 	{
-		UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
-		
 		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 		Grux_Anim->AttackAnim();
 
 		UE_LOG(LogTemp, Warning, TEXT("몬스터가 %f 데미지를 적용"), AttackPower);
+		if (!bisHit)
+		{
+			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
+		}
 	}
 }
 
