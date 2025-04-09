@@ -67,9 +67,10 @@ float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	
 	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-
-	Grux_Anim->IsHit = true;
+	Grux_Anim->HitAnim();
+	
 	return Damage;
 }
 
@@ -79,8 +80,9 @@ void ANormalMonster::Attack(AActor* Target)
 	if (Target)
 	{
 		UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
+		
 		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-		Grux_Anim->IsHit = true;
+		Grux_Anim->AttackAnim();
 
 		UE_LOG(LogTemp, Warning, TEXT("몬스터가 %f 데미지를 적용"), AttackPower);
 	}
@@ -110,6 +112,8 @@ void ANormalMonster::PlayDamageAnim()
 void ANormalMonster::PlayDeathAnim()
 {
 	Super::PlayDeathAnim();
+	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	Grux_Anim->DeathAnim();
 }
 
 void ANormalMonster::OnDeath()
@@ -117,7 +121,6 @@ void ANormalMonster::OnDeath()
 	Super::OnDeath();
 	PlayDeathAnim();
 	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-	Grux_Anim->IsDie = true;
 
 
 	GetController()->UnPossess();
