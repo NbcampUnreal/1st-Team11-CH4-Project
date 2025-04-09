@@ -12,23 +12,131 @@
 
 AElvenRingCharacter::AElvenRingCharacter()
 {
+    //스프링 암
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 300;
 	SpringArmComponent->bUsePawnControlRotation = true;
-	
+	// 카메라
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent , USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
-    NormalSpeed = 600.0f;
-    SprintSpeedMultiplier = 1.5f;
-    SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
-
-    GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
-
+    //인터렉션 컴포
     InteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("Interaction"));
-    
+
+    //공격 관련 함수 정의
+    AttackIndex = 0;
+    bIsAttacking = false;
+    bCanCombo = false;
 }
+
+void AElvenRingCharacter::ToggleInput(bool _bInput)
+{
+    APlayerController* CharController = GetWorld()->GetFirstPlayerController();
+    if (CharController)
+    {
+        if (_bInput)
+        {
+            EnableInput(CharController);
+            SetActorHiddenInGame(false);
+        }
+        else
+        {
+            DisableInput(CharController);
+            SetActorHiddenInGame(true);
+        }
+
+        // 소유한 액터들도 같이 보이거나 숨기도록 처리합니다.
+        TArray<AActor*> OwnedActors;
+        GetAttachedActors(OwnedActors); 
+        for (AActor* OwnedActor : OwnedActors)
+        {
+            if (OwnedActor)
+            {
+                OwnedActor->SetActorHiddenInGame(!_bInput);
+            }
+        }
+    }
+}
+
+//공격 관련 함수
+void AElvenRingCharacter::OnAttackInput()
+{
+    if (!bIsAttacking)
+    {
+        if (CurrentWeapon)
+        {
+            CurrentWeapon->EnableCollision();
+        }
+        bIsAttacking = true;
+        AttackIndex = 1;
+        PlayAttackAnimation();
+    }
+    // 이미 공격 중일 때, 콤보 입력 가능하면 연계
+    else if (bIsAttacking && bCanCombo && AttackIndex < 3)
+    {
+        bCanCombo = false;
+
+        if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle))
+        {
+            GetWorldTimerManager().ClearTimer(ComboTimerHandle);
+        }
+        AttackIndex++;
+        PlayAttackAnimation();
+    }
+}
+
+void AElvenRingCharacter::PlayAttackAnimation()
+{
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (!AnimInstance) return;
+
+    UAnimMontage* CurrentMontage = nullptr;
+    switch (AttackIndex)
+    {
+    case 1:
+        CurrentMontage = AttackMontage1;
+        break;
+    case 2:
+        CurrentMontage = AttackMontage2;
+        break;
+    case 3:
+        CurrentMontage = AttackMontage3;
+        break;
+    default:
+        break;
+    }
+    if (CurrentMontage)
+    {
+        AnimInstance->Montage_Play(CurrentMontage);
+    }
+}
+
+void AElvenRingCharacter::OnAttackAnimationEnd()
+{
+    bCanCombo = true;
+    GetWorldTimerManager().SetTimer(ComboTimerHandle, this, &AElvenRingCharacter::ComboEnd, 0.5f, false);
+}
+
+void AElvenRingCharacter::ComboEnd()
+{
+    if (bCanCombo)
+    {
+        ResetCombo();
+        if (CurrentWeapon)
+        {
+            CurrentWeapon->DisableCollision();
+        }
+    }
+}
+
+void AElvenRingCharacter::ResetCombo()
+{
+    bIsAttacking = false;
+    bCanCombo = false;
+    AttackIndex = 0;
+}
+
 void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -126,7 +234,7 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                         PlayerController->AttackAction,
                         ETriggerEvent::Triggered,
                         this,
-                        &AElvenRingCharacter::StartAttack
+                        &AElvenRingCharacter::OnAttackInput
                     );
                 }
                 if (PlayerController->DefenceAction)
@@ -168,19 +276,6 @@ void AElvenRingCharacter::PlayDodgeAnimation(float _DodgeDuration)
     }
 }
 
-void AElvenRingCharacter::PlayAttackAnimation(float _AttackSpeed)
-{
-    if (AttackMontage)
-    {
-        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-        if (AnimInstance)
-        {
-            float MontageLength = AttackMontage->GetPlayLength();
-            float PlayRate = MontageLength / _AttackSpeed;
-            AnimInstance->Montage_Play(AttackMontage,PlayRate);
-        }
-    }
-}
 
 void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
 {
@@ -189,6 +284,7 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
         UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
         if (AnimInstance)
         {
+            ResetCombo();
             // delegate 바인딩 후 몽타주에 등록
             FOnMontageEnded MontageEndedDelegate;
             MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
@@ -262,7 +358,7 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
     {
-        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+        GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
     }
 }
 
@@ -272,7 +368,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     {
         return;
     }
-    
+    ResetCombo();
     FVector DodgeDirection = GetLastMovementInputVector();
     if (DodgeDirection.IsNearlyZero())
     {
@@ -321,24 +417,6 @@ void AElvenRingCharacter::DodgeCollDown()
     bIsDodging = false;
 }
 
-void AElvenRingCharacter::StartAttack(const FInputActionValue& value)
-{
-    if (bAttack)
-    {
-        return;
-    }
-    PlayAttackAnimation(AttackSpeed);
-    bAttack = true;
-    
-    GetWorld()->GetTimerManager().SetTimer(AttackTimerHandle, this, &AElvenRingCharacter::StopAttack, AttackSpeed, false);
-}
-
-void AElvenRingCharacter::StopAttack()
-{
-    bAttack = false;
-    GetWorld()->GetTimerManager().ClearTimer(AttackTimerHandle);
-}
-
 void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 {
     if (bDefence)
@@ -374,4 +452,8 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
+
+    CurHealth = MaxHealth;
+    
+    SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }

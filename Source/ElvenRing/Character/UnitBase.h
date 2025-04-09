@@ -82,7 +82,10 @@ public:
 	{
 		return CurHealth;
 	}
-
+	float GetAttackPower() const
+	{
+		return AttackPower;
+	}
 	virtual void PlayDamageAnim();
 	virtual void PlayDeathAnim();
 

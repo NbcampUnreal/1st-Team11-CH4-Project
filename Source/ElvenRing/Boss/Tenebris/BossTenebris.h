@@ -26,6 +26,8 @@ class ELVENRING_API ABossTenebris : public ABoss
 
 public:
 	ABossTenebris();
+
+	virtual void OnSpawnSequenceEnded() override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -60,8 +62,6 @@ private:
 	
 	void RushAttack(); // 없어도 될 것 같은 느낌. 플레이어를 불쾌하게 만들 가능성 존재.
 	void WalkingFront();
-
-	void SetSpecialAttackTimer(int8 index);
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
@@ -137,8 +137,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
 	float SpecialAttackInterval;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Sequence")
+	TSubclassOf<ANormalLevelSequenceActor> LevelSequence;
+
+	UPROPERTY(EditInstanceOnly, Category = "Boss|Sequence")
+	EPhaseType PhaseType;
+
 	FTimerHandle SpecialAttackTimer;
 
 	ETenebrisSpecialAttackType AttackType;
-	EPhaseType PhaseType;
 };

@@ -14,7 +14,10 @@ class ELVENRING_API ABaseWeapon : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABaseWeapon();
-
+	void EnableCollision();
+	void DisableCollision();
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	void ResetDamagedActors();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -24,6 +27,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	class UBoxComponent* CollisionBox;
 
+	float AttackPower;
+
+private:
+	TSet<AActor*> DamagedActors;
 	
 public:	
 	// Called every frame
@@ -32,4 +39,5 @@ public:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 						UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 						bool bFromSweep, const FHitResult &SweepResult);
+	
 };

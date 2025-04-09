@@ -29,6 +29,8 @@ ABossTenebris::ABossTenebris()
 	TailAttackCollisions.Add(TailAttackCollision2);
 }
 
+
+
 void ABossTenebris::BeginPlay()
 {
 	LOG(TEXT("Begin!"));
@@ -48,8 +50,8 @@ void ABossTenebris::BeginPlay()
 	//NormalPattern->AddAttackPattern(this, &ABossTenebris::MoveFront, FString("MoveFront"));
 	//NormalPattern->AddAttackPattern(this, &ABossTenebris::MoveFrontLeft, FString("MoveFrontLeft"));
 
-	//SpecialPattern->AddAttackPattern(this, &ABossTenebris::BressAttackRightCondition, &ABossTenebris::BressAttackRight, FString("BressAttackRight"));
-	//SpecialPattern->AddAttackPattern(this, &ABossTenebris::FlyingEarthquakeAttackCondition, &ABossTenebris::FlyingEarthquakeAttack, FString("FlyingEarthquakeAttack"));
+	SpecialPattern->AddAttackPattern(this, &ABossTenebris::BressAttackRightCondition, &ABossTenebris::BressAttackRight, FString("BressAttackRight"));
+	SpecialPattern->AddAttackPattern(this, &ABossTenebris::FlyingEarthquakeAttackCondition, &ABossTenebris::FlyingEarthquakeAttack, FString("FlyingEarthquakeAttack"));
 
 	//NormalPattern->AddAttackPattern(this, &ABossTenebris::RushAttack, FString("RushAttack"));
 	
@@ -59,10 +61,22 @@ void ABossTenebris::BeginPlay()
 	RegisterCollision(GrabAttackCollision, GrabCollisionSocketName);
 
 	Super::BeginPlay();
-
-	PlayAnimMontage(BressAfterMoveFrontAnim);
-	SetSpecialAttackTimer(0);
 }
+
+
+
+void ABossTenebris::OnSpawnSequenceEnded()
+{
+	LOG(TEXT("Begin"));
+	PlayAnimMontage(BressAfterMoveFrontAnim);
+	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+	{
+		AttackType = ETenebrisSpecialAttackType::BressRight;
+	}
+	), SpecialAttackInterval, false);
+}
+
+
 
 float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	AActor* DamageCauser)
@@ -75,8 +89,9 @@ float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 	{
 		if (PhaseType == EPhaseType::One)
 		{
-			LOG(TEXT("Begin"));
-			PhaseType = EPhaseType::Two;
+			LOG(TEXT("Phase Two Begin"));
+			Destroy();
+			// 다음 레벨 로드
 		}
 	}
 
@@ -97,8 +112,10 @@ void ABossTenebris::BressAttackRight()
 {
 	PlayAnimMontage(BressAttackRightAnim);
 	AttackType = ETenebrisSpecialAttackType::None;
-	SetSpecialAttackTimer(1);
-}
+	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+	{
+		AttackType = ETenebrisSpecialAttackType::FlyingEarthquake;;
+	}), SpecialAttackInterval, false);}
 
 bool ABossTenebris::BressAttackRightCondition()
 {
@@ -140,7 +157,10 @@ void ABossTenebris::FlyingEarthquakeAttack()
 {
 	PlayAnimMontage(FlyingEarthquakeAttackAnim);
 	AttackType = ETenebrisSpecialAttackType::None;
-	SetSpecialAttackTimer(0);
+	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+	{
+		AttackType = ETenebrisSpecialAttackType::BressRight;;
+	}), SpecialAttackInterval, false);
 }
 
 bool ABossTenebris::FlyingEarthquakeAttackCondition()
@@ -186,22 +206,4 @@ void ABossTenebris::MoveBack()
 void ABossTenebris::Howling()
 {
 	PlayAnimMontage(HowlingAnim);
-}
-
-void ABossTenebris::SetSpecialAttackTimer(int8 index)
-{
-	GetWorldTimerManager().SetTimer(SpecialAttackTimer, FTimerDelegate::CreateLambda([&]
-	{
-		switch (index)
-		{
-		case 0:
-			AttackType = ETenebrisSpecialAttackType::BressRight;
-			break;
-		case 1:
-			AttackType = ETenebrisSpecialAttackType::FlyingEarthquake;
-			break;
-		default:
-			break;
-		}
-	}), SpecialAttackInterval, false);
 }

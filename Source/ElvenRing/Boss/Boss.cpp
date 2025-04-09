@@ -207,7 +207,6 @@ void ABoss::OnAttackStarted(TArray<UCapsuleComponent*> Collision)
 	{
 		Coll->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
-	//Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 void ABoss::OnAttackEnded(TArray<UCapsuleComponent*> Collision)
@@ -218,7 +217,6 @@ void ABoss::OnAttackEnded(TArray<UCapsuleComponent*> Collision)
 	{
 		Coll->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
-	//Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABoss::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -243,7 +241,6 @@ void ABoss::OnMeshOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	int32 OtherBodyIndex)
 {
 	LOG(TEXT("Mesh Overlap End: %s"), *OtherActor->GetName());
-
 }
 
 

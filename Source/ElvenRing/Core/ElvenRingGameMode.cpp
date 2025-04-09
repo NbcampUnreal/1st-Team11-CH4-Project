@@ -13,6 +13,16 @@ AElvenRingGameMode::AElvenRingGameMode()
 	EventManager = CreateDefaultSubobject<UEventManager>(TEXT("EventManager"));
 }
 
+void AElvenRingGameMode::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
+	{
+		EventManager->Init(GameInstance->GetGameFlags());
+	}
+}
+
 void AElvenRingGameMode::StartPlay()
 {
 	Super::StartPlay();
@@ -23,11 +33,6 @@ void AElvenRingGameMode::StartPlay()
 void AElvenRingGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
-	{
-		EventManager->Init(GameInstance->GetGameFlags());
-	}
 }
 
 void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const
@@ -35,21 +40,22 @@ void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerControll
 	if (GetNetMode() == NM_Standalone)
 	{
 		PlayerController->ClientTravel(LevelName, TRAVEL_Absolute);
+		BroadcastLoadingScreen(LevelName);
 	}
 	else
 	{
 		GetWorld()->ServerTravel(LevelName);
-		BroadcastLoadingScreen();
+		BroadcastLoadingScreen(LevelName);
 	}
 }
 
-void AElvenRingGameMode::BroadcastLoadingScreen() const
+void AElvenRingGameMode::BroadcastLoadingScreen(const FString& MapName) const
 {
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(*It))
 		{
-			PlayerController->ClientShowLoadingScreen();
+			PlayerController->ClientShowLoadingScreen(MapName);
 		}
 	}
 }

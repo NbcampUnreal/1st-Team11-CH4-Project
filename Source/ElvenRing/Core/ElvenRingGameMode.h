@@ -17,6 +17,7 @@ class ELVENRING_API AElvenRingGameMode : public AGameMode
 public:
 	AElvenRingGameMode();
 protected:
+	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void StartPlay() override;
 	
@@ -24,7 +25,7 @@ public:
 	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
 protected:
 	/** Client가 Loading Screen을 출력하도록 전달, 현재 Close 하는 것은 Client가 직접하고 있다.*/
-	void BroadcastLoadingScreen() const;
+	void BroadcastLoadingScreen(const FString& MapName) const;
 	
 public:
 	class UEventManager* GetEventManager() const
