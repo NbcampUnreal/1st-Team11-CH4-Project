@@ -40,22 +40,9 @@ void ABossTenebris::BeginPlay()
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::GrabAttack, FString("GrabAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::TailAttack, FString("TailAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::EarthquakeAttack, FString("EarthquakeAttack"));
-
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::BressAttackFront, FString("BressAttackFront"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::EnergyAttack, FString("EnergyAttack"));
 	
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::FlyingRightFireBallAttack, FString("FlyingRightFireBallAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::Howling, FString("Howling"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::MoveBackLeft, FString("MoveBackLeft"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::MoveBackRight, FString("MoveBackRight"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::MoveBack, FString("MoveBack"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::MoveFront, FString("MoveFront"));
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::MoveFrontLeft, FString("MoveFrontLeft"));
-
 	SpecialPattern->AddAttackPattern(this, &ABossTenebris::BressAttackRightCondition, &ABossTenebris::BressAttackRight, FString("BressAttackRight"));
 	SpecialPattern->AddAttackPattern(this, &ABossTenebris::FlyingEarthquakeAttackCondition, &ABossTenebris::FlyingEarthquakeAttack, FString("FlyingEarthquakeAttack"));
-
-	//NormalPattern->AddAttackPattern(this, &ABossTenebris::RushAttack, FString("RushAttack"));
 	
 	RegisterCollision(BressAttackCollision, BressCollisionSocketName);
 	RegisterCollision(TailAttackCollisions[0], TailCollisionSocketName[0]);
@@ -63,8 +50,6 @@ void ABossTenebris::BeginPlay()
 	RegisterCollision(GrabAttackCollision, GrabCollisionSocketName);
 
 	Super::BeginPlay();
-	
-	//PlayAnimMontage(EnergyAttackAnim);
 }
 
 
@@ -113,7 +98,6 @@ float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		if (PhaseType == EPhaseType::One)
 		{
 			LOG(TEXT("Phase Two Begin"));
-			Destroy();
 			UGameplayStatics::OpenLevel(this, FName("L_Tenebris2"));
 		}
 	}
