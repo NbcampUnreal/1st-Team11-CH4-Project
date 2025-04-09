@@ -84,9 +84,9 @@ void UElvenringGameInstance::CheckLoadProgress()
 void UElvenringGameInstance::BindToCharacterOpenWidget(ECharacterType Type, AUnitBase* Unit)
 {
 	if (ECharacterType::Player == Type)
-		UIManager->BindPlayerMainUi(Unit);
+		UIManager->BindPlayerMainUi(GetWorld(), Unit);
 	else if (ECharacterType::NormalMonster == Type)
-		UIManager->CreateBindNormalMonsterWidgetUi(Unit);
+		UIManager->CreateBindNormalMonsterWidgetUi(GetWorld(), Unit);
 	else if (ECharacterType::Boss == Type)
-		UIManager->BindBossWidgetUi(Unit);
+		UIManager->BindBossWidgetUi(GetWorld(), Unit);
 }

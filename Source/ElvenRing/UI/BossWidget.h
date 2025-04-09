@@ -25,7 +25,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void RecoverHp(float TargetHp, float HpMax);
 
-
 	UPROPERTY(meta = (BindWidget))
 	UCanvasPanel* CanvasPanelSlot;
 
@@ -37,6 +36,9 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* DamageText;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* NameText;
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* HpFrameImg1;
@@ -46,6 +48,9 @@ public:
 	UImage* HpFrameImg3;
 
 	void BindToBoss(AUnitBase* Boss);
+
+	UFUNCTION(BlueprintCallable, Category = "Ui")
+	void SetName(FString Name);
 
 	UFUNCTION(BlueprintCallable, Category = "Ui")
 	void SetActiveWidget(bool bShow);

@@ -111,7 +111,14 @@ void UBossWidget::UpdateProgressBar(FMRamdaElement& FElement)
 void UBossWidget::BindToBoss(AUnitBase* Boss)
 {
 	if (Boss)
+	{
 		Boss->OnHpChanged.AddDynamic(this, &UBossWidget::UpdateHp);
+		//NameText->SetText(FText::FromString(Name));
+	}
+}
+void UBossWidget::SetName(FString Name)
+{
+	NameText->SetText(FText::FromString(Name));
 }
 void UBossWidget::SetActiveWidget(bool bShow)
 {
