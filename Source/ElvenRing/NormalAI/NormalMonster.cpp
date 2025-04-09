@@ -70,8 +70,8 @@ void ANormalMonster::UpdateHPBar()
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
-	bisHit = true;
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	bisHit = true;
 	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 	Grux_Anim->HitAnim();
 	bisHit=false;
