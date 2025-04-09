@@ -161,6 +161,13 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                     this,
                     &AElvenRingCharacter::Move
                 );
+
+                EnhancedInput->BindAction(
+                    PlayerController->MoveAction,
+                    ETriggerEvent::Completed,
+                    this,
+                    &AElvenRingCharacter::MoveEnd
+                );
             }
             
             if (PlayerController->JumpAction)
@@ -267,6 +274,12 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     }
 }
 
+
+void AElvenRingCharacter::SetbJump(bool _bJump)
+{
+    _bJump = bJump;
+}
+
 void AElvenRingCharacter::PlayDodgeAnimation(float _DodgeDuration)
 {
     if (DodgeMontage)
@@ -312,10 +325,9 @@ void AElvenRingCharacter::OnDefenceMontageEnded(UAnimMontage* Montage, bool bInt
 }
 void AElvenRingCharacter::Move(const FInputActionValue& value)
 {
-    if (!bCanMove) return;
     if (!Controller) return;
-
-    const FVector2D MoveInput = value.Get<FVector2D>();
+	MoveInput = value.Get<FVector2D>();
+    if (!bCanMove) return;
 
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
@@ -327,12 +339,16 @@ void AElvenRingCharacter::Move(const FInputActionValue& value)
         AddMovementInput(GetActorRightVector(), MoveInput.Y);
     }
 }
+void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
+{
+    MoveInput = {0,0};
+}
 
 void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
+    if (bIsAttacking) return;
     if (value.Get<bool>())
     {
-        bJump = true;
         Jump();
     }
 }
@@ -341,7 +357,6 @@ void AElvenRingCharacter::StopJump(const FInputActionValue& value)
 {
     if (!value.Get<bool>())
     {
-        bJump = false;
         StopJumping();
     }
 }
@@ -376,20 +391,27 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     {
         return;
     }
+    bCanMove = false;;
     Invincibility = true;
     CurrentWeapon->DisableCollision();
     ResetCombo();
-    FVector DodgeDirection = GetLastMovementInputVector();
+    FVector DodgeDirection = FVector(MoveInput.Y,(-1)*MoveInput.X,0.0f).GetSafeNormal();
+    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
     if (DodgeDirection.IsNearlyZero())
     {
         DodgeDirection = GetActorForwardVector();
     }
-    DodgeDirection.Normalize();
-    DodgeDirection.Z = 0;
-    
+    else
+    {
+        const FVector ForwardVector = GetActorForwardVector();
+        const FVector RightVector = GetActorRightVector();
+        DodgeDirection = (ForwardVector * MoveInput.X + RightVector * MoveInput.Y).GetSafeNormal();
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
+
     DodgeStartLocation = GetActorLocation();
     DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
-    
     DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
 
     bdodge = true;
@@ -461,6 +483,7 @@ void AElvenRingCharacter::Tick(float DeltaTime)
     }
     else
         bSprint = false;
+
 }
 
 void AElvenRingCharacter::BeginPlay()
