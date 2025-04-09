@@ -62,12 +62,15 @@ void AElvenRingCharacter::ToggleInput(bool _bInput)
 //공격 관련 함수
 void AElvenRingCharacter::OnAttackInput()
 {
+    if (bJump) return;
+    if (bdodge) return;
     if (!bIsAttacking)
     {
         if (CurrentWeapon)
         {
             CurrentWeapon->EnableCollision();
         }
+        bCanMove = false;
         bIsAttacking = true;
         AttackIndex = 1;
         PlayAttackAnimation();
@@ -75,6 +78,7 @@ void AElvenRingCharacter::OnAttackInput()
     // 이미 공격 중일 때, 콤보 입력 가능하면 연계
     else if (bIsAttacking && bCanCombo && AttackIndex < 3)
     {
+        bCanMove = false;
         bCanCombo = false;
 
         if (GetWorldTimerManager().IsTimerActive(ComboTimerHandle))
@@ -114,8 +118,9 @@ void AElvenRingCharacter::PlayAttackAnimation()
 
 void AElvenRingCharacter::OnAttackAnimationEnd()
 {
+    bCanMove = true;
     bCanCombo = true;
-    GetWorldTimerManager().SetTimer(ComboTimerHandle, this, &AElvenRingCharacter::ComboEnd, 0.5f, false);
+    GetWorldTimerManager().SetTimer(ComboTimerHandle, this, &AElvenRingCharacter::ComboEnd, 0.3f, false);
 }
 
 void AElvenRingCharacter::ComboEnd()
@@ -307,6 +312,7 @@ void AElvenRingCharacter::OnDefenceMontageEnded(UAnimMontage* Montage, bool bInt
 }
 void AElvenRingCharacter::Move(const FInputActionValue& value)
 {
+    if (!bCanMove) return;
     if (!Controller) return;
 
     const FVector2D MoveInput = value.Get<FVector2D>();
@@ -326,6 +332,7 @@ void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
     if (value.Get<bool>())
     {
+        bJump = true;
         Jump();
     }
 }
@@ -334,6 +341,7 @@ void AElvenRingCharacter::StopJump(const FInputActionValue& value)
 {
     if (!value.Get<bool>())
     {
+        bJump = false;
         StopJumping();
     }
 }
@@ -368,6 +376,8 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     {
         return;
     }
+    Invincibility = true;
+    CurrentWeapon->DisableCollision();
     ResetCombo();
     FVector DodgeDirection = GetLastMovementInputVector();
     if (DodgeDirection.IsNearlyZero())
@@ -381,7 +391,8 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
     
     DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
-    
+
+    bdodge = true;
     bIsDodging = true;
     DodgeTime = 0.f;
     PlayDodgeAnimation(DodgeDuration);
@@ -410,6 +421,10 @@ void AElvenRingCharacter::Interact(const FInputActionValue& InputActionValue)
 void AElvenRingCharacter::StopDodge()
 {
     GetWorld()->GetTimerManager().ClearTimer(DodgeTimerHandle);
+    Invincibility = false;
+    bCanMove = true;
+    bdodge = false;
+    CurrentWeapon->ResetDamagedActors();
 }
 
 void AElvenRingCharacter::DodgeCollDown()

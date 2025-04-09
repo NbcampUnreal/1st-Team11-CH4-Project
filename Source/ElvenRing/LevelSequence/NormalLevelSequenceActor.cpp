@@ -1,17 +1,19 @@
 #include "NormalLevelSequenceActor.h"
 #include "EngineUtils.h"
 #include "LevelSequencePlayer.h"
+#include "Components/AudioComponent.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/Boss.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
+#include "Kismet/GameplayStatics.h"
 
 
 void ANormalLevelSequenceActor::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	CurrentLevelSequence = GetSequence();
 }
 
@@ -58,6 +60,11 @@ void ANormalLevelSequenceActor::OnSequenceEnded()
 	case ESequenceType::Dead:
 		UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
 		Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
+		USoundBase* MySound = LoadObject<USoundBase>(nullptr, TEXT("/Script/Engine.SoundWave'/Game/ElvenRing/Resources/SFX/UI/BossKilled.BossKilled'"));
+		if (MySound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), MySound);
+		}
 		break;
 	}
 }
@@ -66,6 +73,9 @@ void ANormalLevelSequenceActor::OnSequenceEnded()
 
 void ANormalLevelSequenceActor::SetAllPlayerHidden()
 {
+	UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+	Instance->GetUIManager()->SetActiveCharactersUI(false);
+	
 	for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
 	{
 		if (IsValid(Player))
@@ -80,6 +90,9 @@ void ANormalLevelSequenceActor::SetAllPlayerHidden()
 
 void ANormalLevelSequenceActor::SetAllPlayerUnhidden()
 {
+	UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+	Instance->GetUIManager()->SetActiveCharactersUI(true);
+	
 	for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
 	{
 		if (IsValid(Player))
