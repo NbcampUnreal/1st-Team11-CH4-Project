@@ -61,7 +61,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MoveSpeed;
 	bool bCanAttack;
-	bool bCanMove;
+	bool bCanMove = true;
 	bool bIsHit;
 	bool bIsDie;
 	bool bSprint; //ksw;
