@@ -98,6 +98,9 @@ protected:
 	FTimerHandle DodgeTimerHandle;  
 	FTimerHandle DodgeStopTimerHandle;
 	FTimerHandle DodgeStopTestTimerHandle;
+
+	bool bJump = false;
+	bool bdodge = false;
 	void PlayDodgeAnimation(float _Duration);
 	void PlayDefenceAnimation(float _DefenceSpeed);
 	void OnDefenceMontageEnded(UAnimMontage* Montage, bool bInterrupted);
