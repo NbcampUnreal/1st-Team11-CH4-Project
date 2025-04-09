@@ -63,6 +63,8 @@ void ABossTenebris::BeginPlay()
 	RegisterCollision(GrabAttackCollision, GrabCollisionSocketName);
 
 	Super::BeginPlay();
+	
+	//PlayAnimMontage(EnergyAttackAnim);
 }
 
 
@@ -75,6 +77,9 @@ void ABossTenebris::OnSpawnSequenceEnded()
 		AttackType = ETenebrisSpecialAttackType::BressRight;
 	}
 	), SpecialAttackInterval, false);
+	
+	AudioComponent->SetSound(BossBattleBGM);
+	AudioComponent->Play();	
 }
 
 void ABossTenebris::OnPhaseSequenceEnded()
@@ -84,9 +89,14 @@ void ABossTenebris::OnPhaseSequenceEnded()
 	PhaseType = EPhaseType::Two;
 	SetAttackTarget();
 	PlayAnimMontage(FlyingRightFireBallAttackAnim);
+	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+	{
+		AttackType = ETenebrisSpecialAttackType::FlyingEarthquake;
+	}
+	), SpecialAttackInterval, false);
 
 	AudioComponent->SetSound(BossBattleBGM2);
-	AudioComponent->Play();	
+	AudioComponent->Play();
 }
 
 

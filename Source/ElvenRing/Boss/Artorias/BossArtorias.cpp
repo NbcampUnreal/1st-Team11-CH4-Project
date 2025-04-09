@@ -1,4 +1,6 @@
 #include "BossArtorias.h"
+
+#include "Components/AudioComponent.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
 #include "ElvenRing/Boss/BossPattern/BossSpecialPatternComponent.h"
@@ -33,6 +35,8 @@ void ABossArtorias::BeginPlay()
 void ABossArtorias::OnSpawnSequenceEnded()
 {
 	SetBossBattleMode();
+	AudioComponent->SetSound(BossBattleBGM);
+	AudioComponent->Play();
 }
 
 

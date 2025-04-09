@@ -139,10 +139,6 @@ void ABoss::SetBossBattleMode()
 
 	// 공격 활성화
 	bCanAttack = true;
-
-	// 보스 BGM 활성화
-	AudioComponent->SetSound(BossBattleBGM);
-	AudioComponent->Play();
 }
 
 void ABoss::MoveForward(const float MoveMultiflier)
