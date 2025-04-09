@@ -4,23 +4,23 @@
 #include "AIController.h"
 #include "NormalAIController.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class ELVENRING_API ANormalAIController : public AAIController
 {
 	GENERATED_BODY()
 
 public:
+	ANormalAIController();
 	virtual void OnPossess(APawn* InPawn) override;
-	 virtual void BeginPlay() override;
-	virtual void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
-
-	// UFUNCTION(BlueprintCallable, Category="AI")
-	// void MoveToCurrentPatrolPoint();
+	virtual void BeginPlay() override;
 
 protected:
-	// 현재 순찰 지점 인덱스
-	//int32 CurrentPatrolIndex = 0;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	UBlackboardComponent* BlackboardComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	UBehaviorTree* BehaviorTreeAsset;
+
+
 };

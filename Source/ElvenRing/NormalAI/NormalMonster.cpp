@@ -4,13 +4,16 @@
 #include "ElvenRing/NormalAI/NormalMonster.h"
 #include "ElvenRing/NormalAI/NormalAIController.h"
 #include "ElvenRing//Character/ElvenRingCharacter.h"
-#include "Engine/DamageEvents.h"
+#include "ElvenRing/NormalAI/Grux_AnimInstance.h"
+#include "ElvenRing//UI/MonsterWidget.h"//ksw
 
+#include "Components/WidgetComponent.h" //ksw
+#include "Components/CapsuleComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Engine/EngineTypes.h"
 #include "kismet/GameplayStatics.h"
-#include "Components/WidgetComponent.h" //ksw
-#include "ElvenRing//UI/MonsterWidget.h"//ksw
+
 
 ANormalMonster::ANormalMonster()
 {
@@ -18,6 +21,10 @@ ANormalMonster::ANormalMonster()
 	CurHealth = MaxHealth;
 	AttackPower = 10;
 	MoveSpeed = 10;
+
+	AttackDistance = 250.0f;
+	AttackAngle = 60.0f;
+	
 	bCanAttack = true;
 	bCanMove = true;
 	bIsHit = false;
@@ -26,109 +33,118 @@ ANormalMonster::ANormalMonster()
 	AIControllerClass = ANormalAIController::StaticClass();
 
 	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget")); //ksw
-	HPWidgetComponent->SetupAttachment(RootComponent);//ksw
-	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World);//ksw
+	HPWidgetComponent->SetupAttachment(RootComponent); //ksw
+	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
 	HPWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f)); //ksw
-	HPWidgetComponent->SetTwoSided(true);//ksw
-	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World);//ksw
-	HPWidgetComponent->SetPivot(FVector2D(0.5f, 0.5f));//ksw
-	PrimaryActorTick.bCanEverTick = true;//ksw
+	HPWidgetComponent->SetTwoSided(true); //ksw
+	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
+	HPWidgetComponent->SetPivot(FVector2D(0.5f, 0.5f)); //ksw
+	PrimaryActorTick.bCanEverTick = false; //ksw
 }
 
 void ANormalMonster::BeginPlay()
 {
 	Super::BeginPlay();
-	AttachDelegateToWidget(ECharacterType::NormalMonster);//ksw
-	UMonsterWidget* Uiwedget = Cast<UMonsterWidget>(HPWidgetComponent->GetUserWidgetObject());//ksw
+	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
+	UMonsterWidget* Uiwedget = Cast<UMonsterWidget>(HPWidgetComponent->GetUserWidgetObject()); //ksw
 	if (Uiwedget) //순서중요! AttachDelegateToWidget() > SetWidget()로 hp위젯을 먼저 얻어와야함.
-		Uiwedget->SetUiSize(FVector2D(0.8f), FVector2D(0.f, 0.5f));//ksw
-}
-
-float ANormalMonster::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
-                                 class AController* EventInstigator, AActor* DamageCauser)
-{
-	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-	// 데미지 처리
-	CurHealth -= ActualDamage;
-	UE_LOG(LogTemp, Warning, TEXT("몬스터 체력: %f"), CurHealth);
-	PlayDamageAnim();
-	if (CurHealth <= 0)
 	{
-		OnDeath(); // 체력이 0 이하이면 사망 처리
+		Uiwedget->SetUiSize(FVector2D(0.8f), FVector2D(0.f, 0.5f)); //ksw
 	}
 
-	return ActualDamage;
+	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
 }
 
-void ANormalMonster::Attack(AActor* Target)
+void ANormalMonster::UpdateHPBar()
 {
-	if (Target)
-	{
-		UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
-
-		UE_LOG(LogTemp, Warning, TEXT("몬스터가 %f 데미지를 적용"), AttackPower);
-
-		// 애니메이션 적용 (AnimSequence 타입)
-		UAnimSequence* AttackAnim = LoadObject<UAnimSequence>(nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/DoublePain.DoublePain'"));
-		if (AttackAnim && GetMesh())
-		{
-			GetMesh()->PlayAnimation(AttackAnim, false);
-		}
-	}
-}
-
-
-void ANormalMonster::PlayDamageAnim()
-{
-	Super::PlayDamageAnim();
-
-	// 애니메이션 로드
-	UAnimSequence* DamageAnim = LoadObject<UAnimSequence>(
-		nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/HitReact_Front.HitReact_Front'"));
-
-	if (DamageAnim && GetMesh())
-	{
-		GetMesh()->PlayAnimation(DamageAnim, false); // 애니메이션 실행
-	}
-}
-
-void ANormalMonster::PlayDeathAnim()
-{
-	Super::PlayDeathAnim();
-
-	// 애니메이션 로드
-	UAnimSequence* DeathAnim = LoadObject<UAnimSequence>(nullptr, TEXT("/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Death_B.Death_B'"));
-
-	if (DeathAnim && GetMesh())
-	{
-		GetMesh()->PlayAnimation(DeathAnim, false);  // 애니메이션 실행
-	}
-}
-
-void ANormalMonster::OnDeath()
-{
-	Super::OnDeath();
-	PlayDeathAnim();
-
-	
-}
-void ANormalMonster::SetWidget(UUserWidget* Widget)
-{
-	HPWidgetComponent->SetWidget(Widget);
-}
-void ANormalMonster::Tick(float DeltaTime)//ksw
-{
-	Super::Tick(DeltaTime);
 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
 	{
 		FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
 		FVector MyLoc = HPWidgetComponent->GetComponentLocation();
 
 		FRotator LookRot = (CamLoc - MyLoc).Rotation();
-		// LookRot.Pitch = 0.f;
-		 //LookRot.Roll = 0.f; // 수직 회전 제거해서 평면 유지
-
 		HPWidgetComponent->SetWorldRotation(LookRot);
 	}
+}
+
+float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+                                 AActor* DamageCauser)
+{
+	bisHit = true;
+	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	Grux_Anim->HitAnim();
+	bisHit=false;
+	return Damage;
+}
+
+void ANormalMonster::Attack(AActor* Target)
+{
+	if (Target)
+	{
+		//애니메이션 실행
+		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+		Grux_Anim->AttackAnim();
+
+		
+		FVector MonsterLocation = GetActorLocation();
+		FVector TargetLocation = Target->GetActorLocation();
+		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
+
+		FVector MonsterForward = GetActorForwardVector();
+		float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
+		float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
+
+		float Distance = FVector::Dist(MonsterLocation, TargetLocation);
+
+		if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("공격 성공"));
+			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("공격 실패"));
+		}
+	}
+}
+
+void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
+{
+	AAIController* AIController = Cast<AAIController>(GetController());
+	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+
+	BlackboardComp->SetValueAsBool(TEXT("PlayerDetectedKey"), true);
+	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
+	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
+}
+
+void ANormalMonster::PlayDeathAnim()
+{
+	Super::PlayDeathAnim();
+	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	Grux_Anim->DeathAnim();
+}
+
+void ANormalMonster::OnDeath()
+{
+	Super::OnDeath();
+	PlayDeathAnim();
+	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+
+
+	GetController()->UnPossess();
+
+
+	// 콜리전 제거
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	bIsDie = true;
+	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
+	HPWidgetComponent->DestroyComponent();
+}
+
+void ANormalMonster::SetWidget(UUserWidget* Widget)
+{
+	HPWidgetComponent->SetWidget(Widget);
 }

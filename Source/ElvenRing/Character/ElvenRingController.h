@@ -49,5 +49,5 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerRequestLevelChange(const FString& LevelPath);
 	UFUNCTION(Client, Reliable)
-	void ClientShowLoadingScreen();
+	void ClientShowLoadingScreen(const FString& TargetMapName);
 };

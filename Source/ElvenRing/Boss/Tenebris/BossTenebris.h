@@ -4,6 +4,21 @@
 #include "ElvenRing/Boss/Boss.h"
 #include "BossTenebris.generated.h"
 
+UENUM()
+enum class ETenebrisSpecialAttackType : uint8
+{
+	None,
+	FlyingEarthquake,
+	BressRight
+};
+
+UENUM()
+enum class EPhaseType : uint8
+{
+	One,
+	Two
+};
+
 UCLASS()
 class ELVENRING_API ABossTenebris : public ABoss
 {
@@ -11,11 +26,16 @@ class ELVENRING_API ABossTenebris : public ABoss
 
 public:
 	ABossTenebris();
+
+	virtual void OnSpawnSequenceEnded() override;
+	virtual void OnPhaseSequenceEnded() override;
 	
 protected:
 	virtual void BeginPlay() override;
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
+	
 	/** 1페이즈 공격 */
 	void TailAttack();
 	void EarthquakeAttack();
@@ -23,7 +43,9 @@ private:
 
 	/** 1페이즈 특수 공격 */
 	void FlyingEarthquakeAttack();
+	bool FlyingEarthquakeAttackCondition();
 	void BressAttackRight();
+	bool BressAttackRightCondition();
 	
 	/** 2페이즈 공격 */
 	void Howling(); // 이거 어떻게 활용하지 
@@ -38,61 +60,94 @@ private:
 	void MoveBackLeft();
 	void MoveBackRight();
 	void MoveBack();
-
+	
 	void RushAttack(); // 없어도 될 것 같은 느낌. 플레이어를 불쾌하게 만들 가능성 존재.
+	void WalkingFront();
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
+	FName BressCollisionSocketName;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCapsuleComponent* BressAttackCollision;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
+	TArray<FName> TailCollisionSocketName;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<UCapsuleComponent*> TailAttackCollisions;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
+	FName GrabCollisionSocketName;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UCapsuleComponent* GrabAttackCollision;
 
 private:
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|BGM")
+	USoundBase* BossBattleBGM2;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
+	TObjectPtr<class UAnimMontage> BressAfterMoveFrontAnim;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> MoveFrontLeftAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> MoveFrontAnim;
 	
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> MoveBackLeftAnim;
 	
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> MoveBackRightAnim;
 	
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> MoveBackAnim;
 	
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> GrabAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> BressAttackFrontAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> BressAttackRightAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> EnergyAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> TailAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> EarthQuakeAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> RushAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> FlyingEarthquakeAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> FlyingRightFireBallAttackAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Anim")
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> HowlingAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Attack")
-	float FlyingEarthquakeAttackInterval;
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
+	TObjectPtr<class UAnimMontage> WalkingFrontAnim;
 
-	UPROPERTY(EditAnywhere, Category = "Boss|Attack")
-	float BressAttackRightInterval;
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
+	float SpecialAttackInterval;
 
-	FTimerHandle FlyingEarthquakeAttackTimer;
-	FTimerHandle BressAttackRightTimer;
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Sequence")
+	TSubclassOf<ANormalLevelSequenceActor> LevelSequence;
+
+	UPROPERTY(EditInstanceOnly, Category = "Boss|Sequence")
+	EPhaseType PhaseType;
+
+	FTimerHandle SpecialAttackTimer;
+
+	ETenebrisSpecialAttackType AttackType;
 };

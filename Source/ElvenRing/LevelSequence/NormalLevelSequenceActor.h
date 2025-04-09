@@ -7,6 +7,14 @@
 class ULevelSequence;
 class ABoss;
 
+UENUM(BlueprintType)
+enum class ESequenceType : uint8
+{
+	Spawn,
+	Phase,
+	Dead
+};
+
 UCLASS()
 class ELVENRING_API ANormalLevelSequenceActor : public ALevelSequenceActor
 {
@@ -20,16 +28,21 @@ public:
 	
 	UFUNCTION()
 	void OnSequenceEnded();
-	
 	void SetAllPlayerHidden();
 	void SetAllPlayerUnhidden();
-	void SetBossBattleModeWithDelay();
-	
+	void OnSpawnSequenceEnded();
+	void OnPhaseSequenceEnded();
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Boss")
-	float BattleModeDelay = 1.0f;
+	float SpawnSequenceDelegateDelay = 1.0f;
 	
 	UPROPERTY(VisibleAnywhere, Category = "Boss")
 	ULevelSequence* CurrentLevelSequence;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Boss")
+	ESequenceType SequenceType;
+
+	UPROPERTY()
+	ULevelSequencePlayer* LevelSequencePlayer;
 };

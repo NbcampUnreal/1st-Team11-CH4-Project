@@ -19,24 +19,28 @@ public:
 	virtual void Init() override;
 
 	UFUNCTION(Blueprintable)
-	void ShowLoadingScreen();
+	void ShowLoadingScreen(const FString& TargetMapName);
 	UFUNCTION(BlueprintCallable)
 	void HideLoadingScreen();
-	
+
 private:
 	UPROPERTY()
-	TObjectPtr<UUserWidget> LoadingScreenWidget;;
+	TObjectPtr<UUserWidget> LoadingScreenWidget;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UUserWidget> LoadingScreenClass;
-
+	FName TargetMapPackageName;;
+	FTimerHandle LoadTimerHandle;
+	
 	UFUNCTION()
-	void OnPreLoadMap(const FString& String);
+	void OnPreLoadMap(const FString& MapName);
 	UFUNCTION()
 	void OnPostLoadMap(UWorld* World);
 
-
-
-public://ksw
+	void StartTrackLoadProgress(const FString& MapName);
+	UFUNCTION()
+	void CheckLoadProgress();
+	
+public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	UUIManager* GetUIManager() const { return UIManager; };
 
@@ -47,7 +51,7 @@ public://ksw
 	void SetNickname(const FString& NewName) { Nickname = NewName; }
 
 	void BindToCharacterOpenWidget(ECharacterType Type, AUnitBase* Unit);
-private://ksw
+private:
 	UPROPERTY()
 	UUIManager* UIManager;
 
@@ -56,4 +60,15 @@ private://ksw
 
 	UPROPERTY()
 	FString Nickname;
+
+public:
+	TArray<class UGameFlag*>* GetGameFlags()
+	{
+		return &GameFlags;
+	}
+	
+protected:
+	// TO-DO : 추후에 데이터테이블로 변경
+	UPROPERTY(EditDefaultsOnly)
+	TArray<class UGameFlag*> GameFlags;
 };

@@ -48,10 +48,10 @@ void AElvenRingController::ServerRequestLevelChange_Implementation(const FString
 	}
 }
 
-void AElvenRingController::ClientShowLoadingScreen_Implementation()
+void AElvenRingController::ClientShowLoadingScreen_Implementation(const FString& TargetMapName)
 {
 	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
 	{
-		GameInstance->ShowLoadingScreen();
+		GameInstance->ShowLoadingScreen(TargetMapName);
 	}
 }

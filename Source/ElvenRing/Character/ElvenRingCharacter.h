@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UnitBase.h"
+#include "BaseWeapon.h"
 #include "ElvenRing/Interaction/InteractionComponent.h"
 #include "ElvenRingCharacter.generated.h"
 
@@ -20,15 +21,49 @@ class ELVENRING_API AElvenRingCharacter : public AUnitBase
 
 public:
 	AElvenRingCharacter();
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	float GetCurHealth()
+	{
+		return CurHealth;
+	}
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Interaction)
 	UInteractionComponent* InteractionComponent;
+	void ToggleInput(bool bInput);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
+	bool bInput;
 
 protected:
-	protected:
+	//공격 함수 및 변수들
+    
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	int AttackIndex;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	bool bIsAttacking;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	bool bCanCombo;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UAnimMontage* AttackMontage1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UAnimMontage* AttackMontage2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	UAnimMontage* AttackMontage3;
+
+	FTimerHandle ComboTimerHandle;
+	void OnAttackInput();
+	UFUNCTION(BlueprintCallable, Category = "Attack")
+	void OnAttackAnimationEnd();
+	void ComboEnd();
+	void ResetCombo();
+	void PlayAttackAnimation();
+	//무기
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	ABaseWeapon* CurrentWeapon;	
+
+	
 	//애니 몽타주(근데 이거 맞음??너무 더러운거보니까 잘못쓰고 있는거같은데)
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DodgeMontage;
@@ -37,8 +72,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DefenceMontage;
 	//달리기
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float NormalSpeed; // 기본 걷기 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
@@ -54,12 +87,9 @@ protected:
 	float DodgeTime = 0.f;
 	bool bIsDodging = false;
 	FVector DodgeVelocity;
-	//공격 방어 관련함수
-	float AttackSpeed = 1.f;
+	//방어 관련함수
 	float DefenceSpeed = 1.f;
-	bool bAttack;
 	bool bDefence;
-	FTimerHandle AttackTimerHandle;  
 	FTimerHandle DefenceTimerHandle;  
 	
 	FVector DodgeStartLocation;
@@ -69,7 +99,6 @@ protected:
 	FTimerHandle DodgeStopTimerHandle;
 	FTimerHandle DodgeStopTestTimerHandle;
 	void PlayDodgeAnimation(float _Duration);
-	void PlayAttackAnimation(float _AttackSpeed);
 	void PlayDefenceAnimation(float _DefenceSpeed);
 	void OnDefenceMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void UpdateDodge();
@@ -92,10 +121,6 @@ protected:
 	void StopDodge();
 	UFUNCTION()
 	void DodgeCollDown();
-	UFUNCTION()
-	void StartAttack(const FInputActionValue& value);
-	UFUNCTION()
-	void StopAttack();
 	UFUNCTION()
 	void StartDefence(const FInputActionValue& value);
 	UFUNCTION()

@@ -13,6 +13,8 @@ class ELVENRING_API ABossArtorias : public ABoss
 public:
 	ABossArtorias();
 
+	virtual void OnSpawnSequenceEnded() override;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;

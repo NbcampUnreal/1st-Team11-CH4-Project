@@ -74,10 +74,12 @@ void AUnitBase::OnAttacked()
 void AUnitBase::OnDeath()
 {
 	OnDeathEvent.Broadcast(this);
+	bIsDie = true;
 }
 
 void AUnitBase::OnHealthChanged()
 {
+	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
 }
 
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -99,6 +101,7 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 	}
 	return Damage;
 }
+
 
 
 void AUnitBase::PlayDamageAnim()
