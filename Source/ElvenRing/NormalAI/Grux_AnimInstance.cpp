@@ -26,14 +26,20 @@ void UGrux_AnimInstance::AttackAnim()
 void UGrux_AnimInstance::HitAnim()
 {
 	IsHit = true;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-	{
-		IsHit = false;
-		UE_LOG(LogTemp, Warning, TEXT("IsHit 초기화 진행"));
-	}, 0.5f, false);
+	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	// {
+	// 	IsHit = false;
+	// 	UE_LOG(LogTemp, Warning, TEXT("IsHit 초기화 진행"));
+	// }, 0.5f, false);
 }
 
 void UGrux_AnimInstance::DeathAnim()
 {
 	IsDeath = true;
 }
+
+// void UGrux_AnimInstance::AnimNotify_ChangeBool()
+// {
+// 	IsHit = false;
+// 	UE_LOG(LogTemp, Warning, TEXT("UGrux_AnimInstance::AnimNotify_ChangeBool"));
+// }

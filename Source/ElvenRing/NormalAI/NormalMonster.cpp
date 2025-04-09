@@ -6,14 +6,15 @@
 #include "ElvenRing/NormalAI/NormalAIController.h"
 #include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
+#include "ElvenRing//UI/MonsterWidget.h"//ksw
 
+#include "Components/WidgetComponent.h" //ksw
 #include "Components/CapsuleComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Engine/EngineTypes.h"
 #include "kismet/GameplayStatics.h"
-#include "Components/WidgetComponent.h" //ksw
-#include "ElvenRing//UI/MonsterWidget.h"//ksw
+
 
 ANormalMonster::ANormalMonster()
 {
