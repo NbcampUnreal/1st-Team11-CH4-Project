@@ -11,7 +11,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Effect/CameraControllerComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
-#include "ElvenRing/LevelSequence/NormalLevelSequenceActor.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -94,6 +93,10 @@ void ABoss::UpdateState()
 }
 
 
+void ABoss::OnPhaseSequenceEnded()
+{
+	LOG(TEXT("Begin"));
+}
 
 void ABoss::ChangeState(IBossStateInterface* State)
 {
@@ -126,20 +129,16 @@ FVector ABoss::GetDirectionVectorToTarget() const
 
 void ABoss::SetBossBattleMode()
 {
-	// 1. 공격할 타겟 플레이어 지정
+	// 공격할 타겟 플레이어 지정
 	SetAttackTarget();
 	SetAttackTimer();
 
-	// 2. 현재 상태를 Idle로 전환
+	// 현재 상태를 Idle로 전환
 	CurrentState = IdleState;
 	ChangeState(CurrentState);
 
-	// 3. 공격 활성화
+	// 공격 활성화
 	bCanAttack = true;
-
-	// 4. 보스 BGM 활성화
-	AudioComponent->SetSound(BossBattleBGM);
-	AudioComponent->Play();
 }
 
 void ABoss::MoveForward(const float MoveMultiflier)
@@ -207,7 +206,6 @@ void ABoss::OnAttackStarted(TArray<UCapsuleComponent*> Collision)
 	{
 		Coll->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	}
-	//Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 void ABoss::OnAttackEnded(TArray<UCapsuleComponent*> Collision)
@@ -218,7 +216,6 @@ void ABoss::OnAttackEnded(TArray<UCapsuleComponent*> Collision)
 	{
 		Coll->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
-	//Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABoss::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
@@ -243,7 +240,6 @@ void ABoss::OnMeshOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 	int32 OtherBodyIndex)
 {
 	LOG(TEXT("Mesh Overlap End: %s"), *OtherActor->GetName());
-
 }
 
 

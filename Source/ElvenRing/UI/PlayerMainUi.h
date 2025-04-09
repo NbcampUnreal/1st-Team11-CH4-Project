@@ -89,7 +89,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* StFrameImg3;
 
-	TArray<UImage*> PortraitImages;
 
 	UFUNCTION(BlueprintCallable,Category = "PlayerMainUi")
 	void DecreaseHp(float TargetHp , float HpMax);
@@ -120,6 +119,9 @@ public:
 	void UpdateSt(float CurSt, float StMax, int32 State);
 
 	void BindToPlayer(AUnitBase* Player);
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerMainUi")
+	void SetActiveWidget(bool bShow);
 private:
 	void UpdateFrameSize(UProgressBar* ProgressBar, UProgressBar* ProgressBar2, UImage* FrameImage2, UImage* FrameImage3, float LevelHp);
 	void UpdateProgressBarSize(UProgressBar* ProgressBar, float XSize);
@@ -130,6 +132,7 @@ private:
 
 protected:
 	virtual void NativeConstruct() override;
+	
 	virtual void NativeDestruct() override;
 
 	FTimerHandle HpTimerHandle;

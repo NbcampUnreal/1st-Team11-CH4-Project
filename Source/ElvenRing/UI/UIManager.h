@@ -34,33 +34,44 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void InitUi(UWorld* WorldContext);
 
-    void ShowTitleScreen();
-    void ShowWaitingRoom();
-    void ShowInGameUi();
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowTitleScreen(UWorld* World);
 
-    void ShowPlayerMainUi();
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowWaitingRoom(UWorld* World);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void SetActiveCharactersUI(bool bActive);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowInGameUi(UWorld* World);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowPlayerMainUi(UWorld* World);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowMessage(const FString& Message, EMessageType MsgType);
 
-    void ShowBossWidget();
+    void ShowBossWidget(UWorld* World);
 
     void ClearAllWidgets();
+
+    void DestroyMonsterHpWidget(AActor* Monster);
 
     void RegisterMessageWidgets();
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     UPlayerMainUi* GetPlayerMainUi() const { return PlayerMainUiWedget; };
     UFUNCTION(BlueprintCallable, Category = "UI")
-    void BindPlayerMainUi(AUnitBase* Unit);
+    void BindPlayerMainUi(UWorld* World, AUnitBase* Unit);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     UBossWidget* GetBossWidgetUi() const { return BossWidget; };
     UFUNCTION(BlueprintCallable, Category = "UI")
-    void BindBossWidgetUi(AUnitBase* Unit);
+    void BindBossWidgetUi(UWorld* World, AUnitBase* Unit);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
-    void CreateBindNormalMonsterWidgetUi(AUnitBase* Unit);
+    void CreateBindNormalMonsterWidgetUi(UWorld* World, AUnitBase* Unit);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     UMessageWidgetBase* GetMessageWidgetSafe(EMessageType MsgType) const;
@@ -86,6 +97,9 @@ protected:
 
     UPROPERTY()
     UMonsterWidget* MonsterWidget;
+
+    UPROPERTY()
+    TMap<AActor*, UMonsterWidget*> MonsterHpWidgets;
 
     UPROPERTY()
     UBossWidget* BossWidget;
@@ -115,7 +129,7 @@ protected:
     TSubclassOf<UBossWidget> BossWidgetClass;
   
 private:
-    UWorld* CachedWorld = nullptr;
+   // UWorld* CachedWorld = nullptr;
     TArray<UMessageWidgetBase*> MessageWidgets; 
 private:
 

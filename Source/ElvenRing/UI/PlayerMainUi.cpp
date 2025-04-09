@@ -9,14 +9,13 @@
 void UPlayerMainUi::NativeConstruct()
 {
 	Super::NativeConstruct();
-
-	//PortraitImages.Add(HpFrameImg2);
-	//PortraitImages.Add(HpFrameImg3);
-
-	//Character->OnHealthChanged.AddDynamic(this,&UPlayerMainUi::DecreaseMp);
-	//Character->OnHealthChanged.AddDynamic(this,&UPlayerMainUi::DecreaseMp);
-	//Character->OnHealthChanged.AddDynamic(this,&UPlayerMainUi::DecreaseSt);
-	//Character->OnHealthChanged.AddDynamic(this,&UPlayerMainUi::LevelUp);
+}
+void UPlayerMainUi::SetActiveWidget(bool bShow)
+{
+	if (bShow)
+		SetVisibility(ESlateVisibility::Visible);
+	else
+		SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UPlayerMainUi::DecreaseHp(float TargetHp, float HpMax)

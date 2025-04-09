@@ -26,6 +26,9 @@ class ELVENRING_API ABossTenebris : public ABoss
 
 public:
 	ABossTenebris();
+
+	virtual void OnSpawnSequenceEnded() override;
+	virtual void OnPhaseSequenceEnded() override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -61,8 +64,6 @@ private:
 	void RushAttack(); // 없어도 될 것 같은 느낌. 플레이어를 불쾌하게 만들 가능성 존재.
 	void WalkingFront();
 
-	void SetSpecialAttackTimer(int8 index);
-
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
 	FName BressCollisionSocketName;
@@ -83,6 +84,9 @@ protected:
 	UCapsuleComponent* GrabAttackCollision;
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|BGM")
+	USoundBase* BossBattleBGM2;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> BressAfterMoveFrontAnim;
 	
@@ -137,8 +141,13 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
 	float SpecialAttackInterval;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Sequence")
+	TSubclassOf<ANormalLevelSequenceActor> LevelSequence;
+
+	UPROPERTY(EditInstanceOnly, Category = "Boss|Sequence")
+	EPhaseType PhaseType;
+
 	FTimerHandle SpecialAttackTimer;
 
 	ETenebrisSpecialAttackType AttackType;
-	EPhaseType PhaseType;
 };

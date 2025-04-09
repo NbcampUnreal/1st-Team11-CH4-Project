@@ -14,6 +14,7 @@ AMonsterZone::AMonsterZone()
 	PrimaryActorTick.bCanEverTick = false;
 
 	MonsterCount = 0;
+	SetReplicates(false);
 }
 
 void AMonsterZone::OnMonsterDeath(AUnitBase* Unit)

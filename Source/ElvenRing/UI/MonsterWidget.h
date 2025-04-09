@@ -53,6 +53,11 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* HpFrameImg;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
+	FVector2D UIScale  = FVector2D(1.0f, 1.0f);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
+	FVector2D	UIPos = FVector2D::ZeroVector;
+
 	UFUNCTION(BlueprintCallable, Category =  "UI")
 	void SetUiSize(FVector2D  Scale, FVector2D Pos);
 	UFUNCTION(BlueprintCallable, Category = "UI")
@@ -64,10 +69,17 @@ public:
 	void UpdateHp(float TargetHp, float HpMax, int32 State);
 
 	void BindToMonster(AUnitBase* Monster);
+
+	UFUNCTION(BlueprintCallable, Category = "Ui")
+	void SetActiveWidget(bool bShow);
+protected:
+	virtual void NativeConstruct() override;
+
+	virtual void NativeDestruct() override;
+	
 private:
 	FTimerHandle HpTimerHandle;
 	FTimerHandle HpTimerDelayHandle;
 
 	void UpdateProgressBar(FMRamdaElement& FElement);
-
 };
