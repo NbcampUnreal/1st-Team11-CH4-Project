@@ -111,5 +111,28 @@ void UBossWidget::UpdateProgressBar(FMRamdaElement& FElement)
 void UBossWidget::BindToBoss(AUnitBase* Boss)
 {
 	if (Boss)
+	{
 		Boss->OnHpChanged.AddDynamic(this, &UBossWidget::UpdateHp);
+		//NameText->SetText(FText::FromString(Name));
+	}
+}
+void UBossWidget::SetName(FString Name)
+{
+	NameText->SetText(FText::FromString(Name));
+}
+void UBossWidget::SetActiveWidget(bool bShow)
+{
+	if (bShow)
+		SetVisibility(ESlateVisibility::Visible);
+	else
+		SetVisibility(ESlateVisibility::Collapsed);
+}
+void UBossWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
 }

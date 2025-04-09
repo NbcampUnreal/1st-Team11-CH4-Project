@@ -104,6 +104,26 @@ void UMonsterWidget::BindToMonster(AUnitBase* Monster)
 	}
 }
 
+void UMonsterWidget::SetActiveWidget(bool bShow)
+{
+	if (bShow)
+		SetVisibility(ESlateVisibility::Visible);
+	else
+		SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UMonsterWidget::NativeConstruct()
+{
+	SetUiSize(UIScale,UIPos);
+}
+void UMonsterWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	if (GetWorld())
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+}
+
 void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 {
 	if (FElement.DelayTime <= 0.f) //람다 DelayTime이 0이면 진입을 못한다.

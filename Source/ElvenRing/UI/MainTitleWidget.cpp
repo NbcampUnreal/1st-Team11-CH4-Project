@@ -4,6 +4,7 @@
 #include "MainTitleWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Kismet/GameplayStatics.h"
 
 void UMainTitleWidget::NativeConstruct()
 {
@@ -33,6 +34,8 @@ void UMainTitleWidget::OnClicked()
 	UE_LOG(LogTemp, Warning, TEXT("Click StartBTN"));
     GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
     GetWorld()->GetTimerManager().SetTimer(AlphaPingpongTimerHandle, this, &UMainTitleWidget::PingpongText, 0.05f, true);
+
+    UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"));
 }
 void UMainTitleWidget::OnPressed()
 {
