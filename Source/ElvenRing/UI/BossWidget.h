@@ -46,6 +46,13 @@ public:
 	UImage* HpFrameImg3;
 
 	void BindToBoss(AUnitBase* Boss);
+
+	UFUNCTION(BlueprintCallable, Category = "Ui")
+	void SetActiveWidget(bool bShow);
+protected:
+
+	virtual void NativeDestruct() override;
+
 private:
 	void UpdateProgressBar(FMRamdaElement& FElement);
 

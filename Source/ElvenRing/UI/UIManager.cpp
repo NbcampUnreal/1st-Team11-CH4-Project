@@ -15,6 +15,7 @@
 #include "MonsterWidget.h"
 #include "MessageWidgetBase.h"
 #include "ElvenRing/Character/UnitBase.h"
+#include "Components/EditableTextBox.h"
 
 UUIManager::UUIManager()
 {
@@ -63,66 +64,119 @@ UUIManager::UUIManager()
         UE_LOG(LogTemp, Warning, TEXT("BossWidgetClass: %s"), *GetNameSafe(BossWidgetClass));
 }
 
-void UUIManager::InitUi(UWorld* WorldContext)
+void UUIManager::InitUi(UWorld* World)
 {
-    CachedWorld = WorldContext;
+
     if (TitleWidgetClass) //  UE_LOG(LogTemp, Warning, TEXT("UIManager instance class: %s"), *GetNameSafe(UIManager->GetClass()));
-        TitleWidget = CreateWidget<UMainTitleWidget>(CachedWorld, TitleWidgetClass);
+        TitleWidget = CreateWidget<UMainTitleWidget>(World, TitleWidgetClass);
 
     if (WaitingRoomWidgetClass)
-        WaitingRoomWidget = CreateWidget<UWaitingRoomWidget>(CachedWorld, WaitingRoomWidgetClass);
+        WaitingRoomWidget = CreateWidget<UWaitingRoomWidget>(World, WaitingRoomWidgetClass);
 
     if (InGameWidgetClass)
-        InGameWidget = CreateWidget<UInGameWidget>(CachedWorld, InGameWidgetClass);
+        InGameWidget = CreateWidget<UInGameWidget>(World, InGameWidgetClass);
 
     if (SystemMessageWidgetClass)
-        SystemMessageWidget = CreateWidget<UMessageWidget>(CachedWorld, SystemMessageWidgetClass);
+        SystemMessageWidget = CreateWidget<UMessageWidget>(World, SystemMessageWidgetClass);
 
     if (BattleMessageWidgetClass)
-        BattleMessageWidget = CreateWidget<UBattleMessageWidget>(CachedWorld, BattleMessageWidgetClass);
+        BattleMessageWidget = CreateWidget<UBattleMessageWidget>(World, BattleMessageWidgetClass);
 
     if (PlayerMainUiClass)
-        PlayerMainUiWedget = CreateWidget<UPlayerMainUi>(CachedWorld, PlayerMainUiClass);
+        PlayerMainUiWedget = CreateWidget<UPlayerMainUi>(World, PlayerMainUiClass);
 
     if (BossWidgetClass)
-        BossWidget = CreateWidget<UBossWidget>(CachedWorld, BossWidgetClass);
+        BossWidget = CreateWidget<UBossWidget>(World, BossWidgetClass);
 
     RegisterMessageWidgets();
 }
 
-void UUIManager::ShowTitleScreen()
+void UUIManager::ShowTitleScreen(UWorld* World)
 {
-    if (!TitleWidget && TitleWidgetClass && CachedWorld)
-        TitleWidget = CreateWidget<UMainTitleWidget>(CachedWorld, TitleWidgetClass);
+    if (!TitleWidget && TitleWidgetClass && World)
+        TitleWidget = CreateWidget<UMainTitleWidget>(World, TitleWidgetClass);
 
     if (TitleWidget)
+    {
         TitleWidget->AddToViewport();
+
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
+        {
+            PC->bShowMouseCursor = true;
+
+            FInputModeUIOnly InputMode;
+           // InputMode.SetWidgetToFocus(TitleWidget->TakeWidget());
+            InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+            PC->SetInputMode(InputMode);
+        }
+    }
 }
 
-void UUIManager::ShowWaitingRoom()
+void UUIManager::ShowWaitingRoom(UWorld* World)
 {
-    if (!WaitingRoomWidget && WaitingRoomWidgetClass && CachedWorld)
-        WaitingRoomWidget = CreateWidget<UWaitingRoomWidget>(CachedWorld, WaitingRoomWidgetClass);
+    if (!WaitingRoomWidget && WaitingRoomWidgetClass && World)
+        WaitingRoomWidget = CreateWidget<UWaitingRoomWidget>(World, WaitingRoomWidgetClass);
 
     if (WaitingRoomWidget)
+    {
         WaitingRoomWidget->AddToViewport();
-}
 
-void UUIManager::ShowInGameUi()
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
+        {
+            PC->bShowMouseCursor = true;
+
+            FInputModeUIOnly InputMode;
+            
+            InputMode.SetWidgetToFocus(WaitingRoomWidget->NicknameTextBox->TakeWidget());
+            InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+
+            PC->SetInputMode(InputMode);
+        }
+    }
+}
+void UUIManager::SetActiveCharactersUI(bool bActive)
 {
-    if (!InGameWidget && InGameWidgetClass && CachedWorld)
-        InGameWidget = CreateWidget<UInGameWidget>(CachedWorld, InGameWidgetClass);
+    if (PlayerMainUiWedget)
+        PlayerMainUiWedget->SetActiveWidget(bActive);
+
+    if (BossWidget)
+        BossWidget->SetActiveWidget(bActive);
+   
+    for (const TPair<AActor*, UMonsterWidget*>& Pair : MonsterHpWidgets)
+        if (UMonsterWidget* Widget = Pair.Value)
+            Widget->SetActiveWidget(bActive);
+
+    /* for (UMessageWidgetBase* Widget : MessageWidgets)
+    {
+        if (Widget)
+            Widget->SetActiveWidget(bActive);
+    }*/
+}
+void UUIManager::ShowInGameUi(UWorld* World)
+{
+    if (!InGameWidget && InGameWidgetClass && World)
+        InGameWidget = CreateWidget<UInGameWidget>(World, InGameWidgetClass);
 
     if (InGameWidget)
         InGameWidget->AddToViewport();
 }
-void UUIManager::ShowPlayerMainUi()
+void UUIManager::ShowPlayerMainUi(UWorld* World)
 {
-    if (!PlayerMainUiWedget && PlayerMainUiClass && CachedWorld)
-        PlayerMainUiWedget = CreateWidget<UPlayerMainUi>(CachedWorld, PlayerMainUiClass);
+    if (!PlayerMainUiWedget && PlayerMainUiClass && World)
+        PlayerMainUiWedget = CreateWidget<UPlayerMainUi>(World, PlayerMainUiClass);
 
     if (PlayerMainUiWedget)
         PlayerMainUiWedget->AddToViewport();
+
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
+    {
+        PC->bShowMouseCursor = false;
+        // 게임 전용 입력 모드로 전환
+        FInputModeGameOnly InputMode;
+        PC->SetInputMode(InputMode);
+    }
+
 }
 void UUIManager::ShowMessage(const FString& Message, EMessageType MsgType)
 {
@@ -134,10 +188,10 @@ void UUIManager::ShowMessage(const FString& Message, EMessageType MsgType)
    }
 }
 
-void UUIManager::ShowBossWidget()
+void UUIManager::ShowBossWidget(UWorld* World)
 {
-    if (!BossWidget && BossWidgetClass && CachedWorld)
-        BossWidget = CreateWidget<UBossWidget>(CachedWorld, BossWidgetClass);
+    if (!BossWidget && BossWidgetClass && World)
+        BossWidget = CreateWidget<UBossWidget>(World, BossWidgetClass);
 
     if (BossWidget)
         BossWidget->AddToViewport();
@@ -163,45 +217,60 @@ void UUIManager::ClearAllWidgets()
     PlayerMainUiWedget = nullptr;
     MonsterWidget = nullptr;
     BossWidget = nullptr;
-}
 
+    MonsterHpWidgets.Empty(); 
+}
+void UUIManager::DestroyMonsterHpWidget(AActor* Monster)
+{
+    if (MonsterHpWidgets.Contains(Monster))
+    {
+        UMonsterWidget* Widget = MonsterHpWidgets[Monster];
+        if (Widget)
+            Widget->RemoveFromParent();
+
+        MonsterHpWidgets.Remove(Monster);
+    }
+}
 void UUIManager::RegisterMessageWidgets()
 {
     MessageWidgets.Add( SystemMessageWidget);
     MessageWidgets.Add( BattleMessageWidget);
 }
 
-void UUIManager::BindPlayerMainUi(AUnitBase* Unit)
+void UUIManager::BindPlayerMainUi(UWorld* World, AUnitBase* Unit)
 {
-    ShowPlayerMainUi();
+    ShowPlayerMainUi(World);
     if(GetPlayerMainUi())
          GetPlayerMainUi()->BindToPlayer(Unit);
     else
         UE_LOG(LogTemp, Warning, TEXT("Error!! BindPlayerMainUi"));
 }
 
-void UUIManager::BindBossWidgetUi(AUnitBase* Unit)
+void UUIManager::BindBossWidgetUi(UWorld* World, AUnitBase* Unit)
 {
-    ShowBossWidget();
+    ShowBossWidget(World);
     if(BossWidget)
         BossWidget->BindToBoss(Unit);
     else
         UE_LOG(LogTemp, Warning, TEXT("Error!! BindBossWidgetUi"));
 }
 
-void UUIManager::CreateBindNormalMonsterWidgetUi(AUnitBase* Unit)
+void UUIManager::CreateBindNormalMonsterWidgetUi(UWorld* World,AUnitBase* Unit)
 {
     UMonsterWidget* MonsterUiWidget = nullptr;
-    if (MonsterWidgetClass && CachedWorld)
+    if (MonsterWidgetClass && World)
     {
-        MonsterUiWidget = CreateWidget<UMonsterWidget>(CachedWorld, MonsterWidgetClass);
-        if(MonsterUiWidget)
+        MonsterUiWidget = CreateWidget<UMonsterWidget>(World, MonsterWidgetClass);
+        if (MonsterUiWidget)
+        {
             MonsterUiWidget->BindToMonster(Unit);
+            MonsterHpWidgets.Add(Unit,MonsterUiWidget);
+        }
         else
             UE_LOG(LogTemp, Warning, TEXT("Error!! CreateBindNormalMonsterWidgetUi"));
     }
     else
-        UE_LOG(LogTemp, Warning, TEXT("Error!! CreateBindNormalMonsterWidgetUi MonsterWidgetClass CachedWorld"));
+        UE_LOG(LogTemp, Warning, TEXT("Error!! CreateBindNormalMonsterWidgetUi MonsterWidgetClass World"));
 }
 
 UMessageWidgetBase* UUIManager::GetMessageWidgetSafe(EMessageType MsgType) const
@@ -213,6 +282,5 @@ UMessageWidgetBase* UUIManager::GetMessageWidgetSafe(EMessageType MsgType) const
     }
     return nullptr;
 }
-
 
 

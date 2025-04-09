@@ -113,3 +113,19 @@ void UBossWidget::BindToBoss(AUnitBase* Boss)
 	if (Boss)
 		Boss->OnHpChanged.AddDynamic(this, &UBossWidget::UpdateHp);
 }
+void UBossWidget::SetActiveWidget(bool bShow)
+{
+	if (bShow)
+		SetVisibility(ESlateVisibility::Visible);
+	else
+		SetVisibility(ESlateVisibility::Collapsed);
+}
+void UBossWidget::NativeDestruct()
+{
+	Super::NativeDestruct();
+
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+}
