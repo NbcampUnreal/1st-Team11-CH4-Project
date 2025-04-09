@@ -3,6 +3,8 @@
 
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
 
+#include "ElvenRing/ElvenRing.h"
+
 UGrux_AnimInstance::UGrux_AnimInstance()
 {
 	IsAttacking = false;
@@ -12,15 +14,27 @@ UGrux_AnimInstance::UGrux_AnimInstance()
 }
 
 
-
 void UGrux_AnimInstance::AttackAnim()
 {
-	IsAttacking = true;
+	if (IsAttacking == false)
+	{
+		IsAttacking = true;
+	}
 }
 
 void UGrux_AnimInstance::HitAnim()
 {
-	IsHit = true;
+	if (IsHit == false)
+	{
+		IsHit = true;
+		UE_LOG(LogTemp, Error, TEXT("또 감"));
+
+	}
+	else if (IsHit == true)
+	{
+		IsHit = false;
+		IsHit = true;
+	}
 }
 
 void UGrux_AnimInstance::DeathAnim()
@@ -31,5 +45,5 @@ void UGrux_AnimInstance::DeathAnim()
 // void UGrux_AnimInstance::AnimNotify_ChangeBool()
 // {
 // 	IsHit = false;
-// 	UE_LOG(LogTemp, Warning, TEXT("UGrux_AnimInstance::AnimNotify_ChangeBool"));
+// 	UE_LOG(LogTemp, Error, TEXT("다시 돌아옴"));
 // }
