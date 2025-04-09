@@ -4,6 +4,8 @@
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/Boss.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/UIManager.h"
 
 
 void ANormalLevelSequenceActor::BeginPlay()
@@ -54,7 +56,8 @@ void ANormalLevelSequenceActor::OnSequenceEnded()
 		OnPhaseSequenceEnded();
 		break;
 	case ESequenceType::Dead:
-		LOG(TEXT("Dead"));
+		UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+		Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
 		break;
 	}
 }
