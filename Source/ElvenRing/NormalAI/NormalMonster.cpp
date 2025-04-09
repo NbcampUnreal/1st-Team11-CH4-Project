@@ -6,6 +6,8 @@
 #include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
 #include "ElvenRing//UI/MonsterWidget.h"//ksw
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/UIManager.h"
 
 #include "Components/WidgetComponent.h" //ksw
 #include "Components/CapsuleComponent.h"
@@ -46,12 +48,6 @@ void ANormalMonster::BeginPlay()
 {
 	Super::BeginPlay();
 	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
-	UMonsterWidget* Uiwedget = Cast<UMonsterWidget>(HPWidgetComponent->GetUserWidgetObject()); //ksw
-	if (Uiwedget) //순서중요! AttachDelegateToWidget() > SetWidget()로 hp위젯을 먼저 얻어와야함.
-	{
-		Uiwedget->SetUiSize(FVector2D(0.8f), FVector2D(0.f, 0.5f)); //ksw
-	}
-
 	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
 }
 
@@ -141,6 +137,8 @@ void ANormalMonster::OnDeath()
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	bIsDie = true;
 	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
+	UElvenringGameInstance* GameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
+	GameInstance->GetUIManager()->DestroyMonsterHpWidget(this);
 	HPWidgetComponent->DestroyComponent();
 	GetController()->UnPossess();
 
