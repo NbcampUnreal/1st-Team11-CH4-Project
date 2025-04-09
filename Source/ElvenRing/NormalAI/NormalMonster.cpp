@@ -80,20 +80,33 @@ void ANormalMonster::Attack(AActor* Target)
 {
 	if (Target)
 	{
+		//애니메이션 실행
 		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 		Grux_Anim->AttackAnim();
+		
+		FVector MonsterLocation = GetActorLocation();
+		FVector TargetLocation = Target->GetActorLocation();
+		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
 
-		UE_LOG(LogTemp, Warning, TEXT("몬스터가 %f 데미지를 적용"), AttackPower);
-		if (!bisHit)
+		FVector MonsterForward = GetActorForwardVector();
+		float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
+		float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
+
+		float Distance = FVector::Dist(MonsterLocation, TargetLocation);
+
+		if (Distance <= 250.0f && AngleDegrees <= 60.0f) // 120도 범위 (60도 좌우)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("공격 성공! 대상이 범위 내에 있음."));
 			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("공격 실패! 대상이 범위 밖에 있음."));
 		}
 	}
 }
 
-void ANormalMonster::UpdateAnim()
-{
-}
+
 
 void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 {
@@ -104,13 +117,6 @@ void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
 	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
 }
-
-void ANormalMonster::PlayDamageAnim()
-{
-	Super::PlayDamageAnim();
-	GetWorldTimerManager().SetTimer(StayTimer, this, &ANormalMonster::UpdateAnim, 0.5f, false); // 0.5초마다 실행
-}
-
 
 void ANormalMonster::PlayDeathAnim()
 {

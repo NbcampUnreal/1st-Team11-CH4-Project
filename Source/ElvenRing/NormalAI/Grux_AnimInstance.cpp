@@ -16,21 +16,11 @@ UGrux_AnimInstance::UGrux_AnimInstance()
 void UGrux_AnimInstance::AttackAnim()
 {
 	IsAttacking = true;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-	{
-		IsAttacking = false;
-		UE_LOG(LogTemp, Warning, TEXT("IsAttacking 초기화 진행"));
-	}, 0.8f, false);
 }
 
 void UGrux_AnimInstance::HitAnim()
 {
 	IsHit = true;
-	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-	// {
-	// 	IsHit = false;
-	// 	UE_LOG(LogTemp, Warning, TEXT("IsHit 초기화 진행"));
-	// }, 0.5f, false);
 }
 
 void UGrux_AnimInstance::DeathAnim()
