@@ -42,6 +42,8 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	bool Invincibility = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MaxHealth;

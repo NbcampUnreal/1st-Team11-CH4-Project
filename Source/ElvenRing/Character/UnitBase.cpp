@@ -84,6 +84,7 @@ void AUnitBase::OnHealthChanged()
 
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (Invincibility) return 0;
 	float HitDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage > 0 && !bIsDie)
 	{

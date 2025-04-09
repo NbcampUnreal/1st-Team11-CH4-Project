@@ -368,6 +368,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     {
         return;
     }
+    Invincibility = true;
     ResetCombo();
     FVector DodgeDirection = GetLastMovementInputVector();
     if (DodgeDirection.IsNearlyZero())
@@ -410,6 +411,7 @@ void AElvenRingCharacter::Interact(const FInputActionValue& InputActionValue)
 void AElvenRingCharacter::StopDodge()
 {
     GetWorld()->GetTimerManager().ClearTimer(DodgeTimerHandle);
+    Invincibility = false;
 }
 
 void AElvenRingCharacter::DodgeCollDown()
