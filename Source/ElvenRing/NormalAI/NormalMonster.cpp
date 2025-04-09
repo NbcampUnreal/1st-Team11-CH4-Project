@@ -2,13 +2,13 @@
 
 
 #include "ElvenRing/NormalAI/NormalMonster.h"
-
-#include "Components/CapsuleComponent.h"
+#include "ElvenRing/NormalAI/NormalMonsterWatingTask.h"
 #include "ElvenRing/NormalAI/NormalAIController.h"
 #include "ElvenRing//Character/ElvenRingCharacter.h"
-#include "Engine/DamageEvents.h"
+#include "ElvenRing/NormalAI/Grux_AnimInstance.h"
 
-#include "ElvenRing/ElvenRing.h"
+#include "Components/CapsuleComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Engine/EngineTypes.h"
 #include "kismet/GameplayStatics.h"
@@ -47,8 +47,8 @@ void ANormalMonster::BeginPlay()
 	{
 		Uiwedget->SetUiSize(FVector2D(0.8f), FVector2D(0.f, 0.5f)); //ksw
 	}
-	
-	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.5f, true); // 0.5초마다 실행
+
+	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
 }
 
 void ANormalMonster::UpdateHPBar()
@@ -67,6 +67,9 @@ float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+
+	Grux_Anim->IsHit = true;
 	return Damage;
 }
 
@@ -76,59 +79,49 @@ void ANormalMonster::Attack(AActor* Target)
 	if (Target)
 	{
 		UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
+		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+		Grux_Anim->IsHit = true;
 
 		UE_LOG(LogTemp, Warning, TEXT("몬스터가 %f 데미지를 적용"), AttackPower);
-
-		// 애니메이션 적용 (AnimSequence 타입)
-		UAnimSequence* AttackAnim = LoadObject<UAnimSequence>(
-			nullptr, TEXT(
-				"/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/DoublePain.DoublePain'"));
-		if (AttackAnim && GetMesh())
-		{
-			GetMesh()->PlayAnimation(AttackAnim, false);
-		}
 	}
 }
 
+void ANormalMonster::UpdateAnim()
+{
+}
+
+void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
+{
+	AAIController* AIController = Cast<AAIController>(GetController());
+	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
+
+	BlackboardComp->SetValueAsBool(TEXT("PlayerDetectedKey"), true);
+	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
+	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
+}
 
 void ANormalMonster::PlayDamageAnim()
 {
 	Super::PlayDamageAnim();
-
-	// 애니메이션 로드
-	UAnimSequence* DamageAnim = LoadObject<UAnimSequence>(
-		nullptr, TEXT(
-			"/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/HitReact_Front.HitReact_Front'"));
-
-	if (DamageAnim && GetMesh())
-	{
-		GetMesh()->PlayAnimation(DamageAnim, false); // 애니메이션 실행
-	}
+	GetWorldTimerManager().SetTimer(StayTimer, this, &ANormalMonster::UpdateAnim, 0.5f, false); // 0.5초마다 실행
 }
+
 
 void ANormalMonster::PlayDeathAnim()
 {
 	Super::PlayDeathAnim();
-
-	// 애니메이션 로드
-	UAnimSequence* DeathAnim = LoadObject<UAnimSequence>(
-		nullptr, TEXT(
-			"/Script/Engine.AnimSequence'/Game/ParagonGrux/Characters/Heroes/Grux/Animations/Death_B.Death_B'"));
-
-	if (DeathAnim && GetMesh())
-	{
-		GetMesh()->PlayAnimation(DeathAnim, false); // 애니메이션 실행
-	}
 }
 
 void ANormalMonster::OnDeath()
 {
 	Super::OnDeath();
 	PlayDeathAnim();
-	if (GetController())
-	{
-		GetController()->UnPossess();
-	}
+	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	Grux_Anim->IsDie = true;
+
+
+	GetController()->UnPossess();
+
 
 	// 콜리전 제거
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -142,20 +135,3 @@ void ANormalMonster::SetWidget(UUserWidget* Widget)
 {
 	HPWidgetComponent->SetWidget(Widget);
 }
-
-
-// void ANormalMonster::Tick(float DeltaTime)//ksw
-// {
-// 	Super::Tick(DeltaTime);
-// 	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
-// 	{
-// 		FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
-// 		FVector MyLoc = HPWidgetComponent->GetComponentLocation();
-//
-// 		FRotator LookRot = (CamLoc - MyLoc).Rotation();
-// 		// LookRot.Pitch = 0.f;
-// 		//LookRot.Roll = 0.f; // 수직 회전 제거해서 평면 유지
-//
-// 		HPWidgetComponent->SetWorldRotation(LookRot);
-// 	}
-// }
