@@ -31,7 +31,7 @@ public:
 	void SetAllPlayerHidden();
 	void SetAllPlayerUnhidden();
 	void OnSpawnSequenceEnded();
-	
+	void OnPhaseSequenceEnded();
 
 private:
 	UPROPERTY(EditAnywhere, Category = "Boss")

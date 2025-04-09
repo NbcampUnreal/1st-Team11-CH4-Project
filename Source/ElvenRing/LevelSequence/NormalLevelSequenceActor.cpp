@@ -4,6 +4,8 @@
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/Boss.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/UIManager.h"
 
 
 void ANormalLevelSequenceActor::BeginPlay()
@@ -51,11 +53,11 @@ void ANormalLevelSequenceActor::OnSequenceEnded()
 		GetWorldTimerManager().SetTimer(TimerHandle, this, &ANormalLevelSequenceActor::OnSpawnSequenceEnded, SpawnSequenceDelegateDelay, false);
 		break;
 	case ESequenceType::Phase:
-			break;
-		// 시퀀스 끝난 후에는 보스가 존재하지 않으므로 시퀀스쪽에서 처리
-		// 물리침 UI와 Sound 출력
+		OnPhaseSequenceEnded();
+		break;
 	case ESequenceType::Dead:
-		LOG(TEXT("Dead"));
+		UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+		Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
 		break;
 	}
 }
@@ -97,6 +99,18 @@ void ANormalLevelSequenceActor::OnSpawnSequenceEnded()
 		if (IsValid(Boss))
 		{
 			Boss->OnSpawnSequenceEnded();
+			return;
+		}
+	}
+}
+
+void ANormalLevelSequenceActor::OnPhaseSequenceEnded()
+{
+	for (ABoss* Boss : TActorRange<ABoss>(GetWorld()))
+	{
+		if (IsValid(Boss))
+		{
+			Boss->OnPhaseSequenceEnded();
 			return;
 		}
 	}

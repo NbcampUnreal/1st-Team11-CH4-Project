@@ -1,9 +1,11 @@
 #include "BossTenebris.h"
 
+#include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
 #include "ElvenRing/Boss/BossPattern/BossSpecialPatternComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ABossTenebris::ABossTenebris()
 {
@@ -67,7 +69,6 @@ void ABossTenebris::BeginPlay()
 
 void ABossTenebris::OnSpawnSequenceEnded()
 {
-	LOG(TEXT("Begin"));
 	PlayAnimMontage(BressAfterMoveFrontAnim);
 	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
 	{
@@ -76,10 +77,22 @@ void ABossTenebris::OnSpawnSequenceEnded()
 	), SpecialAttackInterval, false);
 }
 
+void ABossTenebris::OnPhaseSequenceEnded()
+{
+	Super::OnPhaseSequenceEnded();
+	CurHealth = MaxHealth/2;
+	PhaseType = EPhaseType::Two;
+	SetAttackTarget();
+	PlayAnimMontage(FlyingRightFireBallAttackAnim);
+
+	AudioComponent->SetSound(BossBattleBGM2);
+	AudioComponent->Play();	
+}
+
 
 
 float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
-	AActor* DamageCauser)
+                                AActor* DamageCauser)
 {
 	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
@@ -91,7 +104,7 @@ float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		{
 			LOG(TEXT("Phase Two Begin"));
 			Destroy();
-			// 다음 레벨 로드
+			UGameplayStatics::OpenLevel(this, FName("L_Tenebris2"));
 		}
 	}
 

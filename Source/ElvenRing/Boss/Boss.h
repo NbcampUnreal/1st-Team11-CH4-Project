@@ -28,6 +28,9 @@ public:
 	/** Spawn 타입의 LevelSequence가 끝났을 때 호출하는 함수 */ 
 	virtual void OnSpawnSequenceEnded() PURE_VIRTUAL(ABoss::OnSpawnSequenceEnded, );
 
+	/** Phase 타입의 LevelSequence가 끝났을 때 호출하는 함수 */
+	virtual void OnPhaseSequenceEnded();
+
 	void ChangeState(IBossStateInterface* State);
 
 	/** 공격 시 카메라를 원하는 강도로 쉐이킹 하는 함수 */
@@ -142,6 +145,9 @@ public:
 	IBossStateInterface* CurrentState, *IdleState, *MoveState, *AttackState, *SpecialAttackState;
 
 protected:
+	UPROPERTY()
+	UAudioComponent* AudioComponent;
+	
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	FName CollisionSocketName;
 	
@@ -152,9 +158,6 @@ private:
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle GetAttackTargetTimerHandle;
 	FTimerHandle AnimationMontageHandle;
-
-	UPROPERTY()
-	UAudioComponent* AudioComponent;
 
 	bool bIsAttacking;
 };

@@ -28,6 +28,7 @@ public:
 	ABossTenebris();
 
 	virtual void OnSpawnSequenceEnded() override;
+	virtual void OnPhaseSequenceEnded() override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -83,6 +84,9 @@ protected:
 	UCapsuleComponent* GrabAttackCollision;
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|BGM")
+	USoundBase* BossBattleBGM2;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> BressAfterMoveFrontAnim;
 	
