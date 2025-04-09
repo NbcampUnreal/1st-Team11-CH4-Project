@@ -1,4 +1,6 @@
 #include "BossTenebris.h"
+
+#include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
@@ -67,7 +69,6 @@ void ABossTenebris::BeginPlay()
 
 void ABossTenebris::OnSpawnSequenceEnded()
 {
-	LOG(TEXT("Begin"));
 	PlayAnimMontage(BressAfterMoveFrontAnim);
 	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
 	{
@@ -79,10 +80,15 @@ void ABossTenebris::OnSpawnSequenceEnded()
 void ABossTenebris::OnPhaseSequenceEnded()
 {
 	Super::OnPhaseSequenceEnded();
-	LOG(TEXT("Begin"));
 	CurHealth = MaxHealth/2;
 	PhaseType = EPhaseType::Two;
+	SetAttackTarget();
+	PlayAnimMontage(FlyingRightFireBallAttackAnim);
+
+	AudioComponent->SetSound(BossBattleBGM2);
+	AudioComponent->Play();	
 }
+
 
 
 float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,

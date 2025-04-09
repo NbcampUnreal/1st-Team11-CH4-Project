@@ -84,6 +84,9 @@ protected:
 	UCapsuleComponent* GrabAttackCollision;
 
 private:
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|BGM")
+	USoundBase* BossBattleBGM2;
+	
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<class UAnimMontage> BressAfterMoveFrontAnim;
 	

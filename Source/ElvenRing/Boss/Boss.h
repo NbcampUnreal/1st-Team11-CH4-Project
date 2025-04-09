@@ -145,6 +145,9 @@ public:
 	IBossStateInterface* CurrentState, *IdleState, *MoveState, *AttackState, *SpecialAttackState;
 
 protected:
+	UPROPERTY()
+	UAudioComponent* AudioComponent;
+	
 	UPROPERTY(EditAnywhere, Category = "Boss|Stat")
 	FName CollisionSocketName;
 	
@@ -155,9 +158,6 @@ private:
 	FTimerHandle AttackTimerHandle;
 	FTimerHandle GetAttackTargetTimerHandle;
 	FTimerHandle AnimationMontageHandle;
-
-	UPROPERTY()
-	UAudioComponent* AudioComponent;
 
 	bool bIsAttacking;
 };
