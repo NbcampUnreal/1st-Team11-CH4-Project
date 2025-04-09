@@ -24,8 +24,6 @@ void ANormalAIController::BeginPlay()
 	}
 }
 
-
-
 void ANormalAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);

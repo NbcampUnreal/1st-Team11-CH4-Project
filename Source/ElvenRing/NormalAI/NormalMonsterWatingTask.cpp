@@ -20,7 +20,7 @@ EBTNodeResult::Type UNormalMonsterWatingTask::ExecuteTask(UBehaviorTreeComponent
 	ANormalMonster* NormalMonster = Cast<ANormalMonster>(AIController->GetPawn());
 	if (!NormalMonster)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("NormalMonster가 nullptr입니다!"));
+		UE_LOG(LogTemp, Warning, TEXT("NormalMonster가 nullptr"));
 		return EBTNodeResult::Failed;
 	}
 
@@ -28,7 +28,7 @@ EBTNodeResult::Type UNormalMonsterWatingTask::ExecuteTask(UBehaviorTreeComponent
 	
 	if (!BlackboardComp)
 	{
-		UE_LOG(LogTemp, Error, TEXT("BlackboardComp가 nullptr입니다!"));
+		UE_LOG(LogTemp, Error, TEXT("BlackboardComp가 nullptr"));
 		return EBTNodeResult::Failed;
 	}
 	return EBTNodeResult::InProgress; // Task 진행 중으로 설정
@@ -57,7 +57,7 @@ void UNormalMonsterWatingTask::UpdateWaiting(ANormalMonster* NormalMonster)
 
 	if (!GruxAnimInstance)
 	{
-		UE_LOG(LogTemp, Error, TEXT("GruxAnimInstance가 nullptr입니다!"));
+		UE_LOG(LogTemp, Error, TEXT("GruxAnimInstance가 nullptr"));
 		return;
 	}
 

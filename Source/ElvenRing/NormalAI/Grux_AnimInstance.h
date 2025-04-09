@@ -10,6 +10,7 @@ class ELVENRING_API UGrux_AnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 	UGrux_AnimInstance();
+
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool IsHit;
@@ -34,7 +35,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Animation")
 	void DeathAnim();
 
+	//추후 복잡한 노티파이는 c++로 작성
 	// UFUNCTION()
 	// void AnimNotify_ChangeBool();
 };
-

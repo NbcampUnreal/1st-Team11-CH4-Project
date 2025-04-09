@@ -18,7 +18,6 @@ public:
 	UNormalMonsterWatingTask();
 
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
-
-	static void UpdateWaiting(ANormalMonster* NormalMonster);
+	void UpdateWaiting(ANormalMonster* NormalMonster);
 	void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 };

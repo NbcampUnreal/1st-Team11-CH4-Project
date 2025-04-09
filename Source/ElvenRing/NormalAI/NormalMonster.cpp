@@ -2,7 +2,6 @@
 
 
 #include "ElvenRing/NormalAI/NormalMonster.h"
-#include "ElvenRing/NormalAI/NormalMonsterWatingTask.h"
 #include "ElvenRing/NormalAI/NormalAIController.h"
 #include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
@@ -22,6 +21,10 @@ ANormalMonster::ANormalMonster()
 	CurHealth = MaxHealth;
 	AttackPower = 10;
 	MoveSpeed = 10;
+
+	AttackDistance = 250.0f;
+	AttackAngle = 60.0f;
+	
 	bCanAttack = true;
 	bCanMove = true;
 	bIsHit = false;
@@ -75,7 +78,6 @@ float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
 	return Damage;
 }
 
-
 void ANormalMonster::Attack(AActor* Target)
 {
 	if (Target)
@@ -83,6 +85,7 @@ void ANormalMonster::Attack(AActor* Target)
 		//애니메이션 실행
 		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 		Grux_Anim->AttackAnim();
+
 		
 		FVector MonsterLocation = GetActorLocation();
 		FVector TargetLocation = Target->GetActorLocation();
@@ -94,19 +97,17 @@ void ANormalMonster::Attack(AActor* Target)
 
 		float Distance = FVector::Dist(MonsterLocation, TargetLocation);
 
-		if (Distance <= 250.0f && AngleDegrees <= 60.0f) // 120도 범위 (60도 좌우)
+		if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("공격 성공! 대상이 범위 내에 있음."));
+			UE_LOG(LogTemp, Warning, TEXT("공격 성공"));
 			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("공격 실패! 대상이 범위 밖에 있음."));
+			UE_LOG(LogTemp, Warning, TEXT("공격 실패"));
 		}
 	}
 }
-
-
 
 void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 {
