@@ -36,8 +36,6 @@ public:
 		PatternConditions.Add(NewConditionHandler);
 		PatternName.Add(InName);
 		++PatternCount;
-
-		LOG(TEXT("%s Pattern Added !"), *InName);
 	}
 
 

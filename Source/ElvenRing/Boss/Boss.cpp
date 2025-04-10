@@ -11,6 +11,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Effect/CameraControllerComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/BossWidget.h"
+#include "ElvenRing/UI/UIManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -79,6 +82,7 @@ void ABoss::OnDeath()
 	Super::OnDeath();
 
 	LOG(TEXT("Begin"));
+	Cast<UElvenringGameInstance>(GetGameInstance())->GetUIManager()->GetBossWidgetUi()->SetActiveWidget(false);
 	StartDeadSequence();
 	Destroy();
 }
