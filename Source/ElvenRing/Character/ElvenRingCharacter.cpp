@@ -224,7 +224,7 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                     // IA_Dodge 액션 키를 "눌렀을 때" DodgeAction() 호출
                     EnhancedInput->BindAction(
                         PlayerController->DodgeAction,
-                        ETriggerEvent::Triggered,
+                        ETriggerEvent::Completed,
                         this,
                         &AElvenRingCharacter::StartDodge
                     );
@@ -386,10 +386,8 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
 {
-    if (bIsDodging)
-    {
-        return;
-    }
+    if (GetCharacterMovement()->IsFalling()) return;
+    if (bIsDodging) return;
     bCanMove = false;;
     Invincibility = true;
     CurrentWeapon->DisableCollision();
@@ -455,6 +453,7 @@ void AElvenRingCharacter::DodgeCollDown()
 
 void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 {
+    if (!bCanMove) bCanMove = true;
     if (bDefence)
     {
         PlayDefenceAnimation(DefenceSpeed);
