@@ -67,10 +67,8 @@ float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	bisHit = true;
 	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 	Grux_Anim->HitAnim();
-	bisHit=false;
 	return Damage;
 }
 
@@ -81,7 +79,6 @@ void ANormalMonster::Attack(AActor* Target)
 		//애니메이션 실행
 		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 		Grux_Anim->AttackAnim();
-
 		
 		FVector MonsterLocation = GetActorLocation();
 		FVector TargetLocation = Target->GetActorLocation();
