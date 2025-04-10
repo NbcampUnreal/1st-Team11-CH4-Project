@@ -454,6 +454,7 @@ void AElvenRingCharacter::DodgeCollDown()
 void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 {
     if (!bCanMove) bCanMove = true;
+    ResetCombo();
     if (bDefence)
     {
         PlayDefenceAnimation(DefenceSpeed);
