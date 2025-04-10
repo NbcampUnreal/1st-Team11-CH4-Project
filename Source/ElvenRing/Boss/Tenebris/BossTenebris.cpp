@@ -29,24 +29,6 @@ ABossTenebris::ABossTenebris()
 	TailAttackCollisions.Add(TailAttackCollision2);
 }
 
-void ABossTenebris::ServerOnSpawnSequenceEnded_Implementation()
-{
-	Super::ServerOnSpawnSequenceEnded_Implementation();
-
-	if (HasAuthority())
-	{
-		PlayAnimation(BressAfterMoveFrontAnim);
-		GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
-		{
-			AttackType = ETenebrisSpecialAttackType::BressRight;
-		}
-		), SpecialAttackInterval, false);
-
-		PlaySound(BossBattleBGM);
-	}
-}
-
-
 void ABossTenebris::BeginPlay()
 {
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::GrabAttack, FString("GrabAttack"));
@@ -64,16 +46,33 @@ void ABossTenebris::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ABossTenebris::MulticastOnPhaseSequenceEnded_Implementation()
+void ABossTenebris::ServerOnSpawnSequenceEnded_Implementation()
 {
-	Super::MulticastOnPhaseSequenceEnded();
+	Super::ServerOnSpawnSequenceEnded_Implementation();
+
+	if (HasAuthority())
+	{
+		PlayAnimation(BressAfterMoveFrontAnim);
+		GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+		{
+			AttackType = ETenebrisSpecialAttackType::BressRight;
+		}
+		), SpecialAttackInterval, false);
+
+		PlaySound(BossBattleBGM);
+	}
+}
+
+void ABossTenebris::ServerOnPhaseSequenceEnded_Implementation()
+{
+	Super::ServerOnPhaseSequenceEnded_Implementation();
 
 	if (HasAuthority())
 	{
 		CurHealth = MaxHealth/2;
 		PhaseType = EPhaseType::Two;
 		SetAttackTarget();
-		PlayAnimMontage(FlyingRightFireBallAttackAnim);
+		PlayAnimation(FlyingRightFireBallAttackAnim);
 		GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
 		{
 			AttackType = ETenebrisSpecialAttackType::FlyingEarthquake;
@@ -84,8 +83,6 @@ void ABossTenebris::MulticastOnPhaseSequenceEnded_Implementation()
 	}
 }
 
-
-
 float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                 AActor* DamageCauser)
 {
@@ -95,10 +92,11 @@ float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 		
 	if (CurHealth < MaxHealth/2)
 	{
-		if (PhaseType == EPhaseType::One)
+		if (PhaseType == EPhaseType::One && HasAuthority())
 		{
 			LOG(TEXT("Phase Two Begin"));
-			UGameplayStatics::OpenLevel(this, FName("L_Tenebris2"));
+			PhaseType = EPhaseType::Two;
+			GetWorld()->ServerTravel("/Game/FantasyCombatArena/Levels/L_Tenebris2?listen");
 		}
 	}
 

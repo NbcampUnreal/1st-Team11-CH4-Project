@@ -43,9 +43,9 @@ void ANormalLevelSequenceActor::StartSequence()
 void ANormalLevelSequenceActor::MulticastPlaySequence_Implementation()
 {
 	LOG(TEXT("Begin"));
-	if (bIsSequencePlaying) return;
+	/*if (bIsSequencePlaying) return;
 
-	bIsSequencePlaying = true;
+	bIsSequencePlaying = true;*/
 	
 	// 4번째 인자로 반환받을 시퀀스 액터 선언
 	ALevelSequenceActor* OutActor = nullptr;
@@ -99,21 +99,13 @@ void ANormalLevelSequenceActor::ServerOnSequenceEnded_Implementation()
 	switch (SequenceType)
 	{
 	case ESequenceType::Spawn:
-		// 서버에서 보스 스폰 시퀀스가 끝났음을 인지한 후 모든 클라이언트에게 스폰 이벤트 전파
 		GetWorldTimerManager().SetTimer(TimerHandle, this, &ANormalLevelSequenceActor::OnSpawnSequenceEnded, SpawnSequenceDelegateDelay, false);
 		break;
 	case ESequenceType::Phase:
-		// 서버에서 보스 페이즈 시퀀스가 끝났음을 인지한 후 모든 클라이언트에게 페이즈 전환 이벤트 전파
 		OnPhaseSequenceEnded();
 		break;
 	case ESequenceType::Dead:
-		// 단순한 UI와 사운드 출력이므로 동기화 없이 Multicast로 출력
-		Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
-		USoundBase* MySound = LoadObject<USoundBase>(nullptr, TEXT("/Script/Engine.SoundWave'/Game/ElvenRing/Resources/SFX/UI/BossKilled.BossKilled'"));
-		if (MySound)
-		{
-			UGameplayStatics::PlaySound2D(GetWorld(), MySound);
-		}
+		OnDeadSequenceEnded();
 		break;
 	}
 }
@@ -138,7 +130,6 @@ void ANormalLevelSequenceActor::MulticastSetAllPlayerUnhidden_Implementation()
 
 void ANormalLevelSequenceActor::OnSpawnSequenceEnded()
 {
-	LOG(TEXT("Begin"));
 	for (ABoss* Boss : TActorRange<ABoss>(GetWorld()))
 	{
 		if (IsValid(Boss))
@@ -155,8 +146,18 @@ void ANormalLevelSequenceActor::OnPhaseSequenceEnded()
 	{
 		if (IsValid(Boss))
 		{
-			Boss->MulticastOnPhaseSequenceEnded();
+			Boss->ServerOnPhaseSequenceEnded();
 			return;
 		}
+	}
+}
+
+void ANormalLevelSequenceActor::OnDeadSequenceEnded_Implementation()
+{
+	Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
+	USoundBase* MySound = LoadObject<USoundBase>(nullptr, TEXT("/Script/Engine.SoundWave'/Game/ElvenRing/Resources/SFX/UI/BossKilled.BossKilled'"));
+	if (MySound)
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), MySound);
 	}
 }

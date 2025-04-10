@@ -31,8 +31,8 @@ public:
 	virtual void ServerOnSpawnSequenceEnded();
 
 	/** Phase 타입의 LevelSequence가 끝났을 때 호출하는 함수 */
-	UFUNCTION(NetMulticast, Reliable)
-	virtual void MulticastOnPhaseSequenceEnded();
+	UFUNCTION(Server, Reliable)
+	virtual void ServerOnPhaseSequenceEnded();
 
 	void ChangeState(IBossStateInterface* State);
 
