@@ -25,8 +25,6 @@ public:
 		Patterns.Add(NewHandler);
 		PatternName.Add(InName);
 		++PatternCount;
-
-		LOG(TEXT("%s Pattern Added !"), *InName);
 	};
 
 	/** 공격 실행 순수 가상 함수 */

@@ -13,7 +13,7 @@ class ELVENRING_API ABossArtorias : public ABoss
 public:
 	ABossArtorias();
 
-	virtual void OnSpawnSequenceEnded() override;
+	virtual void ServerOnSpawnSequenceEnded() override;
 
 protected:
 	virtual void BeginPlay() override;

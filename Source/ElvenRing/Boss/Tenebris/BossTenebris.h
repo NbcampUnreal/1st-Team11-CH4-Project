@@ -27,8 +27,8 @@ class ELVENRING_API ABossTenebris : public ABoss
 public:
 	ABossTenebris();
 
-	virtual void OnSpawnSequenceEnded() override;
-	virtual void OnPhaseSequenceEnded() override;
+	virtual void ServerOnSpawnSequenceEnded_Implementation() override;
+	virtual void MulticastOnPhaseSequenceEnded_Implementation() override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -48,21 +48,14 @@ private:
 	bool BressAttackRightCondition();
 	
 	/** 2페이즈 공격 */
-	void Howling(); // 이거 어떻게 활용하지 
+	void Howling();  
 	void BressAttackFront();
 	void EnergyAttack();
 
 	/** 2페이즈 발동 시 특수 공격 */
 	void FlyingRightFireBallAttack();
-
-	void MoveFrontLeft();
-	void MoveFront();
-	void MoveBackLeft();
-	void MoveBackRight();
-	void MoveBack();
 	
-	void RushAttack(); // 없어도 될 것 같은 느낌. 플레이어를 불쾌하게 만들 가능성 존재.
-	void WalkingFront();
+	void RushAttack();
 
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Stat")
