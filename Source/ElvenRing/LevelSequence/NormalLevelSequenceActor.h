@@ -36,6 +36,9 @@ public:
 	/** 시퀀스 종류별 처리 함수 */
 	void OnSpawnSequenceEnded();
 	void OnPhaseSequenceEnded();
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void OnDeadSequenceEnded();
 
 private:
 	/** 시퀀스 재생 멀티캐스트 함수 (모든 클라이언트에게 전파) */

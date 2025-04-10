@@ -130,7 +130,7 @@ void ABoss::ServerOnSpawnSequenceEnded_Implementation()
 	LOG(TEXT("Begin"));
 }
 
-void ABoss::MulticastOnPhaseSequenceEnded_Implementation()
+void ABoss::ServerOnPhaseSequenceEnded_Implementation()
 {
 	LOG(TEXT("Begin"));
 }
