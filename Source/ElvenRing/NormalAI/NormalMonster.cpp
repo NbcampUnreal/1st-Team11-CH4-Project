@@ -63,6 +63,12 @@ void ANormalMonster::UpdateHPBar()
 	}
 }
 
+// void ANormalMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+// {
+// 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+// 	DOREPLIFETIME(ANormalMonster, CurHealth); //체력을 네트워크로 전송
+// }
+
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
@@ -111,6 +117,11 @@ void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
 	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
 
+}
+
+void ANormalMonster::OnRep_CurHealth()
+{
+	UE_LOG(LogTemp, Warning, TEXT("체력 서버로 보냄"));
 }
 
 void ANormalMonster::PlayDeathAnim()

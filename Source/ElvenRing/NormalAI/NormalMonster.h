@@ -2,8 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "ElvenRing/Character/UnitBase.h"
-#include "Perception/AIPerceptionTypes.h"
+#include "Net/UnrealNetwork.h"
 #include "NormalMonster.generated.h"
+
 
 class UWidgetComponent; //ksw
 class ElvenrinCharacter;
@@ -24,7 +25,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="AI")
 	void PlayerDetected(UObject* TargetObject);
-	
+
+	UFUNCTION()
+	void OnRep_CurHealth();
 	
 	virtual void BeginPlay() override;
 	virtual void OnDeath() override;
@@ -32,7 +35,15 @@ public:
 
 	void SetWidget(UUserWidget* Widget);//ksw
 	void UpdateHPBar();
-		
+	
+	// virtual void GetLifetimeReplicatedProps
+	// (TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	//
+	// UPROPERTY(ReplicatedUsing = OnRep_CurHealth) // 값 변경 시 클라이언트에서 호출
+	// float CurHealth;
+
+	
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
 	UWidgetComponent* HPWidgetComponent;
 

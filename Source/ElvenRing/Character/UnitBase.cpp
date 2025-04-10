@@ -8,6 +8,7 @@
 #include "ElvenRing/UI/PlayerMainUi.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AUnitBase::AUnitBase()
@@ -19,6 +20,13 @@ AUnitBase::AUnitBase()
 	MaxStamina = 100;
 	CurMana = 100;
 	MaxMana = 100;
+}
+
+void AUnitBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AUnitBase, CurHealth);
 }
 
 // Called when the game starts or when spawned
@@ -57,7 +65,7 @@ void AUnitBase::Tick(float DeltaTime)
 				CurStamina += 5.f * DeltaTime;
 				CurStamina = FMath::Clamp(CurStamina, 0, MaxStamina);
 				OnStaminaChanged.Broadcast(CurStamina, MaxStamina, 1);//ksw
-				UE_LOG(LogTemp, Warning, TEXT("CurStamina = %f"), CurStamina);
+				//UE_LOG(LogTemp, Warning, TEXT("CurStamina = %f"), CurStamina);
 			}
 		}
 	}
@@ -77,10 +85,16 @@ void AUnitBase::OnDeath()
 	bIsDie = true;
 }
 
-void AUnitBase::OnHealthChanged()
+void AUnitBase::OnRep_HealthChanged_Implementation()
 {
 	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
+
 }
+
+/*void AUnitBase::OnHealthChanged()
+{
+	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
+}*/
 
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
@@ -92,13 +106,13 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 		const float InterpDamage =  FMath::RandRange(Damage-Damage/5, Damage+Damage/5);
 		
 		CurHealth -= InterpDamage;
-		LOG(TEXT("Get Damaged ! Current Health : %f"), CurHealth);
+		//LOG(TEXT("Get Damaged ! Current Health : %f"), CurHealth);
 		if (CurHealth <= 0.f) OnDeath();
 		else
 		{
 			PlayDamageAnim();
 		}
-		OnHealthChanged();//ksw
+		OnRep_HealthChanged();//ksw
 	}
 	return Damage;
 }

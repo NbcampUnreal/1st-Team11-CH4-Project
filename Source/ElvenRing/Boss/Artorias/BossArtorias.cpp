@@ -11,8 +11,6 @@ ABossArtorias::ABossArtorias()
 	MinThrustAttackRadius = 700.0f;
 }
 
-
-
 void ABossArtorias::BeginPlay()
 {
 	LOG(TEXT("Begin!"));
@@ -30,16 +28,14 @@ void ABossArtorias::BeginPlay()
 	Super::BeginPlay();
 }
 
-
-
-void ABossArtorias::OnSpawnSequenceEnded()
+void ABossArtorias::ServerOnSpawnSequenceEnded_Implementation()
 {
-	SetBossBattleMode();
-	AudioComponent->SetSound(BossBattleBGM);
-	AudioComponent->Play();
+	if (HasAuthority())
+	{
+		SetBossBattleMode();
+		PlaySound(BossBattleBGM);
+	}
 }
-
-
 
 void ABossArtorias::Tick(float DeltaTime)
 {
@@ -48,38 +44,29 @@ void ABossArtorias::Tick(float DeltaTime)
 	RotateToTarget(DeltaTime);
 }
 
-
 void ABossArtorias::HorizonSlashAttack()
 {
-	PlayAnimMontage(HorizontalSlashAnim);
+	PlayAnimation(HorizontalSlashAnim);
 }
-
-
 
 void ABossArtorias::VerticalSlashAttack()
 {
-	PlayAnimMontage(VerticalSlashAnim);
+	PlayAnimation(VerticalSlashAnim);
 }
-
-
 
 void ABossArtorias::RotationAttack()
 {
-	PlayAnimMontage(RotationAttackAnim);
+	PlayAnimation(RotationAttackAnim);
 }
-
-
 
 void ABossArtorias::DodgeAttack()
 {
-	PlayAnimMontage(DodgeAttackAnim);
+	PlayAnimation(DodgeAttackAnim);
 }
-
-
 
 void ABossArtorias::JumpAttack()
 {
-	PlayAnimMontage(JumpAttackAnim);
+	PlayAnimation(JumpAttackAnim);
 }
 
 bool ABossArtorias::JumpAttackCondition()
@@ -94,7 +81,7 @@ bool ABossArtorias::JumpAttackCondition()
 
 void ABossArtorias::ThrustAttack()
 {
-	PlayAnimMontage(ThrustAnim);
+	PlayAnimation(ThrustAnim);
 }
 
 bool ABossArtorias::ThrustAttackCondition()
@@ -110,5 +97,5 @@ bool ABossArtorias::ThrustAttackCondition()
 
 void ABossArtorias::Dodge()
 {
-	PlayAnimMontage(DodgeAnim);
+	PlayAnimation(DodgeAnim);
 }
