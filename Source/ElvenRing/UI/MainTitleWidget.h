@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "MainTitleWidget.generated.h"
 
 class UButton;
@@ -21,11 +22,20 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* TextBlock;
 
-
+	UPROPERTY(meta = (BindWidget))
+	UButton* JoinButton;
 protected:
+	void OnJoinCompleted(FName Name, EOnJoinSessionCompleteResult::Type Arg);
+	void TryJoinSession(const FOnlineSessionSearchResult& Result);
+	void OnSearchCompleted(bool bWasSuccess, const TArray<FOnlineSessionSearchResult>& OnlineSessionSearchResults);
+	UFUNCTION()
+	void OnSearchClicked();
+	UFUNCTION()
+	void OnJoinClicked();
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
+	void OnCreateSessionComplete(FName Name, bool bWasSuccess);
 	UFUNCTION(BlueprintCallable,Category = "UI")
 	void OnClicked();
 	UFUNCTION(BlueprintCallable, Category = "UI")

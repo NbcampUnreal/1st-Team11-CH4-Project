@@ -2,9 +2,75 @@
 
 
 #include "MainTitleWidget.h"
+
+#include "OnlineSessionSettings.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "ElvenRing/Core/NetworkSubsystem/ElvenRingOnline.h"
 #include "Kismet/GameplayStatics.h"
+
+void UMainTitleWidget::OnJoinCompleted(FName Name, EOnJoinSessionCompleteResult::Type Arg)
+{
+    UE_LOG(LogTemp, Display, TEXT("OnJoinCompleted"));
+}
+
+void UMainTitleWidget::TryJoinSession(const FOnlineSessionSearchResult& Result)
+{
+    if (UElvenRingOnline* Online = GetGameInstance()->GetSubsystem<UElvenRingOnline>())
+    {
+        FOnElvenRingJoinSessionComplete CompleteDelegate;
+        CompleteDelegate.BindUObject(this, &UMainTitleWidget::OnJoinCompleted);
+        Online->JoinSession(Result, CompleteDelegate);
+    }
+}
+
+void UMainTitleWidget::OnSearchCompleted(bool bWasSuccess,
+                                         const TArray<FOnlineSessionSearchResult>& OnlineSessionSearchResults)
+{
+    UE_LOG(LogTemp,Display, TEXT("OnSearchCompleted"));
+    GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("OnSearchCompleted"));
+    UE_LOG(LogTemp,Display,TEXT("Search Result Count: %d"), OnlineSessionSearchResults.Num());
+    for (FOnlineSessionSearchResult Result : OnlineSessionSearchResults)
+    {
+        if (Result.IsValid())
+        {
+            UE_LOG(LogTemp, Display, TEXT("Session Found: %s"), *Result.GetSessionIdStr());
+            GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Session Found"));
+            // UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"), true, TEXT("listen"));
+
+            TryJoinSession(Result);
+            return;
+        }
+    }
+
+    // Create Session
+    if (UElvenRingOnline* Online = GetGameInstance()->GetSubsystem<UElvenRingOnline>())
+    {
+        FOnElvenRingCreateSessionComplete CompleteDelegate;
+        CompleteDelegate.BindUObject(this, &UMainTitleWidget::OnCreateSessionComplete);
+        Online->CreateSession(4, CompleteDelegate);
+    }
+}
+
+void UMainTitleWidget::OnSearchClicked()
+{
+    if (UElvenRingOnline* Online = GetGameInstance()->GetSubsystem<UElvenRingOnline>())
+    {
+        FOnElvenRingFindSessionComplete CompleteDelegate;
+        CompleteDelegate.BindUObject(this, &UMainTitleWidget::OnSearchCompleted);
+        Online->FindSession(CompleteDelegate);
+    }
+}
+
+void UMainTitleWidget::OnJoinClicked()
+{
+    if (UElvenRingOnline* Online = GetGameInstance()->GetSubsystem<UElvenRingOnline>())
+    {
+        FOnElvenRingFindSessionComplete CompleteDelegate;
+        CompleteDelegate.BindUObject(this, &UMainTitleWidget::OnSearchCompleted);
+        Online->FindSession(CompleteDelegate);
+    }
+}
 
 void UMainTitleWidget::NativeConstruct()
 {
@@ -18,6 +84,8 @@ void UMainTitleWidget::NativeConstruct()
         StartButton->OnUnhovered.AddDynamic(this, &UMainTitleWidget::OnUnhovered);
         StartButton->OnReleased.AddDynamic(this, &UMainTitleWidget::OnReleased);
 
+	    JoinButton->OnClicked.AddDynamic(this, &UMainTitleWidget::OnJoinClicked);
+
         Dir = 1.f;
         GetWorld()->GetTimerManager().SetTimer(AlphaPingpongTimerHandle, this, &UMainTitleWidget::PingpongText, 0.05f, true);
 	}
@@ -29,13 +97,35 @@ void UMainTitleWidget::NativeDestruct()
     GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
 }
 
+void UMainTitleWidget::OnCreateSessionComplete(FName Name, bool bWasSuccess)
+{
+    UE_LOG(LogTemp, Display, TEXT("OnCreateSessionComplete"));
+    if (bWasSuccess)
+    {
+        UE_LOG(LogTemp, Display, TEXT("Create Session Success"));
+        GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Create Session Success"));
+        UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"), true, TEXT("listen"));
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Create Session Failed"));
+        GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("Create Session Failed"));
+    }
+}
+
 void UMainTitleWidget::OnClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Click StartBTN"));
     GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
     GetWorld()->GetTimerManager().SetTimer(AlphaPingpongTimerHandle, this, &UMainTitleWidget::PingpongText, 0.05f, true);
 
-    UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"));
+    // UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"));
+    if (UElvenRingOnline* Online = GetGameInstance()->GetSubsystem<UElvenRingOnline>())
+    {
+        FOnElvenRingCreateSessionComplete CompleteDelegate;
+        CompleteDelegate.BindUObject(this, &UMainTitleWidget::OnCreateSessionComplete);
+        Online->CreateSession(4, CompleteDelegate);
+    }
 }
 void UMainTitleWidget::OnPressed()
 {
