@@ -32,7 +32,7 @@ void ABossArtorias::BeginPlay()
 
 
 
-void ABossArtorias::OnSpawnSequenceEnded()
+void ABossArtorias::ServerOnSpawnSequenceEnded()
 {
 	SetBossBattleMode();
 	AudioComponent->SetSound(BossBattleBGM);
@@ -51,35 +51,35 @@ void ABossArtorias::Tick(float DeltaTime)
 
 void ABossArtorias::HorizonSlashAttack()
 {
-	PlayAnimMontage(HorizontalSlashAnim);
+	PlayAnimation(HorizontalSlashAnim);
 }
 
 
 
 void ABossArtorias::VerticalSlashAttack()
 {
-	PlayAnimMontage(VerticalSlashAnim);
+	PlayAnimation(VerticalSlashAnim);
 }
 
 
 
 void ABossArtorias::RotationAttack()
 {
-	PlayAnimMontage(RotationAttackAnim);
+	PlayAnimation(RotationAttackAnim);
 }
 
 
 
 void ABossArtorias::DodgeAttack()
 {
-	PlayAnimMontage(DodgeAttackAnim);
+	PlayAnimation(DodgeAttackAnim);
 }
 
 
 
 void ABossArtorias::JumpAttack()
 {
-	PlayAnimMontage(JumpAttackAnim);
+	PlayAnimation(JumpAttackAnim);
 }
 
 bool ABossArtorias::JumpAttackCondition()
@@ -94,7 +94,7 @@ bool ABossArtorias::JumpAttackCondition()
 
 void ABossArtorias::ThrustAttack()
 {
-	PlayAnimMontage(ThrustAnim);
+	PlayAnimation(ThrustAnim);
 }
 
 bool ABossArtorias::ThrustAttackCondition()
@@ -110,5 +110,5 @@ bool ABossArtorias::ThrustAttackCondition()
 
 void ABossArtorias::Dodge()
 {
-	PlayAnimMontage(DodgeAnim);
+	PlayAnimation(DodgeAnim);
 }

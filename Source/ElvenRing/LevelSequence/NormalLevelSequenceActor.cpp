@@ -7,6 +7,7 @@
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 
 void ANormalLevelSequenceActor::BeginPlay()
@@ -18,6 +19,12 @@ void ANormalLevelSequenceActor::BeginPlay()
 	Instance = Cast<UElvenringGameInstance>(GetGameInstance());
 }
 
+void ANormalLevelSequenceActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ANormalLevelSequenceActor, bIsSequencePlaying);
+}
 
 
 void ANormalLevelSequenceActor::StartSequence()
@@ -35,6 +42,11 @@ void ANormalLevelSequenceActor::StartSequence()
 
 void ANormalLevelSequenceActor::MulticastPlaySequence_Implementation()
 {
+	LOG(TEXT("Begin"));
+	if (bIsSequencePlaying) return;
+
+	bIsSequencePlaying = true;
+	
 	// 4번째 인자로 반환받을 시퀀스 액터 선언
 	ALevelSequenceActor* OutActor = nullptr;
 	LevelSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), CurrentLevelSequence, FMovieSceneSequencePlaybackSettings(), OutActor);
@@ -62,7 +74,6 @@ void ANormalLevelSequenceActor::MulticastSetAllPlayerHidden_Implementation()
 	{
 		if (IsValid(Player))
 		{
-			LOG(TEXT("Player Hidden"));
 			Player->ToggleInput(false);
 		}
 	}
@@ -76,12 +87,12 @@ void ANormalLevelSequenceActor::OnSequenceEnded()
 		// 모든 클라이언트에게 플레이어 활성화 전파
 		MulticastSetAllPlayerUnhidden();
 
-		// 모든 클라이언트에게 시퀀스 종료 이벤트 전파
-		MulticastOnSequenceEnded();
+		// 서버에게 시퀀스 종료 이벤트 전파
+		ServerOnSequenceEnded();
 	}
 }
 
-void ANormalLevelSequenceActor::MulticastOnSequenceEnded_Implementation()
+void ANormalLevelSequenceActor::ServerOnSequenceEnded_Implementation()
 {
 	// 재생하는 LevelSequence 타입에 따라 로직 처리
 	FTimerHandle TimerHandle;
@@ -89,17 +100,11 @@ void ANormalLevelSequenceActor::MulticastOnSequenceEnded_Implementation()
 	{
 	case ESequenceType::Spawn:
 		// 서버에서 보스 스폰 시퀀스가 끝났음을 인지한 후 모든 클라이언트에게 스폰 이벤트 전파
-		if (HasAuthority())
-		{
-			GetWorldTimerManager().SetTimer(TimerHandle, this, &ANormalLevelSequenceActor::OnSpawnSequenceEnded, SpawnSequenceDelegateDelay, false);
-		}
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &ANormalLevelSequenceActor::OnSpawnSequenceEnded, SpawnSequenceDelegateDelay, false);
 		break;
 	case ESequenceType::Phase:
 		// 서버에서 보스 페이즈 시퀀스가 끝났음을 인지한 후 모든 클라이언트에게 페이즈 전환 이벤트 전파
-		if (HasAuthority())
-		{
-			OnPhaseSequenceEnded();
-		}
+		OnPhaseSequenceEnded();
 		break;
 	case ESequenceType::Dead:
 		// 단순한 UI와 사운드 출력이므로 동기화 없이 Multicast로 출력
@@ -126,7 +131,6 @@ void ANormalLevelSequenceActor::MulticastSetAllPlayerUnhidden_Implementation()
 	{
 		if (IsValid(Player))
 		{
-			LOG(TEXT("Player Unhidden"));
 			Player->ToggleInput(true);
 		}
 	}
@@ -134,11 +138,12 @@ void ANormalLevelSequenceActor::MulticastSetAllPlayerUnhidden_Implementation()
 
 void ANormalLevelSequenceActor::OnSpawnSequenceEnded()
 {
+	LOG(TEXT("Begin"));
 	for (ABoss* Boss : TActorRange<ABoss>(GetWorld()))
 	{
 		if (IsValid(Boss))
 		{
-			Boss->OnSpawnSequenceEnded();
+			Boss->ServerOnSpawnSequenceEnded();
 			return;
 		}
 	}
@@ -150,7 +155,7 @@ void ANormalLevelSequenceActor::OnPhaseSequenceEnded()
 	{
 		if (IsValid(Boss))
 		{
-			Boss->OnPhaseSequenceEnded();
+			Boss->MulticastOnPhaseSequenceEnded();
 			return;
 		}
 	}

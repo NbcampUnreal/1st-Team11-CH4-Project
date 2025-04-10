@@ -1,6 +1,4 @@
 #include "BossTenebris.h"
-
-#include "Components/AudioComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
@@ -31,12 +29,26 @@ ABossTenebris::ABossTenebris()
 	TailAttackCollisions.Add(TailAttackCollision2);
 }
 
+void ABossTenebris::ServerOnSpawnSequenceEnded_Implementation()
+{
+	Super::ServerOnSpawnSequenceEnded_Implementation();
+
+	if (HasAuthority())
+	{
+		PlayAnimation(BressAfterMoveFrontAnim);
+		GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+		{
+			AttackType = ETenebrisSpecialAttackType::BressRight;
+		}
+		), SpecialAttackInterval, false);
+
+		PlaySound(BossBattleBGM);
+	}
+}
 
 
 void ABossTenebris::BeginPlay()
 {
-	LOG(TEXT("Begin!"));
-
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::GrabAttack, FString("GrabAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::TailAttack, FString("TailAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::EarthquakeAttack, FString("EarthquakeAttack"));
@@ -52,36 +64,24 @@ void ABossTenebris::BeginPlay()
 	Super::BeginPlay();
 }
 
-
-
-void ABossTenebris::OnSpawnSequenceEnded()
+void ABossTenebris::MulticastOnPhaseSequenceEnded_Implementation()
 {
-	PlayAnimMontage(BressAfterMoveFrontAnim);
-	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
-	{
-		AttackType = ETenebrisSpecialAttackType::BressRight;
-	}
-	), SpecialAttackInterval, false);
-	
-	AudioComponent->SetSound(BossBattleBGM);
-	AudioComponent->Play();	
-}
+	Super::MulticastOnPhaseSequenceEnded();
 
-void ABossTenebris::OnPhaseSequenceEnded()
-{
-	Super::OnPhaseSequenceEnded();
-	CurHealth = MaxHealth/2;
-	PhaseType = EPhaseType::Two;
-	SetAttackTarget();
-	PlayAnimMontage(FlyingRightFireBallAttackAnim);
-	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+	if (HasAuthority())
 	{
-		AttackType = ETenebrisSpecialAttackType::FlyingEarthquake;
-	}
-	), SpecialAttackInterval, false);
+		CurHealth = MaxHealth/2;
+		PhaseType = EPhaseType::Two;
+		SetAttackTarget();
+		PlayAnimMontage(FlyingRightFireBallAttackAnim);
+		GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
+		{
+			AttackType = ETenebrisSpecialAttackType::FlyingEarthquake;
+		}
+		), SpecialAttackInterval, false);
 
-	AudioComponent->SetSound(BossBattleBGM2);
-	AudioComponent->Play();
+		PlaySound(BossBattleBGM2);
+	}
 }
 
 
@@ -107,17 +107,17 @@ float ABossTenebris::TakeDamage(float DamageAmount, FDamageEvent const& DamageEv
 
 void ABossTenebris::GrabAttack()
 {
-	PlayAnimMontage(GrabAttackAnim);
+	PlayAnimation(GrabAttackAnim);
 }
 
 void ABossTenebris::BressAttackFront()
 {
-	PlayAnimMontage(BressAttackFrontAnim);
+	PlayAnimation(BressAttackFrontAnim);
 }
 
 void ABossTenebris::BressAttackRight()
 {
-	PlayAnimMontage(BressAttackRightAnim);
+	PlayAnimation(BressAttackRightAnim);
 	AttackType = ETenebrisSpecialAttackType::None;
 	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
 	{
@@ -136,33 +136,27 @@ bool ABossTenebris::BressAttackRightCondition()
 
 void ABossTenebris::EnergyAttack()
 {
-	PlayAnimMontage(EnergyAttackAnim);
+	PlayAnimation(EnergyAttackAnim);
 }
 
 void ABossTenebris::TailAttack()
 {
-	PlayAnimMontage(TailAttackAnim);
+	PlayAnimation(TailAttackAnim);
 }
 
 void ABossTenebris::EarthquakeAttack()
 {
-	PlayAnimMontage(EarthQuakeAttackAnim);
+	PlayAnimation(EarthQuakeAttackAnim);
 }
 
 void ABossTenebris::RushAttack()
 {
-	PlayAnimMontage(RushAttackAnim);
+	PlayAnimation(RushAttackAnim);
 }
-
-void ABossTenebris::WalkingFront()
-{
-	PlayAnimMontage(WalkingFrontAnim);
-}
-
 
 void ABossTenebris::FlyingEarthquakeAttack()
 {
-	PlayAnimMontage(FlyingEarthquakeAttackAnim);
+	PlayAnimation(FlyingEarthquakeAttackAnim);
 	AttackType = ETenebrisSpecialAttackType::None;
 	GetWorldTimerManager().SetTimer(SpecialAttackTimer,FTimerDelegate::CreateLambda([&]
 	{
@@ -182,35 +176,10 @@ bool ABossTenebris::FlyingEarthquakeAttackCondition()
 
 void ABossTenebris::FlyingRightFireBallAttack()
 {
-	PlayAnimMontage(FlyingRightFireBallAttackAnim);
-}
-
-void ABossTenebris::MoveFrontLeft()
-{
-	PlayAnimMontage(MoveFrontLeftAnim);
-}
-
-void ABossTenebris::MoveFront()
-{
-	PlayAnimMontage(MoveFrontAnim);
-}
-
-void ABossTenebris::MoveBackLeft()
-{
-	PlayAnimMontage(MoveBackLeftAnim);
-}
-
-void ABossTenebris::MoveBackRight()
-{
-	PlayAnimMontage(MoveBackRightAnim);
-}
-
-void ABossTenebris::MoveBack()
-{
-	PlayAnimMontage(MoveBackAnim);
+	PlayAnimation(FlyingRightFireBallAttackAnim);
 }
 
 void ABossTenebris::Howling()
 {
-	PlayAnimMontage(HowlingAnim);
+	PlayAnimation(HowlingAnim);
 }

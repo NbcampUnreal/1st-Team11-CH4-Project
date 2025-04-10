@@ -23,6 +23,7 @@ class ELVENRING_API ANormalLevelSequenceActor : public ALevelSequenceActor
 
 public:
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** 서버에서 시퀀스 시작 */
 	UFUNCTION(BlueprintCallable)
@@ -42,8 +43,8 @@ private:
 	void MulticastPlaySequence();
     
 	/** 시퀀스 종료 멀티캐스트 함수 */
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastOnSequenceEnded();
+	UFUNCTION(Server, Reliable)
+	void ServerOnSequenceEnded();
     
 	/** 플레이어 가시성 제어 멀티캐스트 함수 */
 	UFUNCTION(NetMulticast, Reliable)
@@ -66,4 +67,8 @@ private:
 
 	UPROPERTY()
 	UElvenringGameInstance* Instance;
+
+	// 네트워크 동기화를 위한 복제 변수들
+	UPROPERTY(Replicated)
+	bool bIsSequencePlaying;
 };
