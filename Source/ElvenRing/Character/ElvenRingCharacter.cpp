@@ -62,6 +62,7 @@ void AElvenRingCharacter::ToggleInput(bool _bInput)
 //공격 관련 함수
 void AElvenRingCharacter::OnAttackInput()
 {
+    if (GetCharacterMovement()->IsFalling()) return;
     if (bJump) return;
     if (bdodge) return;
     if (!bIsAttacking)
@@ -161,6 +162,13 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                     this,
                     &AElvenRingCharacter::Move
                 );
+
+                EnhancedInput->BindAction(
+                    PlayerController->MoveAction,
+                    ETriggerEvent::Completed,
+                    this,
+                    &AElvenRingCharacter::MoveEnd
+                );
             }
             
             if (PlayerController->JumpAction)
@@ -216,7 +224,7 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                     // IA_Dodge 액션 키를 "눌렀을 때" DodgeAction() 호출
                     EnhancedInput->BindAction(
                         PlayerController->DodgeAction,
-                        ETriggerEvent::Triggered,
+                        ETriggerEvent::Completed,
                         this,
                         &AElvenRingCharacter::StartDodge
                     );
@@ -267,6 +275,12 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
     }
 }
 
+
+void AElvenRingCharacter::SetbJump(bool _bJump)
+{
+    _bJump = bJump;
+}
+
 void AElvenRingCharacter::PlayDodgeAnimation(float _DodgeDuration)
 {
     if (DodgeMontage)
@@ -292,9 +306,6 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
             ResetCombo();
             // delegate 바인딩 후 몽타주에 등록
             FOnMontageEnded MontageEndedDelegate;
-            MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
-            AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DefenceMontage);
-
             //float MontageLength = DefenceMontage->GetPlayLength(); 일단 빼두자 언제 또 써야할지도 모른다.....
             
             AnimInstance->Montage_Play(DefenceMontage);
@@ -312,14 +323,14 @@ void AElvenRingCharacter::OnDefenceMontageEnded(UAnimMontage* Montage, bool bInt
 }
 void AElvenRingCharacter::Move(const FInputActionValue& value)
 {
-    if (!bCanMove) return;
     if (!Controller) return;
-
-    const FVector2D MoveInput = value.Get<FVector2D>();
+	MoveInput = value.Get<FVector2D>();
+    if (!bCanMove) return;
 
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
         AddMovementInput(GetActorForwardVector(), MoveInput.X);
+        
     }
 
     if (!FMath::IsNearlyZero(MoveInput.Y))
@@ -327,12 +338,16 @@ void AElvenRingCharacter::Move(const FInputActionValue& value)
         AddMovementInput(GetActorRightVector(), MoveInput.Y);
     }
 }
+void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
+{
+    MoveInput = {0,0};
+}
 
 void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
+    if (bIsAttacking) return;
     if (value.Get<bool>())
     {
-        bJump = true;
         Jump();
     }
 }
@@ -341,7 +356,6 @@ void AElvenRingCharacter::StopJump(const FInputActionValue& value)
 {
     if (!value.Get<bool>())
     {
-        bJump = false;
         StopJumping();
     }
 }
@@ -372,24 +386,29 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
 {
-    if (bIsDodging)
-    {
-        return;
-    }
+    if (GetCharacterMovement()->IsFalling()) return;
+    if (bIsDodging) return;
+    bCanMove = false;;
     Invincibility = true;
     CurrentWeapon->DisableCollision();
     ResetCombo();
-    FVector DodgeDirection = GetLastMovementInputVector();
+    FVector DodgeDirection = FVector(MoveInput.Y,(-1)*MoveInput.X,0.0f).GetSafeNormal();
+    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
     if (DodgeDirection.IsNearlyZero())
     {
         DodgeDirection = GetActorForwardVector();
     }
-    DodgeDirection.Normalize();
-    DodgeDirection.Z = 0;
-    
+    else
+    {
+        const FVector ForwardVector = GetActorForwardVector();
+        const FVector RightVector = GetActorRightVector();
+        DodgeDirection = (ForwardVector * MoveInput.X + RightVector * MoveInput.Y).GetSafeNormal();
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
+
     DodgeStartLocation = GetActorLocation();
     DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
-    
     DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
 
     bdodge = true;
@@ -434,8 +453,11 @@ void AElvenRingCharacter::DodgeCollDown()
 
 void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 {
+    if (!bCanMove) bCanMove = true;
+    ResetCombo();
     if (bDefence)
     {
+        PlayDefenceAnimation(DefenceSpeed);
         return;
     }
     PlayDefenceAnimation(DefenceSpeed);
@@ -444,8 +466,13 @@ void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 
 void AElvenRingCharacter::StopDefence(const FInputActionValue& value)
 {
-    bDefence = false;
-    GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance)
+    {
+        AnimInstance->Montage_Stop(0.2f, DefenceMontage);
+        bDefence = false;
+        GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
+    }
 }
 void AElvenRingCharacter::Tick(float DeltaTime)
 {
@@ -461,6 +488,7 @@ void AElvenRingCharacter::Tick(float DeltaTime)
     }
     else
         bSprint = false;
+
 }
 
 void AElvenRingCharacter::BeginPlay()

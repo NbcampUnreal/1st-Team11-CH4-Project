@@ -99,6 +99,9 @@ protected:
 	FTimerHandle DodgeStopTimerHandle;
 	FTimerHandle DodgeStopTestTimerHandle;
 
+	UFUNCTION(BlueprintCallable,Category="Jump")
+	void SetbJump(bool _bJump);
+	FVector2D MoveInput;
 	bool bJump = false;
 	bool bdodge = false;
 	void PlayDodgeAnimation(float _Duration);
@@ -108,6 +111,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
+	UFUNCTION()
+	void MoveEnd(const FInputActionValue& value);
 	UFUNCTION()
 	void StartJump(const FInputActionValue& value);
 	UFUNCTION()
@@ -133,4 +138,5 @@ protected:
 	virtual void Tick(float DeltaTime) override;//ksw
 	virtual void BeginPlay() override;//ksw
 };
+
 
