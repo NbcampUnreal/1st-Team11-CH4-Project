@@ -6,14 +6,14 @@
 #include "Components/Image.h"
 #include "ElvenRing/Character/UnitBase.h"
 #include "UIManager.h"
-#include "ScreenEffectWidget.h"
-#include "ElvenRing/Core/ElvenringGameInstance.h"
+//#include "ScreenEffectWidget.h"
+//#include "ElvenRing/Core/ElvenringGameInstance.h"
 
 void UPlayerMainUi::NativeConstruct()
 {
 	Super::NativeConstruct();
-	UElvenringGameInstance* ElvenringGameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
-	ElvenringGameInstance->GetUIManager()->GetScreenEffectWidget()->FadeOutIn();
+	//UElvenringGameInstance* ElvenringGameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
+	//ElvenringGameInstance->GetUIManager()->GetScreenEffectWidget()->FadeOutIn();
 }
 void UPlayerMainUi::SetActiveWidget(bool bShow)
 {
