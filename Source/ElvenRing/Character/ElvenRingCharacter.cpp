@@ -62,6 +62,7 @@ void AElvenRingCharacter::ToggleInput(bool _bInput)
 //공격 관련 함수
 void AElvenRingCharacter::OnAttackInput()
 {
+    if (GetCharacterMovement()->IsFalling()) return;
     if (bJump) return;
     if (bdodge) return;
     if (!bIsAttacking)
@@ -305,9 +306,6 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
             ResetCombo();
             // delegate 바인딩 후 몽타주에 등록
             FOnMontageEnded MontageEndedDelegate;
-            MontageEndedDelegate.BindUObject(this, &AElvenRingCharacter::OnDefenceMontageEnded);
-            AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, DefenceMontage);
-
             //float MontageLength = DefenceMontage->GetPlayLength(); 일단 빼두자 언제 또 써야할지도 모른다.....
             
             AnimInstance->Montage_Play(DefenceMontage);
@@ -332,6 +330,7 @@ void AElvenRingCharacter::Move(const FInputActionValue& value)
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
         AddMovementInput(GetActorForwardVector(), MoveInput.X);
+        
     }
 
     if (!FMath::IsNearlyZero(MoveInput.Y))
@@ -458,6 +457,7 @@ void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 {
     if (bDefence)
     {
+        PlayDefenceAnimation(DefenceSpeed);
         return;
     }
     PlayDefenceAnimation(DefenceSpeed);
@@ -466,8 +466,13 @@ void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 
 void AElvenRingCharacter::StopDefence(const FInputActionValue& value)
 {
-    bDefence = false;
-    GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance)
+    {
+        AnimInstance->Montage_Stop(0.2f, DefenceMontage);
+        bDefence = false;
+        GetWorld()->GetTimerManager().ClearTimer(DefenceTimerHandle);
+    }
 }
 void AElvenRingCharacter::Tick(float DeltaTime)
 {
