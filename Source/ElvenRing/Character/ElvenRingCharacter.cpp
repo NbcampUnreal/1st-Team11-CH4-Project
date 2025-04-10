@@ -345,11 +345,18 @@ void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
+    if (bJump) return;
     if (bIsAttacking) return;
     if (value.Get<bool>())
     {
         Jump();
+        bJump = true;
     }
+}
+
+void AElvenRingCharacter::SetBoolTrue()
+{
+    bJump = false;
 }
 
 void AElvenRingCharacter::StopJump(const FInputActionValue& value)
@@ -360,6 +367,13 @@ void AElvenRingCharacter::StopJump(const FInputActionValue& value)
     }
 }
 
+void AElvenRingCharacter::Landed(const FHitResult& Hit)
+{
+    Super::Landed(Hit);
+
+    
+    GetWorld()->GetTimerManager().SetTimer(JumpTimerHandle, this, &AElvenRingCharacter::SetBoolTrue, 0.5f, false);
+}
 void AElvenRingCharacter::Look(const FInputActionValue& value)
 {
     FVector2D LookInput = value.Get<FVector2D>();

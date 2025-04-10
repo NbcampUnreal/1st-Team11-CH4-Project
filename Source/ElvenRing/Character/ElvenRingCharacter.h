@@ -96,6 +96,7 @@ protected:
 	FVector DodgeTargetLocation;
 	
 	FTimerHandle DodgeTimerHandle;  
+	FTimerHandle JumpTimerHandle;  
 	FTimerHandle DodgeStopTimerHandle;
 	FTimerHandle DodgeStopTestTimerHandle;
 
@@ -115,6 +116,7 @@ protected:
 	void MoveEnd(const FInputActionValue& value);
 	UFUNCTION()
 	void StartJump(const FInputActionValue& value);
+	void SetBoolTrue();
 	UFUNCTION()
 	void StopJump(const FInputActionValue& value);
 	UFUNCTION()
@@ -134,7 +136,8 @@ protected:
 	UFUNCTION()
 	void StopDefence(const FInputActionValue& value);
 	void Interact(const FInputActionValue& InputActionValue);
-
+	
+	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Tick(float DeltaTime) override;//ksw
 	virtual void BeginPlay() override;//ksw
 };
