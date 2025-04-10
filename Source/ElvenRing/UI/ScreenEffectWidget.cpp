@@ -36,6 +36,7 @@ void UScreenEffectWidget:: FadeIn(float Time, bool bAutoHideWhenFinished )
 			RamdaElement.ElapsedTime += GetWorld()->GetTimeSeconds() - RamdaElement.PrevTime;
 			float Alpha = FMath::Clamp(RamdaElement.ElapsedTime / RamdaElement.Duration, 0.f, 1.f);
 			float CurValue = FMath::Lerp(RamdaElement.StartValue, RamdaElement.EndValue, Alpha);
+			//UE_LOG(LogTemp, Warning, TEXT("Alpha %f"), Alpha * RamdaElement.Duration);
 			RamdaElement.Color.A = CurValue;
 			ImageScreen->SetColorAndOpacity(RamdaElement.Color);
 			if (1.f <= Alpha)
@@ -45,7 +46,7 @@ void UScreenEffectWidget:: FadeIn(float Time, bool bAutoHideWhenFinished )
 				bPlay = false;
 				if(bAutoHideWhenFinished)
 					SetVisibility(ESlateVisibility::Collapsed);
-				UE_LOG(LogTemp, Warning, TEXT("End FadeIn"));
+				//UE_LOG(LogTemp, Warning, TEXT("End FadeIn"));
 				GetWorld()->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
 			}
 			RamdaElement.PrevTime = GetWorld()->GetTimeSeconds();
@@ -83,6 +84,7 @@ void UScreenEffectWidget:: FadeOut(float Time )
 				RamdaElement.ElapsedTime += GetWorld()->GetTimeSeconds() - RamdaElement.PrevTime;
 				float Alpha = FMath::Clamp(RamdaElement.ElapsedTime / RamdaElement.Duration, 0.f, 1.f);
 				float CurValue = FMath::Lerp(RamdaElement.StartValue, RamdaElement.EndValue, Alpha);
+				//UE_LOG(LogTemp, Warning, TEXT("Alpha %f"), Alpha* RamdaElement.Duration);
 				RamdaElement.Color.A = CurValue;
 				ImageScreen->SetColorAndOpacity(RamdaElement.Color);
 				if (1.f <= Alpha)
@@ -91,7 +93,7 @@ void UScreenEffectWidget:: FadeOut(float Time )
 					ImageScreen->SetColorAndOpacity(RamdaElement.Color);
 					bPlay = false;
 					GetWorld()->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
-					UE_LOG(LogTemp, Warning, TEXT("TimerHandle"));
+					//UE_LOG(LogTemp, Warning, TEXT("TimerHandle"));
 				}
 				RamdaElement.PrevTime = GetWorld()->GetTimeSeconds();
 			}), 0.05f, true
@@ -117,7 +119,7 @@ void UScreenEffectWidget::FadeOutIn(float FadeOutTime , float DelayTime , float 
 		FTimerDelegate::CreateLambda([this, RamdaElement, FadeInTime, bAutoHideWhenFinished]() mutable
 		{
 			bPlay = false;
-			UE_LOG(LogTemp, Warning, TEXT("BlackTime"));
+			//UE_LOG(LogTemp, Warning, TEXT("BlackTime"));
 			FadeIn(FadeInTime, bAutoHideWhenFinished);
 			GetWorld()->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
 

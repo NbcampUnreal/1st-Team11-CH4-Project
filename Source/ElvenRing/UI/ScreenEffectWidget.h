@@ -29,11 +29,11 @@ public:
 	UImage* ImageScreen;
 	
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void FadeIn(float Time = 2.f, bool bAutoHideWhenFinished = false );//밝아짐
+	void FadeIn(float Time = 3.f, bool bAutoHideWhenFinished = false );//밝아짐
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void FadeOut(float Time = 2.f); //어두워짐
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void FadeOutIn(float FadeOut = 1.f, float DelayTime = 1.5f, float FadeIn = 1.f,bool bAutoHideWhenFinished = false );
+	void FadeOutIn(float FadeOut = 2.f, float DelayTime = 2.f, float FadeIn = 3.f,bool bAutoHideWhenFinished = false );
 
 private:
 	bool bPlay;
