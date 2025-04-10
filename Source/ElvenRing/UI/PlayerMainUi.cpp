@@ -5,10 +5,15 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Components/Image.h"
 #include "ElvenRing/Character/UnitBase.h"
+#include "UIManager.h"
+#include "ScreenEffectWidget.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
 
 void UPlayerMainUi::NativeConstruct()
 {
 	Super::NativeConstruct();
+	UElvenringGameInstance* ElvenringGameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
+	ElvenringGameInstance->GetUIManager()->GetScreenEffectWidget()->FadeOutIn();
 }
 void UPlayerMainUi::SetActiveWidget(bool bShow)
 {
@@ -24,18 +29,6 @@ void UPlayerMainUi::DecreaseHp(float TargetHp, float HpMax)
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
 
-	//FRamdaElement FElement;
-	//FElement.TargetValue = TargetHp;
-	//FElement.ValueMax = HpMax;
-	//FElement.Duration = 1.0f;
-	//FElement.MyProgressBar = HpProgressBar;
-	//FElement.MyYellowProgressBar = HpProgressYellowBar;
-	//FElement.DelayTimerHandle = &HpTimerDelayHandle;
-	//FElement.TimerHandle = &HpTimerHandle;
-
-	//DecreaseProgressBar(FElement);
-
-
 	HpProgressBar->SetPercent(TargetHp / HpMax);
 	FRamdaElement FElement;
 	FElement.TargetValue = TargetHp;
@@ -48,9 +41,6 @@ void UPlayerMainUi::DecreaseHp(float TargetHp, float HpMax)
 	FElement.TimerHandle = &HpTimerHandle;
 
 	DecreaseProgressBar(FElement);
-
-
-
 }
 void UPlayerMainUi::DecreaseMp(float TargetMp, float MpMax)
 {
@@ -82,34 +72,12 @@ void UPlayerMainUi::DecreaseSt(float TargetSt, float StMax)
 	float TargetPercent = TargetSt / StMax;
 	StProgressBar->SetPercent(TargetPercent);
 	StProgressYellowBar->SetPercent(TargetPercent);
-	
-	//FRamdaElement FElement;
-	//FElement.TargetValue = TargetSt;
-	//FElement.ValueMax = StMax;
-	//FElement.Duration = 0.5f;
-	//FElement.DelayTime = 0.5f;
-	//FElement.MyProgressBar = StProgressBar;
-	//FElement.MyYellowProgressBar = StProgressYellowBar;
-	//FElement.DelayTimerHandle = &StTimerDelayHandle;
-	//FElement.TimerHandle = &StTimerHandle;
-	//DecreaseProgressBar(FElement);
 }
 
 void UPlayerMainUi::RecoverHp(float TargetHp, float HpMax,float RecoverSpeed )
 {
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
-
-	//FRamdaElement2 FEmt;
-	//FEmt.TargetValue = TargetHp;
-	//FEmt.ValueMax = HpMax;
-	//FEmt.Duration = RecoverSpeed;
-	//FEmt.TimerHandle = &HpTimerHandle;
-	//FEmt.DelayTimerHandle = &HpTimerDelayHandle;
-	//FEmt.MyProgressBar = HpProgressBar;
-	//FEmt.TargetYellowProgressBar = HpProgressYellowBar;
-	//RecoverProgressBar(FEmt);
-	//HpProgressBar->SetPercent(TargetHp / HpMax);
 
 	FRamdaElement FElement;
 	FElement.TargetValue = TargetHp;
@@ -127,16 +95,6 @@ void UPlayerMainUi::RecoverMp(float TargetMp, float MpMax, float RecoverSpeed)
 {
 	GetWorld()->GetTimerManager().ClearTimer(MpTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(MpTimerDelayHandle);
-
-	//FRamdaElement2 FEmt;
-	//FEmt.TargetValue = TargetMp;
-	//FEmt.ValueMax = MpMax;
-	//FEmt.Duration = 1.f;
-	//FEmt.TimerHandle = &MpTimerHandle;
-	//FEmt.DelayTimerHandle = &MpTimerDelayHandle;
-	//FEmt.MyProgressBar = MpProgressBar;
-	//FEmt.TargetYellowProgressBar = MpProgressYellowBar;
-	//RecoverProgressBar(FEmt);
 
 	FRamdaElement FElement;
 	FElement.TargetValue = TargetMp;
@@ -158,27 +116,6 @@ void UPlayerMainUi::RecoverSt(float TargetSt, float StMax, float RecoverSpeed)
 	float TargetPercent = TargetSt / StMax;
 	StProgressBar->SetPercent(TargetPercent);
 	StProgressYellowBar->SetPercent(TargetPercent);
-
-	//FRamdaElement2 FEmt;
-	//FEmt.TargetValue = TargetSt;
-	//FEmt.ValueMax = StMax;
-	//FEmt.Duration = 1.f;
-	//FEmt.TimerHandle = &StTimerHandle;
-	//FEmt.DelayTimerHandle = &StTimerDelayHandle;
-	//FEmt.MyProgressBar = StProgressBar;
-	//FEmt.TargetYellowProgressBar = StProgressYellowBar;
-	//RecoverProgressBar(FEmt);
-
-	//FRamdaElement FElement;
-	//FElement.TargetValue = TargetSt;
-	//FElement.ValueMax = StMax;
-	//FElement.Duration = 1.f;
-	//FElement.DelayTime = 0.f;
-	//FElement.MyProgressBar = StProgressBar;
-	//FElement.MyYellowProgressBar = StProgressYellowBar;
-	//FElement.DelayTimerHandle = &StTimerDelayHandle;
-	//FElement.TimerHandle = &StTimerHandle;
-	//RecoverProgressBar1(FElement);
 }
 
 void UPlayerMainUi::LevelUp(float Hp, float St, float Mp)
@@ -261,33 +198,23 @@ void UPlayerMainUi::UpdateProgressBarSize(UProgressBar* ProgressBar,float XSize 
 void UPlayerMainUi::NativeDestruct()
 {
 	Super::NativeDestruct();
+	if (GetWorld())
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
 }
 
 void UPlayerMainUi::DecreaseProgressBar(FRamdaElement& FEmt)
 {
-	
-	//FVector2D CurrentSize = FVector2D::Zero();
-	//if (UCanvasPanelSlot* ProgressBarCanvasSlot = Cast<UCanvasPanelSlot>(FEmt.MyYellowProgressBar->Slot))
-	//	CurrentSize = ProgressBarCanvasSlot->GetSize();
-	//float TargetPercent = FEmt.TargetValue / FEmt.ValueMax;
-	//float UpdateProgressBarSizeX = CurrentSize.X * TargetPercent;
-
-	//UpdateProgressBarSize(FEmt.MyProgressBar, UpdateProgressBarSizeX);
-
-	//float CurYellowBarHpPer = FEmt.MyYellowProgressBar->GetPercent();
-	//float TargetHpPer = 1.f - TargetPercent;
-
-	//FEmt.CurProgressBarPer = CurYellowBarHpPer;
-	//FEmt.TargetProgressBarPer = TargetHpPer;
-
 	FEmt.CurProgressBarPer = FEmt.MyYellowProgressBar->GetPercent();
 	FEmt.TargetProgressBarPer = FEmt.TargetValue / FEmt.ValueMax;
 
 	GetWorld()->GetTimerManager().SetTimer
 	(
+		
 		*FEmt.DelayTimerHandle,
 		FTimerDelegate::CreateLambda([this, FEmt]() mutable
 		{
+			if (!this)
+				return;
 			FEmt.PrevTime = GetWorld()->GetTimeSeconds();
 			//==========================================================================
 			GetWorld()->GetTimerManager().SetTimer
@@ -295,6 +222,8 @@ void UPlayerMainUi::DecreaseProgressBar(FRamdaElement& FEmt)
 				*FEmt.TimerHandle,
 				FTimerDelegate::CreateLambda([this, FEmt]() mutable
 				{
+					if (!this)
+						return;
 					FEmt.ElapsedTime += GetWorld()->GetTimeSeconds() - FEmt.PrevTime;
 					float Alpha = FMath::Clamp(FEmt.ElapsedTime / FEmt.Duration, 0.f, 1.f);
 					float CurValue = FMath::Lerp(FEmt.CurProgressBarPer, FEmt.TargetProgressBarPer, Alpha);
@@ -313,70 +242,12 @@ void UPlayerMainUi::DecreaseProgressBar(FRamdaElement& FEmt)
 			//==========================================================================	
 		}), FEmt.DelayTime,false
 	);
-
-
 	//FTimerDelegate TimerDel;
 	//TimerDel.BindUFunction(this, FName("HpYellowBar"), CurYellowBarHpPer, TargetHpPer);
 	//GetWorld()->GetTimerManager().SetTimer(HpTimerHandle, TimerDel, 0.05f, true);
 
 	//GetWorld()->GetTimerManager().SetTimer(HpTimerDelayHandle, this, &UPlayerMainUi::HpTimerDelayDelay, 2.f, false);
 }
-
-void UPlayerMainUi::RecoverProgressBar(FRamdaElement2& FEmt)
-{
-	FVector2D StandardSize = FVector2D::Zero();
-	FVector2D CurrentSize = FVector2D::Zero();
-	UCanvasPanelSlot* TargetProgressBarCanvasSlot = Cast<UCanvasPanelSlot>(FEmt.TargetYellowProgressBar->Slot);
-	if (TargetProgressBarCanvasSlot)
-		StandardSize = TargetProgressBarCanvasSlot->GetSize();
-	else
-		return;
-	UCanvasPanelSlot* MyProgressBarCanvasSlot = Cast<UCanvasPanelSlot>(FEmt.MyProgressBar->Slot);
-	if (MyProgressBarCanvasSlot)
-		CurrentSize = MyProgressBarCanvasSlot->GetSize();
-	else
-		return;
-	float RecoverPercent = FEmt.TargetValue / FEmt.ValueMax;
-	float UpdateProgressBarSizeX = StandardSize.X * RecoverPercent;
-	FVector2D TargetSize = FVector2D(UpdateProgressBarSizeX, CurrentSize.Y);
-
-	FEmt.CurrentSize = CurrentSize;
-	FEmt.TargetSize = TargetSize;
-	FEmt.RecoverProgessBarPercent = RecoverPercent;
-
-	//FEmt.PrevTime = GetWorld()->GetTimeSeconds();
-	GetWorld()->GetTimerManager().SetTimer
-	(
-		*FEmt.DelayTimerHandle,
-		FTimerDelegate::CreateLambda([this, FEmt, MyProgressBarCanvasSlot]() mutable
-			{
-				//UE_LOG(LogTemp, Warning, TEXT("CurrentSize : %f /TargetSize :  %f "), FEmt.CurrentSize.X, FEmt.TargetSize.X);
-				FEmt.PrevTime = GetWorld()->GetTimeSeconds();
-				GetWorld()->GetTimerManager().SetTimer
-				(
-					*FEmt.TimerHandle,
-					FTimerDelegate::CreateLambda([this, FEmt, MyProgressBarCanvasSlot]() mutable
-						{
-							FEmt.ElapsedTime += GetWorld()->GetTimeSeconds() - FEmt.PrevTime;
-							float Alpha = FMath::Clamp(FEmt.ElapsedTime / FEmt.Duration, 0.f, 1.f);
-							FVector2D RenewalSize = FMath::Lerp(FEmt.CurrentSize, FEmt.TargetSize, Alpha);
-							//UE_LOG(LogTemp, Warning, TEXT("CurrentSize : %f / RenewalSize : %f / TargetSize :  %f "), FEmt.CurrentSize.X, RenewalSize.X, FEmt.TargetSize.X);
-							MyProgressBarCanvasSlot->SetSize(RenewalSize);
-
-							if (1.f <= Alpha)
-							{
-								MyProgressBarCanvasSlot->SetSize(FEmt.TargetSize);
-								FEmt.TargetYellowProgressBar->SetPercent(FEmt.RecoverProgessBarPercent);
-								FEmt.ClearPointer();
-								GetWorld()->GetTimerManager().ClearTimer(*FEmt.TimerHandle);
-							}
-							FEmt.PrevTime = GetWorld()->GetTimeSeconds();
-						}), 0.05f, true
-				);
-			}), 1.5f, false
-	);
-}
-
 void UPlayerMainUi::RecoverProgressBar1(FRamdaElement& FEmt)
 {
 	FEmt.CurProgressBarPer = FEmt.MyProgressBar->GetPercent();
@@ -387,12 +258,16 @@ void UPlayerMainUi::RecoverProgressBar1(FRamdaElement& FEmt)
 		*FEmt.DelayTimerHandle,
 		FTimerDelegate::CreateLambda([this, FEmt]() mutable
 			{
+				if (!this)
+					return;
 				FEmt.PrevTime = GetWorld()->GetTimeSeconds();
 				GetWorld()->GetTimerManager().SetTimer
 				(
 					*FEmt.TimerHandle,
 					FTimerDelegate::CreateLambda([this, FEmt]() mutable
 						{
+							if (!this)
+								return;
 							FEmt.ElapsedTime += GetWorld()->GetTimeSeconds() - FEmt.PrevTime;
 							float Alpha = FMath::Clamp(FEmt.ElapsedTime / FEmt.Duration, 0.f, 1.f);
 							float CurValue = FMath::Lerp(FEmt.CurProgressBarPer, FEmt.TargetProgressBarPer, Alpha);
@@ -411,6 +286,5 @@ void UPlayerMainUi::RecoverProgressBar1(FRamdaElement& FEmt)
 				);
 			}), FEmt.DelayTime, false
 	);
-
 }
 
