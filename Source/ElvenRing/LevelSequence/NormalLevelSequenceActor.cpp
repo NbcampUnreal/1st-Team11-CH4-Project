@@ -1,7 +1,6 @@
 #include "NormalLevelSequenceActor.h"
 #include "EngineUtils.h"
 #include "LevelSequencePlayer.h"
-#include "Components/AudioComponent.h"
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/Boss.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
@@ -15,19 +14,29 @@ void ANormalLevelSequenceActor::BeginPlay()
 	Super::BeginPlay();
 	
 	CurrentLevelSequence = GetSequence();
+
+	Instance = Cast<UElvenringGameInstance>(GetGameInstance());
 }
 
 
 
 void ANormalLevelSequenceActor::StartSequence()
 {
-	// 모든 플레이어를 hidden 처리
-	SetAllPlayerHidden();
+	// 서버에서만 실행
+	if (HasAuthority())
+	{
+		// 모든 클라이언트에게 시퀀스 재생 명령 전파
+		MulticastPlaySequence();
+		
+		// 모든 클라이언트에게 플레이어 숨김 처리 전파
+		MulticastSetAllPlayerHidden();
+	}
+}
 
+void ANormalLevelSequenceActor::MulticastPlaySequence_Implementation()
+{
 	// 4번째 인자로 반환받을 시퀀스 액터 선언
 	ALevelSequenceActor* OutActor = nullptr;
-
-	// 시퀀스를 재생할 플레이어 지정
 	LevelSequencePlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), CurrentLevelSequence, FMovieSceneSequencePlaybackSettings(), OutActor);
 
 	// 시퀀스가 끝날 때 호출할 함수 바인드
@@ -40,42 +49,15 @@ void ANormalLevelSequenceActor::StartSequence()
 	}
 }
 
-
-
-void ANormalLevelSequenceActor::OnSequenceEnded()
+void ANormalLevelSequenceActor::MulticastSetAllPlayerHidden_Implementation()
 {
-	// 모든 플레이어 Visible 처리
-	SetAllPlayerUnhidden();
-
-	// 재생하는 LevelSequence 타입에 따라 로직 처리
-	FTimerHandle TimerHandle;
-	switch (SequenceType)
+	// UI 모두 비활성화
+	if (Instance && Instance->GetUIManager())
 	{
-	case ESequenceType::Spawn:
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &ANormalLevelSequenceActor::OnSpawnSequenceEnded, SpawnSequenceDelegateDelay, false);
-		break;
-	case ESequenceType::Phase:
-		OnPhaseSequenceEnded();
-		break;
-	case ESequenceType::Dead:
-		UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
-		Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
-		USoundBase* MySound = LoadObject<USoundBase>(nullptr, TEXT("/Script/Engine.SoundWave'/Game/ElvenRing/Resources/SFX/UI/BossKilled.BossKilled'"));
-		if (MySound)
-		{
-			UGameplayStatics::PlaySound2D(GetWorld(), MySound);
-		}
-		break;
+		Instance->GetUIManager()->SetActiveCharactersUI(false);
 	}
-}
 
-
-
-void ANormalLevelSequenceActor::SetAllPlayerHidden()
-{
-	UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
-	Instance->GetUIManager()->SetActiveCharactersUI(false);
-	
+	// 플레이어 객체 hidden 처리
 	for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
 	{
 		if (IsValid(Player))
@@ -86,13 +68,60 @@ void ANormalLevelSequenceActor::SetAllPlayerHidden()
 	}
 }
 
-
-
-void ANormalLevelSequenceActor::SetAllPlayerUnhidden()
+void ANormalLevelSequenceActor::OnSequenceEnded()
 {
-	UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
-	Instance->GetUIManager()->SetActiveCharactersUI(true);
-	
+	// 서버에서만 실행
+	if (HasAuthority())
+	{
+		// 모든 클라이언트에게 플레이어 활성화 전파
+		MulticastSetAllPlayerUnhidden();
+
+		// 모든 클라이언트에게 시퀀스 종료 이벤트 전파
+		MulticastOnSequenceEnded();
+	}
+}
+
+void ANormalLevelSequenceActor::MulticastOnSequenceEnded_Implementation()
+{
+	// 재생하는 LevelSequence 타입에 따라 로직 처리
+	FTimerHandle TimerHandle;
+	switch (SequenceType)
+	{
+	case ESequenceType::Spawn:
+		// 서버에서 보스 스폰 시퀀스가 끝났음을 인지한 후 모든 클라이언트에게 스폰 이벤트 전파
+		if (HasAuthority())
+		{
+			GetWorldTimerManager().SetTimer(TimerHandle, this, &ANormalLevelSequenceActor::OnSpawnSequenceEnded, SpawnSequenceDelegateDelay, false);
+		}
+		break;
+	case ESequenceType::Phase:
+		// 서버에서 보스 페이즈 시퀀스가 끝났음을 인지한 후 모든 클라이언트에게 페이즈 전환 이벤트 전파
+		if (HasAuthority())
+		{
+			OnPhaseSequenceEnded();
+		}
+		break;
+	case ESequenceType::Dead:
+		// 단순한 UI와 사운드 출력이므로 동기화 없이 Multicast로 출력
+		Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
+		USoundBase* MySound = LoadObject<USoundBase>(nullptr, TEXT("/Script/Engine.SoundWave'/Game/ElvenRing/Resources/SFX/UI/BossKilled.BossKilled'"));
+		if (MySound)
+		{
+			UGameplayStatics::PlaySound2D(GetWorld(), MySound);
+		}
+		break;
+	}
+}
+
+void ANormalLevelSequenceActor::MulticastSetAllPlayerUnhidden_Implementation()
+{
+	// UI 모두 활성화
+	if (Instance && Instance->GetUIManager())
+	{
+		Instance->GetUIManager()->SetActiveCharactersUI(true);
+	}
+
+	// 플레이어 객체 활성화 처리
 	for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
 	{
 		if (IsValid(Player))
@@ -102,8 +131,6 @@ void ANormalLevelSequenceActor::SetAllPlayerUnhidden()
 		}
 	}
 }
-
-
 
 void ANormalLevelSequenceActor::OnSpawnSequenceEnded()
 {
