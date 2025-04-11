@@ -54,6 +54,7 @@ void ANormalMonster::BeginPlay()
 	SetReplicates(true);
 	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
 	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
+	
 }
 
 void ANormalMonster::UpdateHPBar()
@@ -70,9 +71,8 @@ void ANormalMonster::UpdateHPBar()
 
 void ANormalMonster::RPCIsHit_Implementation(bool value)
 {
-	
+	UE_LOG(LogTemp, Warning, TEXT("RPC호출"));
 		MulticastIsHit(value);
-	
 }
 
 void ANormalMonster::RPCIsAttack_Implementation(bool value)
@@ -97,7 +97,7 @@ void ANormalMonster::MulticastIsHit_Implementation(bool value)
 	if (AnimInstance)
 	{
 		AnimInstance->UpdateHit(value);
-		
+		UE_LOG(LogTemp, Warning, TEXT("Multicast호출"));
 	}
 }
 
@@ -123,9 +123,10 @@ float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-
+	UE_LOG(LogTemp, Log, TEXT("takedmg 함수 호출"));
 	InstanceIsHit = true;
-	RPCIsHit(InstanceIsHit);
+		RPCIsHit(InstanceIsHit);
+	
 	return Damage;
 }
 
