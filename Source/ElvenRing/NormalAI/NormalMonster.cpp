@@ -27,7 +27,7 @@ ANormalMonster::ANormalMonster()
 
 	AttackDistance = 250.0f;
 	AttackAngle = 60.0f;
-	
+
 	bCanAttack = true;
 	bCanMove = true;
 	MonsterIsHit = false;
@@ -37,7 +37,7 @@ ANormalMonster::ANormalMonster()
 	InstanceIsAttack = false;
 	InstanceIsHit = false;
 	InstanceIsDeath = false;
-	
+
 	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget")); //ksw
 	HPWidgetComponent->SetupAttachment(RootComponent); //ksw
 	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
@@ -68,52 +68,64 @@ void ANormalMonster::UpdateHPBar()
 	}
 }
 
-void ANormalMonster::OnRep_InstanceIsHit()
+void ANormalMonster::RPCIsHit_Implementation(bool value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("함수는 실행이 됨"));
-	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-	if (AnimInstance)
+	
+		MulticastIsHit(value);
+	
+}
+
+void ANormalMonster::RPCIsAttack_Implementation(bool value)
+{
+	if (HasAuthority())
 	{
-		AnimInstance->UpdateHit(InstanceIsHit);// AnimInstance 변수 업데이트
-		UE_LOG(LogTemp, Warning, TEXT("Monster에서 Onrep_Hit 정상실행"));
+		MulticastIsAttack(value);
 	}
 }
 
-void ANormalMonster::OnRep_InstanceIsAttack()
+void ANormalMonster::RPCIsDeath_Implementation(bool value)
+{
+	if (HasAuthority())
+	{
+		MulticastIsDeath(value);
+	}
+}
+
+void ANormalMonster::MulticastIsHit_Implementation(bool value)
 {
 	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
-		AnimInstance->UpdateAttack(InstanceIsAttack); // AnimInstance 변수 업데이트
+		AnimInstance->UpdateHit(value);
+		
 	}
 }
 
-void ANormalMonster::OnRep_InstanceIsDeath()
+void ANormalMonster::MulticastIsAttack_Implementation(bool value)
 {
 	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
-		AnimInstance->IsDeath = InstanceIsDeath;
+		AnimInstance->UpdateAttack(value);
 	}
 }
 
-void ANormalMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(ANormalMonster, InstanceIsHit);
-	DOREPLIFETIME(ANormalMonster, InstanceIsAttack);
-	DOREPLIFETIME(ANormalMonster, InstanceIsDeath);
+	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->UpdateDeath(value);
+	}
 }
 
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	MonsterIsHit = true;
-	InstanceIsHit = true;
-	UE_LOG(LogTemp, Warning, TEXT("Hit:%d"),InstanceIsHit);
-	MonsterIsHit = false;
 
+	InstanceIsHit = true;
+	RPCIsHit(InstanceIsHit);
 	return Damage;
 }
 
@@ -122,6 +134,7 @@ void ANormalMonster::Attack(AActor* Target)
 	if (Target)
 	{
 		InstanceIsAttack = true;
+		RPCIsAttack(InstanceIsAttack);
 		FVector MonsterLocation = GetActorLocation();
 		FVector TargetLocation = Target->GetActorLocation();
 		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
@@ -133,12 +146,7 @@ void ANormalMonster::Attack(AActor* Target)
 
 		if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("공격 성공"));
 			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("공격 실패"));
 		}
 	}
 }
@@ -157,13 +165,15 @@ void ANormalMonster::OnDeath()
 {
 	Super::OnDeath();
 	InstanceIsDeath = true;
-	
+	RPCIsDeath(InstanceIsDeath);
+
 	// 콜리전 제거
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	bIsDie = true;
+
+	//HP바 타이머 정지, 위젯 제거
 	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
-	UElvenringGameInstance* GameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
+	UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
 	GameInstance->GetUIManager()->DestroyMonsterHpWidget(this);
 	HPWidgetComponent->DestroyComponent();
 	GetController()->UnPossess();

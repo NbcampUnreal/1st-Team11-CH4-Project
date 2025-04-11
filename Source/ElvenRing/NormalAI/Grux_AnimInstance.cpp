@@ -25,6 +25,11 @@ void UGrux_AnimInstance::UpdateHit(bool value)
 	IsHit = value;
 }
 
+void UGrux_AnimInstance::UpdateDeath(bool value)
+{
+	IsDeath = value;
+}
+
 void UGrux_AnimInstance::AnimNotify_EndHit()
 {
 	AActor* OwnerActor = GetOwningActor();
@@ -32,8 +37,8 @@ void UGrux_AnimInstance::AnimNotify_EndHit()
 	{
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
-		{
-			Monster->InstanceIsHit = false;
+		{	IsHit=false;
+			Monster->MulticastIsHit(IsHit);
 		}
 	}
 }
@@ -46,7 +51,8 @@ void UGrux_AnimInstance::AnimNotify_EndAttack()
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
 		{
-			Monster->InstanceIsAttack = false;
+			IsAttacking=false;
+			Monster->MulticastIsAttack(IsAttacking);
 		}
 	}
 }

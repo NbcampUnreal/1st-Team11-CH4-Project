@@ -18,6 +18,8 @@ public:
 	UFUNCTION()
 	void UpdateHit(bool value);
 	
+	UFUNCTION()
+	void UpdateDeath(bool value);
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool IsHit;
