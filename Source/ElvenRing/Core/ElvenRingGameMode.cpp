@@ -9,7 +9,7 @@
 
 AElvenRingGameMode::AElvenRingGameMode()
 {
-	bActorSeamlessTraveled = true;
+	bUseSeamlessTravel = true;
 	EventManager = CreateDefaultSubobject<UEventManager>(TEXT("EventManager"));
 }
 
