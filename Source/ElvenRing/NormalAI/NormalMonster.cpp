@@ -212,6 +212,7 @@ void ANormalMonster::OnDeath()
 	InstanceIsDeath = true;
 	RPCIsDeath(InstanceIsDeath);
 	PlayRandomSound(ENormalMonsterSoundCategory::DeathSound);
+	
 	// 콜리전 제거
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
