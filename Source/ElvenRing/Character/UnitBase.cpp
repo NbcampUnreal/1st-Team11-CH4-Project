@@ -33,7 +33,6 @@ void AUnitBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 void AUnitBase::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AUnitBase::AttachDelegateToWidget(ECharacterType Type)
@@ -45,7 +44,6 @@ void AUnitBase::AttachDelegateToWidget(ECharacterType Type)
 void AUnitBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 
 	//Sprint Test용도로 만든거라 따로 구현하시던지 삭제 해도됩니다. ksw
 	if (bSprint)
@@ -88,16 +86,11 @@ void AUnitBase::OnDeath()
 void AUnitBase::OnRep_HealthChanged_Implementation()
 {
 	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
-
 }
-
-/*void AUnitBase::OnHealthChanged()
-{
-	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
-}*/
 
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (!HasAuthority()) return 0;
 	if (Invincibility) return 0;
 	float HitDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	if (Damage > 0 && !bIsDie)
@@ -114,6 +107,7 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 		}
 		OnRep_HealthChanged();//ksw
 	}
+	
 	return Damage;
 }
 
