@@ -80,6 +80,6 @@ protected:
 private:
 	FTimerHandle HpTimerHandle;
 	FTimerHandle HpTimerDelayHandle;
-
+	AUnitBase* TempMonster = nullptr;
 	void UpdateProgressBar(FMRamdaElement& FElement);
 };

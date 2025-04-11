@@ -3,14 +3,61 @@
 
 #include "ElvenRingGameMode.h"
 
+#include <rapidjson/stream.h>
+
 #include "ElvenringGameInstance.h"
+#include "ElvenRingGameState.h"
+#include "ElvenRingPlayerState.h"
 #include "ElvenRing/Character/ElvenRingController.h"
 #include "ElvenRing/Gimmick/EventManager.h"
+#include "GameFramework/PlayerState.h"
 
 AElvenRingGameMode::AElvenRingGameMode()
 {
-	bActorSeamlessTraveled = true;
+	bUseSeamlessTravel = true;
 	EventManager = CreateDefaultSubobject<UEventManager>(TEXT("EventManager"));
+}
+
+void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage)
+{
+	if (EventInstigator->IsA(APlayerController::StaticClass()))
+	{
+		if (AElvenRingPlayerState* PlayerState = EventInstigator->GetPlayerState<AElvenRingPlayerState>())
+		{
+			PlayerState->RecordPlayerDamage(DamagedActor, Damage);
+		}
+	}
+}
+
+ACharacter* AElvenRingGameMode::GetHighestDamageCharacter(const AActor* BossActor) const
+{
+	ACharacter* HighestDamageCharacter = nullptr;
+	float HighestDamage = 0.f;
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(*It))
+		{
+			if (ACharacter* Character = PlayerController->GetCharacter())
+			{
+				float Damage = PlayerController->GetPlayerState<AElvenRingPlayerState>()->GetBossDamage(BossActor);
+				if (Damage > HighestDamage)
+				{
+					HighestDamage = Damage;
+					HighestDamageCharacter = Character;
+				}
+			}
+		}
+	}
+
+	return HighestDamageCharacter;
+}
+
+void AElvenRingGameMode::PostSeamlessTravel()
+{
+	Super::PostSeamlessTravel();
+
+	UE_LOG(LogTemp,Display, TEXT("PostSeamlessTravel"));
 }
 
 void AElvenRingGameMode::PostInitializeComponents()
@@ -39,7 +86,8 @@ void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerControll
 {
 	if (GetNetMode() == NM_Standalone)
 	{
-		PlayerController->ClientTravel(LevelName, TRAVEL_Absolute);
+		// PlayerController->ClientTravel(LevelName, TRAVEL_Absolute);
+		GetWorld()->ServerTravel(LevelName);
 		BroadcastLoadingScreen(LevelName);
 	}
 	else

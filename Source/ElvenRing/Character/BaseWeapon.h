@@ -39,5 +39,7 @@ public:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 						UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 						bool bFromSweep, const FHitResult &SweepResult);
-	
+
+	UFUNCTION(Server, Reliable)
+	void ServerApplyDamage(AActor* Target, float DamageAmount, AController* InstigatorController, AActor* DamageCauser);
 };
