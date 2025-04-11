@@ -17,13 +17,14 @@ class ELVENRING_API AElvenRingPlayerState : public APlayerState
 public:
 	AElvenRingPlayerState();
 
-	void ResetBossDamage();
-	float GetCurrentBossDamage() const { return CurrentBossDamage; }
-	void ApplyBossDamage(float Damage);
+	void RecordPlayerDamage(AActor* DamagedActor, float Damage);
+	float GetBossDamage(const AActor* BossActor) const;
+	void ResetPlayerDamage(AActor* BossClass);
+protected:
+	static UClass* GetNativeClass(const AActor* Actor);
+	TMap<UClass*, float> BossDamageRecord;
+
 protected:
 	virtual void BeginPlay() override;
-	
-	float CurrentBossDamage;
-
 	virtual void CopyProperties(APlayerState* PlayerState) override;
 };

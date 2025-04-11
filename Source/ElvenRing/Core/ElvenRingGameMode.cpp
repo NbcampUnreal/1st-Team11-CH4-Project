@@ -22,51 +22,35 @@ void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* Dama
 {
 	if (EventInstigator->IsA(APlayerController::StaticClass()))
 	{
-		if (AElvenRingGameState* ElvenRingGameState = GetGameState<AElvenRingGameState>())
+		if (AElvenRingPlayerState* PlayerState = EventInstigator->GetPlayerState<AElvenRingPlayerState>())
 		{
-			ElvenRingGameState->RecordPlayerDamage(Cast<APlayerController>(EventInstigator), DamagedActor, Damage);
+			PlayerState->RecordPlayerDamage(DamagedActor, Damage);
 		}
 	}
 }
 
-void AElvenRingGameMode::StartBossLap(const UClass* BossClass)
+ACharacter* AElvenRingGameMode::GetHighestDamageCharacter() const
 {
-	for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	ACharacter* HighestDamageCharacter = nullptr;
+	float HighestDamage = 0.f;
+
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
-		if (!It->IsValid())
+		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(*It))
 		{
-			continue;
+			if (ACharacter* Character = PlayerController->GetCharacter())
+			{
+				float Damage = PlayerController->GetPlayerState<AElvenRingPlayerState>()->GetBossDamage(Character);
+				if (Damage > HighestDamage)
+				{
+					HighestDamage = Damage;
+					HighestDamageCharacter = Character;
+				}
+			}
 		}
-		
-		APlayerController* PC = It->Get();
-		AElvenRingPlayerState* PlayerState = PC->GetPlayerState<AElvenRingPlayerState>();
-		if (!PC || !PC->PlayerState)
-		{
-			continue;
-		}
-
-		PlayerState->ResetBossDamage();
 	}
-}
 
-void AElvenRingGameMode::StopBossLap()
-{
-	for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
-	{
-		if (!It->IsValid())
-		{
-			continue;
-		}
-		
-		APlayerController* PC = It->Get();
-		AElvenRingPlayerState* PlayerState = PC->GetPlayerState<AElvenRingPlayerState>();
-		if (!PC || !PC->PlayerState)
-		{
-			continue;
-		}
-
-		PlayerState->ResetBossDamage();
-	}
+	return HighestDamageCharacter;
 }
 
 void AElvenRingGameMode::PostSeamlessTravel()
