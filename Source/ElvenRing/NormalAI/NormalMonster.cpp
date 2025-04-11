@@ -5,11 +5,10 @@
 #include "ElvenRing/NormalAI/NormalAIController.h"
 #include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
-#include "ElvenRing//UI/MonsterWidget.h"//ksw
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
-#include "Net/UnrealNetwork.h"
 
+#include "Components/AudioComponent.h"
 #include "Components/WidgetComponent.h" //ksw
 #include "Components/CapsuleComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -38,6 +37,10 @@ ANormalMonster::ANormalMonster()
 	InstanceIsHit = false;
 	InstanceIsDeath = false;
 
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent); // 🔹 캐릭터에 부착
+	AudioComponent->bAutoActivate = false; // 기본적으로 자동 실행 비활성화
+
 	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget")); //ksw
 	HPWidgetComponent->SetupAttachment(RootComponent); //ksw
 	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
@@ -54,7 +57,6 @@ void ANormalMonster::BeginPlay()
 	SetReplicates(true);
 	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
 	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
-	
 }
 
 void ANormalMonster::UpdateHPBar()
@@ -72,7 +74,7 @@ void ANormalMonster::UpdateHPBar()
 void ANormalMonster::RPCIsHit_Implementation(bool value)
 {
 	UE_LOG(LogTemp, Warning, TEXT("RPC호출"));
-		MulticastIsHit(value);
+	MulticastIsHit(value);
 }
 
 void ANormalMonster::RPCIsAttack_Implementation(bool value)
@@ -119,14 +121,55 @@ void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 	}
 }
 
+
+void ANormalMonster::PlaySound_Implementation(USoundBase* Sound)
+{
+	if (!Sound || !AudioComponent) return;
+	AudioComponent->SetSound(Sound);
+	AudioComponent->Play();
+}
+
+void ANormalMonster::PlayRandomSound_Implementation(ENormalMonsterSoundCategory Category)
+{
+	TArray<USoundBase*>* SoundArray = nullptr;
+
+	switch (Category)
+	{
+	case ENormalMonsterSoundCategory::MoveSound:
+		SoundArray = &MoveSounds;
+		break;
+	case ENormalMonsterSoundCategory::AttackSound:
+		SoundArray = &AttackSounds;
+		break;
+	case ENormalMonsterSoundCategory::HitSound:
+		SoundArray = &HitSounds;
+		break;
+	case ENormalMonsterSoundCategory::DeathSound:
+		SoundArray = &DeathSounds;
+		break;
+	}
+
+	if (SoundArray && SoundArray->Num() > 0)
+	{
+		int32 RandomIndex = FMath::RandRange(0, SoundArray->Num() - 1);
+		USoundBase* SelectedSound = (*SoundArray)[RandomIndex];
+
+		if (SelectedSound)
+		{
+			PlaySound(SelectedSound);
+		}
+	}
+}
+
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	UE_LOG(LogTemp, Log, TEXT("takedmg 함수 호출"));
 	InstanceIsHit = true;
-		RPCIsHit(InstanceIsHit);
-	
+	RPCIsHit(InstanceIsHit);
+	PlayRandomSound(ENormalMonsterSoundCategory::HitSound);
+
 	return Damage;
 }
 
@@ -136,6 +179,7 @@ void ANormalMonster::Attack(AActor* Target)
 	{
 		InstanceIsAttack = true;
 		RPCIsAttack(InstanceIsAttack);
+		PlayRandomSound(ENormalMonsterSoundCategory::AttackSound);
 		FVector MonsterLocation = GetActorLocation();
 		FVector TargetLocation = Target->GetActorLocation();
 		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
@@ -156,7 +200,7 @@ void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 {
 	AAIController* AIController = Cast<AAIController>(GetController());
 	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
-
+	PlayRandomSound(ENormalMonsterSoundCategory::MoveSound);
 	BlackboardComp->SetValueAsBool(TEXT("PlayerDetectedKey"), true);
 	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
 	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
@@ -167,7 +211,8 @@ void ANormalMonster::OnDeath()
 	Super::OnDeath();
 	InstanceIsDeath = true;
 	RPCIsDeath(InstanceIsDeath);
-
+	PlayRandomSound(ENormalMonsterSoundCategory::DeathSound);
+	
 	// 콜리전 제거
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
