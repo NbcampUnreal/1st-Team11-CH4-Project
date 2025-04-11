@@ -92,13 +92,15 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 {
 	if (!HasAuthority()) return 0;
 	if (Invincibility) return 0;
-	float HitDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	if (Damage > 0 && !bIsDie)
+	
+	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if (ActualDamage > 0 && !bIsDie)
 	{
 		// 연출을 위해 원래 데미지 주변 값으로 계산
-		const float InterpDamage =  FMath::RandRange(Damage-Damage/5, Damage+Damage/5);
+		ActualDamage =  FMath::RandRange(Damage-Damage/5, Damage+Damage/5);
 		
-		CurHealth -= InterpDamage;
+		CurHealth -= ActualDamage;
 		//LOG(TEXT("Get Damaged ! Current Health : %f"), CurHealth);
 		if (CurHealth <= 0.f) OnDeath();
 		else
@@ -108,7 +110,7 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 		OnRep_HealthChanged();//ksw
 	}
 	
-	return Damage;
+	return ActualDamage;
 }
 
 
