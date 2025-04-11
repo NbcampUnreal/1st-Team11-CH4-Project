@@ -29,7 +29,7 @@ void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* Dama
 	}
 }
 
-ACharacter* AElvenRingGameMode::GetHighestDamageCharacter() const
+ACharacter* AElvenRingGameMode::GetHighestDamageCharacter(const AActor* BossActor) const
 {
 	ACharacter* HighestDamageCharacter = nullptr;
 	float HighestDamage = 0.f;
@@ -40,7 +40,7 @@ ACharacter* AElvenRingGameMode::GetHighestDamageCharacter() const
 		{
 			if (ACharacter* Character = PlayerController->GetCharacter())
 			{
-				float Damage = PlayerController->GetPlayerState<AElvenRingPlayerState>()->GetBossDamage(Character);
+				float Damage = PlayerController->GetPlayerState<AElvenRingPlayerState>()->GetBossDamage(BossActor);
 				if (Damage > HighestDamage)
 				{
 					HighestDamage = Damage;

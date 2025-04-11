@@ -30,7 +30,7 @@ public:
 	 * Warning : 같은 보스가 Respawn된다거나 여러 개체가 존재하면 잘못된 계산을 할 수 있다.
 	 */
 	void RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage);
-	ACharacter* GetHighestDamageCharacter() const;
+	ACharacter* GetHighestDamageCharacter(const AActor* BossActor) const;
 	
 public:
 	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
