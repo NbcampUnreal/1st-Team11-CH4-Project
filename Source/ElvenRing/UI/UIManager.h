@@ -15,6 +15,7 @@ class UBattleMessageWidget;
 class UBossWidget;
 class UMonsterWidget;
 class UMessageWidgetBase;
+class UScreenEffectWidget;
 class AUnitBase;
 
 UENUM(BlueprintType)
@@ -52,6 +53,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowMessage(const FString& Message, EMessageType MsgType);
 
+  
+
     void ShowBossWidget(UWorld* World);
 
     void ClearAllWidgets();
@@ -62,6 +65,10 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     UPlayerMainUi* GetPlayerMainUi() const { return PlayerMainUiWedget; };
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    UScreenEffectWidget* GetScreenEffectWidget();
+
     UFUNCTION(BlueprintCallable, Category = "UI")
     void BindPlayerMainUi(UWorld* World, AUnitBase* Unit);
 
@@ -73,7 +80,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void CreateBindNormalMonsterWidgetUi(UWorld* World, AUnitBase* Unit);
 
-    UFUNCTION(BlueprintCallable, Category = "UI")
     UMessageWidgetBase* GetMessageWidgetSafe(EMessageType MsgType) const;
 
 protected:
@@ -104,6 +110,9 @@ protected:
     UPROPERTY()
     UBossWidget* BossWidget;
 
+    UPROPERTY()
+    UScreenEffectWidget* ScreenEffectWidget;
+
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UMainTitleWidget> TitleWidgetClass;
 
@@ -127,7 +136,9 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UBossWidget> BossWidgetClass;
-  
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UScreenEffectWidget> ScreenEffectWidgetClass;
 private:
    // UWorld* CachedWorld = nullptr;
     TArray<UMessageWidgetBase*> MessageWidgets; 

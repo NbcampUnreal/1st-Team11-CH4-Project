@@ -127,12 +127,10 @@ private:
 	void UpdateProgressBarSize(UProgressBar* ProgressBar, float XSize);
 
 	void DecreaseProgressBar(FRamdaElement& FEmt);
-	void RecoverProgressBar(FRamdaElement2& FEmt );
 	void RecoverProgressBar1(FRamdaElement& FEmt);
 
 protected:
 	virtual void NativeConstruct() override;
-	
 	virtual void NativeDestruct() override;
 
 	FTimerHandle HpTimerHandle;
