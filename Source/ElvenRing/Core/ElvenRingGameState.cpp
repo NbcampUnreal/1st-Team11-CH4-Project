@@ -2,3 +2,13 @@
 
 
 #include "ElvenRingGameState.h"
+
+AElvenRingGameState::AElvenRingGameState()
+{
+	bActorSeamlessTraveled = true;
+}
+
+void AElvenRingGameState::BeginPlay()
+{
+	Super::BeginPlay();
+}

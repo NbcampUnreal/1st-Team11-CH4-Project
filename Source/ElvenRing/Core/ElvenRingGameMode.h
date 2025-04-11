@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EngineUtils.h"
 #include "GameFramework/GameMode.h"
 #include "ElvenRingGameMode.generated.h"
 
@@ -16,11 +17,34 @@ class ELVENRING_API AElvenRingGameMode : public AGameMode
 
 public:
 	AElvenRingGameMode();
+	
 protected:
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void StartPlay() override;
+	virtual void PostSeamlessTravel() override;
+
+public:
+	/**
+	 * 현재 Boss의 Type을 기준으로 기록하고 있다.
+	 * Warning : 같은 보스가 Respawn된다거나 여러 개체가 존재하면 잘못된 계산을 할 수 있다.
+	 */
+	void RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage);
+	APlayerController* GetHighestDamagePlayer(const AActor* BossActor) const;
+	void ResetDamageRecord(const UClass* BossClass);
 	
+	void StartBossLap(const UClass* BossClass);
+	void StopBossLap();
+	
+protected:
+	void RecordPlayerDamage(APlayerController* EventInstigator, AActor* DamagedActor, float Damage);
+	static UClass* GetNativeClass(const AActor* Actor);
+
+	/*
+	 * Player Controller는 파괴 될 수 있기 때문에 NetID를 기준으로 작성
+	 */
+	TUniqueNetIdMap<TMap<UClass*, float>> PlayerBossDamageRecord;
+
 public:
 	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
 protected:

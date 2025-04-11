@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ElvenRing/UI/PlayerMainUi.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/Core/ElvenRingGameMode.h"
 #include "ElvenRing/UI/UIManager.h"
 #include "Net/UnrealNetwork.h"
 
@@ -108,6 +109,11 @@ float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, ACon
 			PlayDamageAnim();
 		}
 		OnRep_HealthChanged();//ksw
+
+		if (AElvenRingGameMode* GameMode = GetWorld()->GetAuthGameMode<AElvenRingGameMode>())
+		{
+			GameMode->RecordDamage(EventInstigator, this, ActualDamage);
+		}
 	}
 	
 	return ActualDamage;
