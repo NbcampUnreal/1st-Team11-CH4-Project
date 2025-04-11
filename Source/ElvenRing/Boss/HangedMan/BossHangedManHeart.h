@@ -11,6 +11,8 @@ class ELVENRING_API ABossHangedManHeart : public AUnitBase
 
 public:
 	ABossHangedManHeart();
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Boss")
 	TObjectPtr<class ABossHangedMan> HangedMan;
 };
