@@ -8,6 +8,7 @@
 #include "ElvenRing//UI/MonsterWidget.h"//ksw
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
+#include "Net/UnrealNetwork.h"
 
 #include "Components/WidgetComponent.h" //ksw
 #include "Components/CapsuleComponent.h"
@@ -29,11 +30,14 @@ ANormalMonster::ANormalMonster()
 	
 	bCanAttack = true;
 	bCanMove = true;
-	bIsHit = false;
+	MonsterIsHit = false;
 	bIsDie = false;
-
 	AIControllerClass = ANormalAIController::StaticClass();
 
+	InstanceIsAttack = false;
+	InstanceIsHit = false;
+	InstanceIsDeath = false;
+	
 	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget")); //ksw
 	HPWidgetComponent->SetupAttachment(RootComponent); //ksw
 	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
@@ -47,6 +51,7 @@ ANormalMonster::ANormalMonster()
 void ANormalMonster::BeginPlay()
 {
 	Super::BeginPlay();
+	SetReplicates(true);
 	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
 	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
 }
@@ -63,18 +68,52 @@ void ANormalMonster::UpdateHPBar()
 	}
 }
 
-// void ANormalMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-// {
-// 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-// 	DOREPLIFETIME(ANormalMonster, CurHealth); //체력을 네트워크로 전송
-// }
+void ANormalMonster::OnRep_InstanceIsHit()
+{
+	UE_LOG(LogTemp, Warning, TEXT("함수는 실행이 됨"));
+	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->UpdateHit(InstanceIsHit);// AnimInstance 변수 업데이트
+		UE_LOG(LogTemp, Warning, TEXT("Monster에서 Onrep_Hit 정상실행"));
+	}
+}
+
+void ANormalMonster::OnRep_InstanceIsAttack()
+{
+	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->UpdateAttack(InstanceIsAttack); // AnimInstance 변수 업데이트
+	}
+}
+
+void ANormalMonster::OnRep_InstanceIsDeath()
+{
+	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->IsDeath = InstanceIsDeath;
+	}
+}
+
+void ANormalMonster::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ANormalMonster, InstanceIsHit);
+	DOREPLIFETIME(ANormalMonster, InstanceIsAttack);
+	DOREPLIFETIME(ANormalMonster, InstanceIsDeath);
+}
 
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-	Grux_Anim->HitAnim();
+	MonsterIsHit = true;
+	InstanceIsHit = true;
+	UE_LOG(LogTemp, Warning, TEXT("Hit:%d"),InstanceIsHit);
+	MonsterIsHit = false;
+
 	return Damage;
 }
 
@@ -82,10 +121,7 @@ void ANormalMonster::Attack(AActor* Target)
 {
 	if (Target)
 	{
-		//애니메이션 실행
-		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-		Grux_Anim->AttackAnim();
-		
+		InstanceIsAttack = true;
 		FVector MonsterLocation = GetActorLocation();
 		FVector TargetLocation = Target->GetActorLocation();
 		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
@@ -93,7 +129,6 @@ void ANormalMonster::Attack(AActor* Target)
 		FVector MonsterForward = GetActorForwardVector();
 		float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
 		float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
-
 		float Distance = FVector::Dist(MonsterLocation, TargetLocation);
 
 		if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
@@ -116,30 +151,13 @@ void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 	BlackboardComp->SetValueAsBool(TEXT("PlayerDetectedKey"), true);
 	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
 	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
-
-}
-
-void ANormalMonster::OnRep_CurHealth()
-{
-	UE_LOG(LogTemp, Warning, TEXT("체력 서버로 보냄"));
-}
-
-void ANormalMonster::PlayDeathAnim()
-{
-	Super::PlayDeathAnim();
-	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-	Grux_Anim->DeathAnim();
 }
 
 void ANormalMonster::OnDeath()
 {
 	Super::OnDeath();
-	PlayDeathAnim();
-	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-
-
-
-
+	InstanceIsDeath = true;
+	
 	// 콜리전 제거
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -149,7 +167,6 @@ void ANormalMonster::OnDeath()
 	GameInstance->GetUIManager()->DestroyMonsterHpWidget(this);
 	HPWidgetComponent->DestroyComponent();
 	GetController()->UnPossess();
-
 }
 
 void ANormalMonster::SetWidget(UUserWidget* Widget)

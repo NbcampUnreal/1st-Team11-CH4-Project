@@ -2,6 +2,7 @@
 
 
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
+#include "ElvenRing/NormalAI/NormalMonster.h"
 
 #include "ElvenRing/ElvenRing.h"
 
@@ -14,36 +15,38 @@ UGrux_AnimInstance::UGrux_AnimInstance()
 }
 
 
-void UGrux_AnimInstance::AttackAnim()
+void UGrux_AnimInstance::UpdateAttack(bool value)
 {
-	if (IsAttacking == false)
+	IsAttacking = value;
+}
+
+void UGrux_AnimInstance::UpdateHit(bool value)
+{
+	IsHit = value;
+}
+
+void UGrux_AnimInstance::AnimNotify_EndHit()
+{
+	AActor* OwnerActor = GetOwningActor();
+	if (OwnerActor)
 	{
-		IsAttacking = true;
+		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
+		if (Monster)
+		{
+			Monster->InstanceIsHit = false;
+		}
 	}
 }
 
-void UGrux_AnimInstance::HitAnim()
+void UGrux_AnimInstance::AnimNotify_EndAttack()
 {
-	if (IsHit == false)
+	AActor* OwnerActor = GetOwningActor();
+	if (OwnerActor)
 	{
-		IsHit = true;
-		UE_LOG(LogTemp, Error, TEXT("또 감"));
-
-	}
-	else if (IsHit == true)
-	{
-		IsHit = false;
-		IsHit = true;
+		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
+		if (Monster)
+		{
+			Monster->InstanceIsAttack = false;
+		}
 	}
 }
-
-void UGrux_AnimInstance::DeathAnim()
-{
-	IsDeath = true;
-}
-
-// void UGrux_AnimInstance::AnimNotify_ChangeBool()
-// {
-// 	IsHit = false;
-// 	UE_LOG(LogTemp, Error, TEXT("다시 돌아옴"));
-// }

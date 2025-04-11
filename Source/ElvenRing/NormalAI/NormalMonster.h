@@ -2,12 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "ElvenRing/Character/UnitBase.h"
-#include "Net/UnrealNetwork.h"
 #include "NormalMonster.generated.h"
 
 
 class UWidgetComponent; //ksw
-class ElvenrinCharacter;
 
 UCLASS()
 class ELVENRING_API ANormalMonster : public AUnitBase
@@ -21,58 +19,51 @@ public:
 	virtual void Attack(AActor* Target) override;
 
 	UFUNCTION(BlueprintCallable, Category="AI")
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	                         class AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable, Category="AI")
 	void PlayerDetected(UObject* TargetObject);
 
-	UFUNCTION()
-	void OnRep_CurHealth();
-	
+
 	virtual void BeginPlay() override;
 	virtual void OnDeath() override;
-	virtual void PlayDeathAnim() override;
 
-	void SetWidget(UUserWidget* Widget);//ksw
+	void SetWidget(UUserWidget* Widget); //ksw
 	void UpdateHPBar();
-	
-	// virtual void GetLifetimeReplicatedProps
-	// (TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	//
-	// UPROPERTY(ReplicatedUsing = OnRep_CurHealth) // 값 변경 시 클라이언트에서 호출
-	// float CurHealth;
 
-	
-	
+	UPROPERTY(ReplicatedUsing = OnRep_InstanceIsHit)
+	bool InstanceIsHit;
+
+	UPROPERTY(ReplicatedUsing = OnRep_InstanceIsAttack)
+	bool InstanceIsAttack;
+
+	UPROPERTY(ReplicatedUsing = OnRep_InstanceIsDeath)
+	bool InstanceIsDeath;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION()
+	void OnRep_InstanceIsHit();
+
+	UFUNCTION()
+	void OnRep_InstanceIsAttack();
+
+	UFUNCTION()
+	void OnRep_InstanceIsDeath();
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
 	UWidgetComponent* HPWidgetComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
-	bool bisHit;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
-	bool bIsDie;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	float AttackDistance;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
 	float AttackAngle;
 
-	
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="AI")
+	bool MonsterIsHit;
+
 	FTimerHandle UpdateHPBarTimer;
 	FTimerHandle StayTimer;
-
-	
-	
-	
-	
-
-};	
-
-
-
-
-
-
+};

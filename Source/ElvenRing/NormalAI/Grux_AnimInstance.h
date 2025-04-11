@@ -12,6 +12,13 @@ class ELVENRING_API UGrux_AnimInstance : public UAnimInstance
 	UGrux_AnimInstance();
 
 public:
+	UFUNCTION()
+	void UpdateAttack(bool value);
+
+	UFUNCTION()
+	void UpdateHit(bool value);
+	
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")
 	bool IsHit;
 
@@ -26,16 +33,10 @@ public:
 
 	FTimerHandle TimerHandle;
 
-	UFUNCTION(BlueprintCallable, Category = "Animation")
-	void AttackAnim();
 
-	UFUNCTION(BlueprintCallable, Category = "Animation")
-	void HitAnim();
+	UFUNCTION(BlueprintCallable)
+	void AnimNotify_EndHit();
 
-	UFUNCTION(BlueprintCallable, Category = "Animation")
-	void DeathAnim();
-
-	//추후 복잡한 노티파이는 c++로 작성
-	// UFUNCTION()
-	// void AnimNotify_ChangeBool();
+	UFUNCTION(BlueprintCallable)
+	void AnimNotify_EndAttack();
 };
