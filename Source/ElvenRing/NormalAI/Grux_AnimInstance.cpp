@@ -23,7 +23,6 @@ void UGrux_AnimInstance::UpdateAttack(bool value)
 void UGrux_AnimInstance::UpdateHit(bool value)
 {
 	IsHit = value;
-	UE_LOG(LogTemp, Warning, TEXT("HitUpdate 호출"));
 }
 
 void UGrux_AnimInstance::UpdateDeath(bool value)
