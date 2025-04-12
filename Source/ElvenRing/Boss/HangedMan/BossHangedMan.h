@@ -44,8 +44,9 @@ private:
 
 	void ThunderBoldAttack();
 
-	void ElectronicAttack();
-
+	void ElectronicAttackUp();
+	void ElectronicAttackDown();
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLightning();
 
@@ -80,7 +81,10 @@ private:
 	TObjectPtr<UAnimMontage> ThunderBoldAnim;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
-	TObjectPtr<UAnimMontage> ElectronicAnim;
+	TObjectPtr<UAnimMontage> ElectronicUpAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
+	TObjectPtr<UAnimMontage> ElectronicDownAnim;
 	
 	EHealthPhase HealthPhase;
 	

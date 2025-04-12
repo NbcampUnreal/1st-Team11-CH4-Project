@@ -15,10 +15,11 @@ ABossHangedMan::ABossHangedMan()
 
 void ABossHangedMan::BeginPlay()
 {
-	//NormalPattern->AddAttackPattern(this, &ABossHangedMan::LightningAttack, FString("LightningAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::LightningAttack, FString("LightningAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectricJavelinAttack, FString("ElectricJavelinAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossHangedMan::ThunderBoldAttack, FString("ThunderBoldAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttack, FString("ElectronicAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ThunderBoldAttack, FString("ThunderBoldAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackUp, FString("ElectronicAttackUp"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackDown, FString("ElectronicAttackDown"));
 
 	Super::BeginPlay();
 	SetBossBattleMode();
@@ -87,9 +88,14 @@ void ABossHangedMan::ThunderBoldAttack()
 	PlayAnimation(ThunderBoldAnim);
 }
 
-void ABossHangedMan::ElectronicAttack()
+void ABossHangedMan::ElectronicAttackUp()
 {
-	PlayAnimation(ElectronicAnim);
+	PlayAnimation(ElectronicUpAnim);
+}
+
+void ABossHangedMan::ElectronicAttackDown()
+{
+	PlayAnimation(ElectronicDownAnim);
 }
 
 void ABossHangedMan::MulticastLightning_Implementation()
