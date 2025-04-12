@@ -79,12 +79,16 @@ void UBossWidget::UpdateProgressBar(FMRamdaElement& FElement)
 		HpTimerDelayHandle,
 		FTimerDelegate::CreateLambda([this, FElement]() mutable
 			{
+				if (!this)
+					return;
 				FElement.PrevTime = GetWorld()->GetTimeSeconds();
 				GetWorld()->GetTimerManager().SetTimer
 				(
 					HpTimerHandle,
 					FTimerDelegate::CreateLambda([this, FElement]() mutable
 						{
+							if (!this)
+								return;
 							FElement.ElapsedTime += GetWorld()->GetTimeSeconds() - FElement.PrevTime;
 							float Alpha = FMath::Clamp(FElement.ElapsedTime / FElement.Duration, 0.f, 1.f);
 							float CurValue = FMath::Lerp(FElement.CurProgressBarPer, FElement.TargetProgressBarPer, Alpha);

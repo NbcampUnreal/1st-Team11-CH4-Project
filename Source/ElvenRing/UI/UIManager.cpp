@@ -14,6 +14,7 @@
 #include "BossWidget.h"
 #include "MonsterWidget.h"
 #include "MessageWidgetBase.h"
+#include "ScreenEffectWidget.h"
 #include "ElvenRing/Character/UnitBase.h"
 #include "Components/EditableTextBox.h"
 
@@ -57,11 +58,17 @@ UUIManager::UUIManager()
     else
         UE_LOG(LogTemp, Warning, TEXT("PlayerMainUiClass: %s"), *GetNameSafe(PlayerMainUiClass));
 
-    static ConstructorHelpers::FClassFinder<UBossWidget> WBP_BossWidgetClass(TEXT("/Game/ElvenRing/Blueprints/UI/WBP_Boss"));
-    if (WBP_BossWidgetClass.Succeeded())
-        BossWidgetClass = WBP_BossWidgetClass.Class;
+    static ConstructorHelpers::FClassFinder<UBossWidget> WBP_BossWidget(TEXT("/Game/ElvenRing/Blueprints/UI/WBP_Boss"));
+    if (WBP_BossWidget.Succeeded())
+        BossWidgetClass = WBP_BossWidget.Class;
     else
         UE_LOG(LogTemp, Warning, TEXT("BossWidgetClass: %s"), *GetNameSafe(BossWidgetClass));
+
+    static ConstructorHelpers::FClassFinder<UScreenEffectWidget> WBP_ScreenEffectWidget(TEXT("/Game/ElvenRing/Blueprints/UI/WBP_ScreenEffectWidget"));
+    if (WBP_ScreenEffectWidget.Succeeded())
+        ScreenEffectWidgetClass = WBP_ScreenEffectWidget.Class;
+    else
+        UE_LOG(LogTemp, Warning, TEXT("ScreenEffectWidgetClass: %s"), *GetNameSafe(ScreenEffectWidgetClass));
 }
 
 void UUIManager::InitUi(UWorld* World)
@@ -88,6 +95,9 @@ void UUIManager::InitUi(UWorld* World)
     if (BossWidgetClass)
         BossWidget = CreateWidget<UBossWidget>(World, BossWidgetClass);
 
+    if (ScreenEffectWidgetClass)
+        ScreenEffectWidget = CreateWidget<UScreenEffectWidget>(World, ScreenEffectWidgetClass);
+    
     RegisterMessageWidgets();
 }
 
@@ -158,7 +168,7 @@ void UUIManager::ShowInGameUi(UWorld* World)
     if (!InGameWidget && InGameWidgetClass && World)
         InGameWidget = CreateWidget<UInGameWidget>(World, InGameWidgetClass);
 
-    if (InGameWidget)
+    if (InGameWidget&& !InGameWidget->IsInViewport())
         InGameWidget->AddToViewport();
 }
 void UUIManager::ShowPlayerMainUi(UWorld* World)
@@ -166,7 +176,7 @@ void UUIManager::ShowPlayerMainUi(UWorld* World)
     if (!PlayerMainUiWedget && PlayerMainUiClass && World)
         PlayerMainUiWedget = CreateWidget<UPlayerMainUi>(World, PlayerMainUiClass);
 
-    if (PlayerMainUiWedget)
+    if (PlayerMainUiWedget && !PlayerMainUiWedget->IsInViewport())
         PlayerMainUiWedget->AddToViewport();
 
     if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
@@ -183,7 +193,8 @@ void UUIManager::ShowMessage(const FString& Message, EMessageType MsgType)
    UMessageWidgetBase* Widget = GetMessageWidgetSafe(MsgType);
    if (Widget)
    {
-       Widget->AddToViewport();
+       if(!Widget->IsInViewport() )
+         Widget->AddToViewport();
        Widget->ShowMessageText(Message);
    }
 }
@@ -193,7 +204,7 @@ void UUIManager::ShowBossWidget(UWorld* World)
     if (!BossWidget && BossWidgetClass && World)
         BossWidget = CreateWidget<UBossWidget>(World, BossWidgetClass);
 
-    if (BossWidget)
+    if ( BossWidget && !BossWidget->IsInViewport())
         BossWidget->AddToViewport();
 }
 
@@ -217,6 +228,7 @@ void UUIManager::ClearAllWidgets()
     PlayerMainUiWedget = nullptr;
     MonsterWidget = nullptr;
     BossWidget = nullptr;
+    ScreenEffectWidget = nullptr;
 
     MonsterHpWidgets.Empty(); 
 }
@@ -235,6 +247,15 @@ void UUIManager::RegisterMessageWidgets()
 {
     MessageWidgets.Add( SystemMessageWidget);
     MessageWidgets.Add( BattleMessageWidget);
+}
+
+UScreenEffectWidget* UUIManager::GetScreenEffectWidget()
+{
+    if (ScreenEffectWidget && !ScreenEffectWidget->IsInViewport())
+    {
+        ScreenEffectWidget->AddToViewport(100);
+    }
+    return ScreenEffectWidget;
 }
 
 void UUIManager::BindPlayerMainUi(UWorld* World, AUnitBase* Unit)

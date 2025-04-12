@@ -12,6 +12,8 @@ ALever::ALever()
 	bCanLeverOn = true;
 	bCanLeverOff = false;
 	bIsLocked = false;
+
+	bReplicates = true;
 }
 
 FString ALever::GetInteractText()

@@ -45,7 +45,7 @@ void UMonsterWidget::SetUiSize(FVector2D  Scale, FVector2D Pos)
 }
 void UMonsterWidget::DecreaseHp(float TargetHp, float HpMax)
 {
-	if (0 >= HpProgressBar->GetPercent())
+	if (KINDA_SMALL_NUMBER >= HpProgressBar->GetPercent())
 		return;
 
 	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
@@ -101,6 +101,7 @@ void UMonsterWidget::BindToMonster(AUnitBase* Monster)
 	{
 		Cast< ANormalMonster >(Monster)->SetWidget(this);
 		Monster->OnHpChanged.AddDynamic(this, &UMonsterWidget::UpdateHp);
+		TempMonster = Monster;
 	}
 }
 
@@ -136,12 +137,23 @@ void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 		HpTimerDelayHandle,
 		FTimerDelegate::CreateLambda([this, FElement]() mutable
 			{
+				if (!this)
+				{
+					//UE_LOG(LogTemp, Warning, TEXT("this ERROR!!!!!!!!!!!!! "));
+					return;
+				}
+
 				FElement.PrevTime = GetWorld()->GetTimeSeconds();
 				GetWorld()->GetTimerManager().SetTimer
 				(
 					HpTimerHandle,
 					FTimerDelegate::CreateLambda([this, FElement]() mutable
 					{
+							if (!this)
+							{
+								//UE_LOG(LogTemp, Warning, TEXT("this ERROR!!!!!!!!!!!!! "));
+								return;
+							}
 						FElement.ElapsedTime += GetWorld()->GetTimeSeconds() - FElement.PrevTime;
 						float Alpha = FMath::Clamp(FElement.ElapsedTime / FElement.Duration, 0.f, 1.f);
 						float CurValue = FMath::Lerp(FElement.CurProgressBarPer, FElement.TargetProgressBarPer, Alpha);
@@ -153,9 +165,16 @@ void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 							FElement.MyProgressBar->SetPercent(FElement.TargetProgressBarPer);
 							if (FElement.Recover)
 								FElement.MyProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
-							else 
-								DamageText->SetText( FText::GetEmpty());
-
+							else
+							{
+								DamageText->SetText(FText::GetEmpty());
+								if (KINDA_SMALL_NUMBER >= FElement.MyProgressBar->GetPercent())
+								{
+									TempMonster->OnHpChanged.RemoveDynamic(this, &UMonsterWidget::UpdateHp);
+									TempMonster = nullptr;
+									//UE_LOG(LogTemp, Warning, TEXT(" RemoveDynamic!!!!!! Monster"));
+								}
+							}
 							FElement.ClearPointer();
 							GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
 						}

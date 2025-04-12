@@ -5,10 +5,10 @@
 #include "ElvenRing/NormalAI/NormalAIController.h"
 #include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
-#include "ElvenRing//UI/MonsterWidget.h"//ksw
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
 
+#include "Components/AudioComponent.h"
 #include "Components/WidgetComponent.h" //ksw
 #include "Components/CapsuleComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -26,13 +26,20 @@ ANormalMonster::ANormalMonster()
 
 	AttackDistance = 250.0f;
 	AttackAngle = 60.0f;
-	
+
 	bCanAttack = true;
 	bCanMove = true;
-	bIsHit = false;
+	MonsterIsHit = false;
 	bIsDie = false;
-
 	AIControllerClass = ANormalAIController::StaticClass();
+
+	InstanceIsAttack = false;
+	InstanceIsHit = false;
+	InstanceIsDeath = false;
+
+	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("AudioComponent"));
+	AudioComponent->SetupAttachment(RootComponent); // 🔹 캐릭터에 부착
+	AudioComponent->bAutoActivate = false; // 기본적으로 자동 실행 비활성화
 
 	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget")); //ksw
 	HPWidgetComponent->SetupAttachment(RootComponent); //ksw
@@ -47,6 +54,7 @@ ANormalMonster::ANormalMonster()
 void ANormalMonster::BeginPlay()
 {
 	Super::BeginPlay();
+	SetReplicates(true);
 	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
 	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
 }
@@ -63,12 +71,105 @@ void ANormalMonster::UpdateHPBar()
 	}
 }
 
+void ANormalMonster::RPCIsHit_Implementation(bool value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("RPC호출"));
+	MulticastIsHit(value);
+}
+
+void ANormalMonster::RPCIsAttack_Implementation(bool value)
+{
+	if (HasAuthority())
+	{
+		MulticastIsAttack(value);
+	}
+}
+
+void ANormalMonster::RPCIsDeath_Implementation(bool value)
+{
+	if (HasAuthority())
+	{
+		MulticastIsDeath(value);
+	}
+}
+
+void ANormalMonster::MulticastIsHit_Implementation(bool value)
+{
+	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->UpdateHit(value);
+		UE_LOG(LogTemp, Warning, TEXT("Multicast호출"));
+	}
+}
+
+void ANormalMonster::MulticastIsAttack_Implementation(bool value)
+{
+	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->UpdateAttack(value);
+	}
+}
+
+void ANormalMonster::MulticastIsDeath_Implementation(bool value)
+{
+	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
+	if (AnimInstance)
+	{
+		AnimInstance->UpdateDeath(value);
+	}
+}
+
+
+void ANormalMonster::PlaySound_Implementation(USoundBase* Sound)
+{
+	if (!Sound || !AudioComponent) return;
+	AudioComponent->SetSound(Sound);
+	AudioComponent->Play();
+}
+
+void ANormalMonster::PlayRandomSound_Implementation(ENormalMonsterSoundCategory Category)
+{
+	TArray<USoundBase*>* SoundArray = nullptr;
+
+	switch (Category)
+	{
+	case ENormalMonsterSoundCategory::MoveSound:
+		SoundArray = &MoveSounds;
+		break;
+	case ENormalMonsterSoundCategory::AttackSound:
+		SoundArray = &AttackSounds;
+		break;
+	case ENormalMonsterSoundCategory::HitSound:
+		SoundArray = &HitSounds;
+		break;
+	case ENormalMonsterSoundCategory::DeathSound:
+		SoundArray = &DeathSounds;
+		break;
+	}
+
+	if (SoundArray && SoundArray->Num() > 0)
+	{
+		int32 RandomIndex = FMath::RandRange(0, SoundArray->Num() - 1);
+		USoundBase* SelectedSound = (*SoundArray)[RandomIndex];
+
+		if (SelectedSound)
+		{
+			PlaySound(SelectedSound);
+		}
+	}
+}
+
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-	Grux_Anim->HitAnim();
+	UE_LOG(LogTemp, Log, TEXT("takedmg 함수 호출"));
+	InstanceIsHit = true;
+	RPCIsHit(InstanceIsHit);
+	PlayRandomSound(ENormalMonsterSoundCategory::HitSound);
+
 	return Damage;
 }
 
@@ -76,10 +177,9 @@ void ANormalMonster::Attack(AActor* Target)
 {
 	if (Target)
 	{
-		//애니메이션 실행
-		UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-		Grux_Anim->AttackAnim();
-		
+		InstanceIsAttack = true;
+		RPCIsAttack(InstanceIsAttack);
+		PlayRandomSound(ENormalMonsterSoundCategory::AttackSound);
 		FVector MonsterLocation = GetActorLocation();
 		FVector TargetLocation = Target->GetActorLocation();
 		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
@@ -87,17 +187,11 @@ void ANormalMonster::Attack(AActor* Target)
 		FVector MonsterForward = GetActorForwardVector();
 		float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
 		float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
-
 		float Distance = FVector::Dist(MonsterLocation, TargetLocation);
 
 		if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("공격 성공"));
 			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("공격 실패"));
 		}
 	}
 }
@@ -106,39 +200,29 @@ void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 {
 	AAIController* AIController = Cast<AAIController>(GetController());
 	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
-
+	PlayRandomSound(ENormalMonsterSoundCategory::MoveSound);
 	BlackboardComp->SetValueAsBool(TEXT("PlayerDetectedKey"), true);
 	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
 	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
-
-}
-
-void ANormalMonster::PlayDeathAnim()
-{
-	Super::PlayDeathAnim();
-	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-	Grux_Anim->DeathAnim();
 }
 
 void ANormalMonster::OnDeath()
 {
 	Super::OnDeath();
-	PlayDeathAnim();
-	UGrux_AnimInstance* Grux_Anim = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
-
-
-
-
+	InstanceIsDeath = true;
+	RPCIsDeath(InstanceIsDeath);
+	PlayRandomSound(ENormalMonsterSoundCategory::DeathSound);
+	
 	// 콜리전 제거
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	bIsDie = true;
+
+	//HP바 타이머 정지, 위젯 제거
 	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
-	UElvenringGameInstance* GameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
+	UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
 	GameInstance->GetUIManager()->DestroyMonsterHpWidget(this);
 	HPWidgetComponent->DestroyComponent();
 	GetController()->UnPossess();
-
 }
 
 void ANormalMonster::SetWidget(UUserWidget* Widget)
