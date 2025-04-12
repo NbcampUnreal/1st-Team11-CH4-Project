@@ -20,7 +20,7 @@ void ABossHangedMan::BeginPlay()
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ThunderBoldAttack, FString("ThunderBoldAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackUp, FString("ElectronicAttackUp"));
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackDown, FString("ElectronicAttackDown"));
-
+	
 	Super::BeginPlay();
 	SetBossBattleMode();
 }
@@ -54,17 +54,17 @@ void ABossHangedMan::CheckHealthPhase()
 	if (CurHealth <= MaxHealth/4*3 && HealthPhase == EHealthPhase::None)
 	{
 		HealthPhase = EHealthPhase::First;
-		PlayAnimation(GroggyAnim);
+		Groggy();
 	}
 	else if (CurHealth <= MaxHealth/2 && HealthPhase == EHealthPhase::First)
 	{
 		HealthPhase = EHealthPhase::Second;
-		PlayAnimation(GroggyAnim);
+		SpecialAttack();
 	}
 	else if (CurHealth <= MaxHealth/4 && HealthPhase == EHealthPhase::Second)
 	{
 		HealthPhase = EHealthPhase::Third;
-		PlayAnimation(GroggyAnim);
+		Groggy();
 	}
 }
 
@@ -96,6 +96,18 @@ void ABossHangedMan::ElectronicAttackUp()
 void ABossHangedMan::ElectronicAttackDown()
 {
 	PlayAnimation(ElectronicDownAnim);
+}
+
+void ABossHangedMan::SpecialAttack()
+{
+	MulticastStopBattleMode();
+	PlayAnimation(SpecialAttackAnim);
+}
+
+void ABossHangedMan::Groggy()
+{
+	MulticastStopBattleMode();
+	PlayAnimation(GroggyAnim);
 }
 
 void ABossHangedMan::MulticastLightning_Implementation()

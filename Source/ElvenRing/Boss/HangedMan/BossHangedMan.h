@@ -46,6 +46,10 @@ private:
 
 	void ElectronicAttackUp();
 	void ElectronicAttackDown();
+
+	void SpecialAttack();
+
+	void Groggy();
 	
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastLightning();
@@ -85,6 +89,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<UAnimMontage> ElectronicDownAnim;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
+	TObjectPtr<UAnimMontage> SpecialAttackAnim;
 	
 	EHealthPhase HealthPhase;
 	
