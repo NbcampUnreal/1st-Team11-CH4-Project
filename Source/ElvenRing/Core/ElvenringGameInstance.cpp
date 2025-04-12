@@ -74,7 +74,7 @@ void UElvenringGameInstance::StartTrackLoadProgress(const FString& MapName)
 
 void UElvenringGameInstance::CheckLoadProgress()
 {
-	UE_LOG(LogTemp, Display, TEXT("Check Progress"));
+	// UE_LOG(LogTemp, Display, TEXT("Check Progress"));
 	// if (TargetMapPackageName.IsNone()) return;
 	
 	// float Percentage = GetAsyncLoadPercentage(TargetMapPackageName);

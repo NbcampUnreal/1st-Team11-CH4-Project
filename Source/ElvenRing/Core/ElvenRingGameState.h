@@ -13,4 +13,9 @@ UCLASS()
 class ELVENRING_API AElvenRingGameState : public AGameState
 {
 	GENERATED_BODY()
+
+public:
+	AElvenRingGameState();
+	
+	virtual void BeginPlay() override;
 };
