@@ -54,6 +54,9 @@ public:
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void SetBossBattleMode();
 
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastStopBattleMode();
+
 	/** 특정 구간동안 빠르게 이동시키고 싶을 때 사용 */
 	UFUNCTION(BlueprintCallable)
 	void MoveForward(float MoveMultiflier);
