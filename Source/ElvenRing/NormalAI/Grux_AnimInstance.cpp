@@ -38,6 +38,10 @@ void UGrux_AnimInstance::AnimNotify_EndHit()
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
 		{	IsHit=false;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
+			{
+				IsHit = false;
+			}, 0.5f, false);			
 			Monster->MulticastIsHit(IsHit);
 		}
 	}
