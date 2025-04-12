@@ -23,7 +23,6 @@ void UGrux_AnimInstance::UpdateAttack(bool value)
 void UGrux_AnimInstance::UpdateHit(bool value)
 {
 	IsHit = value;
-	UE_LOG(LogTemp, Warning, TEXT("HitUpdate 호출"));
 }
 
 void UGrux_AnimInstance::UpdateDeath(bool value)
@@ -39,6 +38,10 @@ void UGrux_AnimInstance::AnimNotify_EndHit()
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
 		{	IsHit=false;
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
+			{
+				IsHit = false;
+			}, 0.5f, false);			
 			Monster->MulticastIsHit(IsHit);
 		}
 	}

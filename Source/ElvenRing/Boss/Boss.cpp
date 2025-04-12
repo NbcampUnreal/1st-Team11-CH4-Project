@@ -247,6 +247,11 @@ void ABoss::SetBossBattleMode_Implementation()
 	bCanAttack = true;
 }
 
+void ABoss::MulticastStopBattleMode_Implementation()
+{
+	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+}
+
 void ABoss::MoveForward(const float MoveMultiflier)
 {
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed * MoveMultiflier;

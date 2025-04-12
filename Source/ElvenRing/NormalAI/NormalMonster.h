@@ -70,7 +70,6 @@ public:
 	virtual void OnDeath() override;
 	
 
-
 #pragma endregion
 	
 #pragma region 통신관련

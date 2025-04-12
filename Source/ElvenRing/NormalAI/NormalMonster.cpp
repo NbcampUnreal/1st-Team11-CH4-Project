@@ -48,7 +48,10 @@ ANormalMonster::ANormalMonster()
 	HPWidgetComponent->SetTwoSided(true); //ksw
 	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
 	HPWidgetComponent->SetPivot(FVector2D(0.5f, 0.5f)); //ksw
+
 	PrimaryActorTick.bCanEverTick = false; //ksw
+	bReplicates = true;
+	GetMesh()->SetIsReplicated(true);
 }
 
 void ANormalMonster::BeginPlay()
@@ -70,10 +73,9 @@ void ANormalMonster::UpdateHPBar()
 		HPWidgetComponent->SetWorldRotation(LookRot);
 	}
 }
-
+#pragma region 통신
 void ANormalMonster::RPCIsHit_Implementation(bool value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("RPC호출"));
 	MulticastIsHit(value);
 }
 
@@ -89,6 +91,9 @@ void ANormalMonster::RPCIsDeath_Implementation(bool value)
 {
 	if (HasAuthority())
 	{
+		GetController()->UnPossess();
+
+		UE_LOG(LogTemp, Warning, TEXT("Multicast Death호출"));
 		MulticastIsDeath(value);
 	}
 }
@@ -99,7 +104,6 @@ void ANormalMonster::MulticastIsHit_Implementation(bool value)
 	if (AnimInstance)
 	{
 		AnimInstance->UpdateHit(value);
-		UE_LOG(LogTemp, Warning, TEXT("Multicast호출"));
 	}
 }
 
@@ -119,9 +123,24 @@ void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 	{
 		AnimInstance->UpdateDeath(value);
 	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	
+	//HP바 타이머 정지, 위젯 제거
+	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
+
+	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
+	{
+		GameInstance->GetUIManager()->DestroyMonsterHpWidget(this);
+	}
+	if (HPWidgetComponent)
+	{
+		HPWidgetComponent->DestroyComponent();
+	}
 }
 
+#pragma endregion
 
+#pragma region 오디오
 void ANormalMonster::PlaySound_Implementation(USoundBase* Sound)
 {
 	if (!Sound || !AudioComponent) return;
@@ -160,12 +179,13 @@ void ANormalMonster::PlayRandomSound_Implementation(ENormalMonsterSoundCategory 
 		}
 	}
 }
+#pragma endregion
 
+#pragma region 전투
 float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                  AActor* DamageCauser)
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	UE_LOG(LogTemp, Log, TEXT("takedmg 함수 호출"));
 	InstanceIsHit = true;
 	RPCIsHit(InstanceIsHit);
 	PlayRandomSound(ENormalMonsterSoundCategory::HitSound);
@@ -212,19 +232,10 @@ void ANormalMonster::OnDeath()
 	InstanceIsDeath = true;
 	RPCIsDeath(InstanceIsDeath);
 	PlayRandomSound(ENormalMonsterSoundCategory::DeathSound);
-	
-	// 콜리전 제거
-	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	//HP바 타이머 정지, 위젯 제거
-	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
-	UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
-	GameInstance->GetUIManager()->DestroyMonsterHpWidget(this);
-	HPWidgetComponent->DestroyComponent();
-	GetController()->UnPossess();
 }
 
+
+#pragma endregion
 void ANormalMonster::SetWidget(UUserWidget* Widget)
 {
 	HPWidgetComponent->SetWidget(Widget);
