@@ -17,6 +17,7 @@ AElvenRingGameMode::AElvenRingGameMode()
 	bIsAllPlayerLoadMap = false;
 	LoadingTimeOutTime = 30.0f;
 	PlayerReadyCount = 0;
+	bHasPlayersReady = false;
 	
 	bDelayedStart = true;
 }
@@ -105,8 +106,6 @@ void AElvenRingGameMode::HandleSeamlessTravelPlayer(AController*& C)
 void AElvenRingGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
-
-	UE_LOG(LogTemp, Display, TEXT("HandleMatchIsWaitingToStart() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 }
 
 void AElvenRingGameMode::PostInitializeComponents()
@@ -122,19 +121,15 @@ void AElvenRingGameMode::PostInitializeComponents()
 void AElvenRingGameMode::StartPlay()
 {
 	Super::StartPlay();
-
-	UE_LOG(LogTemp,Display, TEXT("AElvenRingGameMode::StartPlay() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 }
 
 void AElvenRingGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp,Display, TEXT("AElvenRingGameMode::BeginPlay() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 	// 이 시점에서도 bAfterSeamlessTravel이 false일 경우, Seamless Travel이 아니라 처음 맵을 연 상태이다.
 	if (!bAfterSeamlessTravel)
 	{
-		UE_LOG(LogTemp,Display,TEXT("AElvenRingGameMode::BeginPlay() / Seamless Travel이 아닙니다."));
 		bDelayedStart = false;
 	}
 }
@@ -163,8 +158,12 @@ void AElvenRingGameMode::HandleNetworkReady(AElvenRingController* ElvenRingContr
 {
 	// 원래라면 잘못된 중복 입력을 처리하기 위해 Controller를 저장해야 하지만 구현 간단성을 위해 생략한다.
 	// 추후에 버그가 있을 경우 Controller를 저장해서 확인한다.
+	if (bHasPlayersReady)
+	{
+		return;
+	}
+	
 	PlayerReadyCount++;
-	UE_LOG(LogTemp,Display, TEXT("HandleNetworkReady() / Player Ready Count : %d"), PlayerReadyCount);
 	if (PlayerReadyCount >= GetNumPlayers())
 	{
 		OnAllPlayerReady();
@@ -193,6 +192,12 @@ void AElvenRingGameMode::OnAllPlayerLoadMap()
 
 void AElvenRingGameMode::OnAllPlayerReady()
 {
-	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
+	if (bHasPlayersReady)
+	{
+		return;
+	}
+	
+	bHasPlayersReady = true;
 	OnAllPlayersReadyDelegate.Broadcast();
+	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 }

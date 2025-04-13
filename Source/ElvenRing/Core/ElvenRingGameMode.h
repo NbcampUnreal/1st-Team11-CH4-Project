@@ -22,7 +22,7 @@ public:
 	/** 모든 Client에서 Begin Play가 호출된 이후에 호출된다. */
 	UPROPERTY(BlueprintAssignable)
 	FOnAllPlayersReady OnAllPlayersReadyDelegate;
-	
+
 protected:
 	// Call 순서
 	// StartToLeaveMap(Seamless Travel 직전)
@@ -72,6 +72,8 @@ protected:
 	float LoadingTimeOutTime;
 	/** Player의 Map Load만을 체크해서는 불완전하기에 Begin Play 시점도 확인해야 한다. */
 	int32 PlayerReadyCount;
+	/** Player Ready 호출 기록 */
+	bool bHasPlayersReady;
 public:
 	class UEventManager* GetEventManager() const
 	{
