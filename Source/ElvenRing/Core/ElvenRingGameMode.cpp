@@ -151,7 +151,7 @@ void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerControll
 
 bool AElvenRingGameMode::AreAllPlayersReady() const
 {
-	return bIsAllPlayerLoadMap;
+	return bHasPlayersReady;
 }
 
 void AElvenRingGameMode::HandleNetworkReady(AElvenRingController* ElvenRingController)
