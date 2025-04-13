@@ -42,6 +42,8 @@ public:
 protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayAttackAnimation(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayDodgeAnimation(float _DodgeDuration);
 	//공격 함수 및 변수들
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)
 	int AttackIndex;
@@ -59,6 +61,9 @@ protected:
 	void OnAttackInput();
 	UFUNCTION(Server, Reliable)
 	void Server_OnAttackInput();
+	void OnDodgeInput(const FInputActionValue& Value);
+	UFUNCTION(Server, Reliable)
+	void Server_OnDodgeInput(const FInputActionValue& Value);
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void OnAttackAnimationEnd();
 	void ComboEnd();

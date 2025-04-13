@@ -52,6 +52,20 @@ void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     // AttackIndex 변수 복제 설정
 }
 
+void AElvenRingCharacter::Multicast_PlayDodgeAnimation_Implementation(float _DodgeDuration)
+{
+    if (DodgeMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            float MontageLength = DodgeMontage->GetPlayLength();
+            float PlayRate = MontageLength / _DodgeDuration;
+            AnimInstance->Montage_Play(DodgeMontage,PlayRate);
+        }
+    }
+}
+
 void AElvenRingCharacter::ToggleInput(bool _bInput)
 {
     APlayerController* CharController = GetWorld()->GetFirstPlayerController();
@@ -120,6 +134,17 @@ void AElvenRingCharacter::OnAttackInput()
     }
 }
 
+void AElvenRingCharacter::OnDodgeInput(const FInputActionValue& Value)
+{
+    StartDodge(Value);
+    
+    // 만약 클라이언트라면 서버에도 dodge 입력을 알림
+    if (!HasAuthority())
+    {
+        Server_OnDodgeInput(Value);
+    }
+}
+
 void AElvenRingCharacter::Server_OnAttackInput_Implementation()
 {
     OnAttackInput();
@@ -149,6 +174,11 @@ void AElvenRingCharacter::PlayAttackAnimation()
     {
         AnimInstance->Montage_Play(CurrentMontage);
     }
+}
+
+void AElvenRingCharacter::Server_OnDodgeInput_Implementation(const FInputActionValue& Value)
+{
+    StartDodge(Value);
 }
 
 void AElvenRingCharacter::OnAttackAnimationEnd()
@@ -260,7 +290,7 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                         PlayerController->DodgeAction,
                         ETriggerEvent::Completed,
                         this,
-                        &AElvenRingCharacter::StartDodge
+                        &AElvenRingCharacter::OnDodgeInput
                     );
                 }
 
@@ -441,7 +471,6 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     CurrentWeapon->DisableCollision();
     ResetCombo();
     FVector DodgeDirection = FVector(MoveInput.Y,(-1)*MoveInput.X,0.0f).GetSafeNormal();
-    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
     if (DodgeDirection.IsNearlyZero())
     {
         DodgeDirection = GetActorForwardVector();
@@ -452,9 +481,6 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
         const FVector RightVector = GetActorRightVector();
         DodgeDirection = (ForwardVector * MoveInput.X + RightVector * MoveInput.Y).GetSafeNormal();
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
-
     DodgeStartLocation = GetActorLocation();
     DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
     DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
@@ -462,7 +488,11 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     bdodge = true;
     bIsDodging = true;
     DodgeTime = 0.f;
-    PlayDodgeAnimation(DodgeDuration);
+    
+    if (HasAuthority())
+    {
+        Multicast_PlayDodgeAnimation(DodgeDuration);
+    }
     
     const float DodgeUpdate = 0.01f;
     GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::UpdateDodge, DodgeUpdate, true);

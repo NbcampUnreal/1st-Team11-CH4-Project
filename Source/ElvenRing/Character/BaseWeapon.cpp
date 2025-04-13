@@ -54,6 +54,7 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 {
 	// 오너 캐릭터의 데미지를 가져오는 과정
 	//근데 이거 데미지 변경될때만 하면 되는거 아닌가 오버랩 될때마다 해야함??
+	if (!HasAuthority()) return;
 	AActor* RawOwner = GetOwner();
 	if (RawOwner)
 	{
@@ -77,6 +78,9 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 
 	UGameplayStatics::ApplyDamage(OtherActor, AttackPower, InstigatorController, this, UDamageType::StaticClass());
 	DamagedActors.Add(OtherActor);
+	AElvenRingCharacter * Char = Cast<AElvenRingCharacter>(OtherActor);
+	int hp = Char->CurGetHealth();
+	UE_LOG(LogTemp, Warning, TEXT("공격 대상: %s, 남은 체력: %d"), *OtherActor->GetName(), hp);
 }
 void ABaseWeapon::ResetDamagedActors()
 {
