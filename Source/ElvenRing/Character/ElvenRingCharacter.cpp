@@ -12,6 +12,9 @@
 
 AElvenRingCharacter::AElvenRingCharacter()
 {
+    //네트워크
+    bReplicates = true;
+    
     //스프링 암
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -28,6 +31,25 @@ AElvenRingCharacter::AElvenRingCharacter()
     AttackIndex = 0;
     bIsAttacking = false;
     bCanCombo = false;
+}
+
+
+
+void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMontage* Montage)
+{
+    if (Montage)
+    {
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            bCanMove = false;
+            AnimInstance->Montage_Play(Montage);
+        }
+    }
+}
+void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+    // AttackIndex 변수 복제 설정
 }
 
 void AElvenRingCharacter::ToggleInput(bool _bInput)
@@ -74,7 +96,10 @@ void AElvenRingCharacter::OnAttackInput()
         bCanMove = false;
         bIsAttacking = true;
         AttackIndex = 1;
-        PlayAttackAnimation();
+        if (HasAuthority())
+        {
+            Multicast_PlayAttackAnimation(AttackMontage1);
+        }
     }
     // 이미 공격 중일 때, 콤보 입력 가능하면 연계
     else if (bIsAttacking && bCanCombo && AttackIndex < 3)
@@ -87,8 +112,17 @@ void AElvenRingCharacter::OnAttackInput()
             GetWorldTimerManager().ClearTimer(ComboTimerHandle);
         }
         AttackIndex++;
-        PlayAttackAnimation();
+        UAnimMontage* MontageToPlay = (AttackIndex == 2 ? AttackMontage2 : AttackMontage3);
+        if (MontageToPlay && HasAuthority())
+        {
+            Multicast_PlayAttackAnimation(MontageToPlay);
+        }
     }
+}
+
+void AElvenRingCharacter::Server_OnAttackInput_Implementation()
+{
+    OnAttackInput();
 }
 
 void AElvenRingCharacter::PlayAttackAnimation()
@@ -247,7 +281,7 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                         PlayerController->AttackAction,
                         ETriggerEvent::Triggered,
                         this,
-                        &AElvenRingCharacter::OnAttackInput
+                        &AElvenRingCharacter::Server_OnAttackInput
                     );
                 }
                 if (PlayerController->DefenceAction)

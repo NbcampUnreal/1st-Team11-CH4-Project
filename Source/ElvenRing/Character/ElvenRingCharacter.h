@@ -22,6 +22,7 @@ class ELVENRING_API AElvenRingCharacter : public AUnitBase
 public:
 	AElvenRingCharacter();
 	UFUNCTION(BlueprintCallable, Category = "Attack")
+	
 	float GetCurHealth()
 	{
 		return CurHealth;
@@ -36,12 +37,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
 	bool bInput;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayAttackAnimation(UAnimMontage* Montage);
 	//공격 함수 및 변수들
-    
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)
 	int AttackIndex;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)
 	bool bIsAttacking;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
 	bool bCanCombo;
@@ -51,9 +55,10 @@ protected:
 	UAnimMontage* AttackMontage2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	UAnimMontage* AttackMontage3;
-
 	FTimerHandle ComboTimerHandle;
 	void OnAttackInput();
+	UFUNCTION(Server, Reliable)
+	void Server_OnAttackInput();
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void OnAttackAnimationEnd();
 	void ComboEnd();
