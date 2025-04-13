@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EngineUtils.h"
+#include "ElvenRing/Character/ElvenRingController.h"
 #include "GameFramework/GameMode.h"
 #include "ElvenRingGameMode.generated.h"
 
@@ -18,9 +18,10 @@ class ELVENRING_API AElvenRingGameMode : public AGameMode
 public:
 	AElvenRingGameMode();
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartMatch);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAllPlayersReady);
+	/** 모든 Client에서 Begin Play가 호출된 이후에 호출된다. */
 	UPROPERTY(BlueprintAssignable)
-	FOnStartMatch OnStartMatchDelegate;
+	FOnAllPlayersReady OnAllPlayersReadyDelegate;
 	
 protected:
 	// Call 순서
@@ -36,7 +37,7 @@ protected:
 	virtual void PostSeamlessTravel() override;
 	virtual void StartToLeaveMap() override;
 	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
-	// Match Start가 될 때 호출
+	// Match Start가 될 때 호출, Client들이 Begin Play가 시작된다.
 	virtual void HandleMatchHasStarted() override;
 	
 public:
@@ -52,21 +53,25 @@ public:
 	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
 	/** 모든 유저가 맵을 로딩했는지 확인 */
 	bool AreAllPlayersReady() const;
-	DECLARE_MULTICAST_DELEGATE(FOnAllPlayersReady);
-	FOnAllPlayersReady OnAllPlayersReadyDelegate;
+	/** Player Controller Begin Play에서 호출*/
+	void HandleNetworkReady(AElvenRingController* ElvenRingController);
 
 protected:
 	/** Client가 Loading Screen을 출력하도록 전달, 현재 Close 하는 것은 Client가 OnPostLoadMap에서 직접하고 있다.*/
 	void BroadcastLoadingScreen(const FString& MapName) const;
-	/** 모든 Client가 맵을 로딩했을 떄 호출 */
-	void OnAllPlayersReady();
+	/** 모든 Client가 맵을 로딩했을 떄 호출, Start Match로 게임이 진행 된다. */
+	void OnAllPlayerLoadMap();
+	/** 모든 Client가 BeginPlay가 호출된 다음에 호출 */
+	void OnAllPlayerReady();
 	
 	bool bAfterSeamlessTravel;
 	UPROPERTY(BlueprintReadOnly)
-	bool bIsAllPlayersReady;
+	bool bIsAllPlayerLoadMap;
 	FTimerHandle LoadingTimeOutHandle;
 	UPROPERTY(EditDefaultsOnly)
 	float LoadingTimeOutTime;
+	/** Player의 Map Load만을 체크해서는 불완전하기에 Begin Play 시점도 확인해야 한다. */
+	int32 PlayerReadyCount;
 public:
 	class UEventManager* GetEventManager() const
 	{

@@ -14,9 +14,10 @@ AElvenRingGameMode::AElvenRingGameMode()
 	bUseSeamlessTravel = true;
 	EventManager = CreateDefaultSubobject<UEventManager>(TEXT("EventManager"));
 	bAfterSeamlessTravel = false;
-	bIsAllPlayersReady = false;
+	bIsAllPlayerLoadMap = false;
 	LoadingTimeOutTime = 30.0f;
-
+	PlayerReadyCount = 0;
+	
 	bDelayedStart = true;
 }
 
@@ -65,14 +66,14 @@ void AElvenRingGameMode::PostSeamlessTravel()
 	// 가능한 지는 모르겠지만 Client가 이미 Seamless Travel을 완료했을 경우
 	if (NumTravellingPlayers == 0)
 	{
-		OnAllPlayersReady();
+		OnAllPlayerLoadMap();
 		return;
 	}
 
 	GetWorldTimerManager().SetTimer(
 		LoadingTimeOutHandle,
 		this,
-		&AElvenRingGameMode::OnAllPlayersReady,
+		&AElvenRingGameMode::OnAllPlayerLoadMap,
 		LoadingTimeOutTime,
 		false
 	);
@@ -97,7 +98,7 @@ void AElvenRingGameMode::HandleSeamlessTravelPlayer(AController*& C)
 	UE_LOG(LogTemp,Display, TEXT("HandleSeamlessTravelPlayer : Num Of Players : %d, Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 	if (bAfterSeamlessTravel && NumTravellingPlayers == 0)
 	{
-		OnAllPlayersReady();
+		OnAllPlayerLoadMap();
 	}
 }
 
@@ -105,7 +106,6 @@ void AElvenRingGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
 
-	OnStartMatchDelegate.Broadcast();
 	UE_LOG(LogTemp, Display, TEXT("HandleMatchIsWaitingToStart() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 }
 
@@ -156,7 +156,19 @@ void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerControll
 
 bool AElvenRingGameMode::AreAllPlayersReady() const
 {
-	return bIsAllPlayersReady;
+	return bIsAllPlayerLoadMap;
+}
+
+void AElvenRingGameMode::HandleNetworkReady(AElvenRingController* ElvenRingController)
+{
+	// 원래라면 잘못된 중복 입력을 처리하기 위해 Controller를 저장해야 하지만 구현 간단성을 위해 생략한다.
+	// 추후에 버그가 있을 경우 Controller를 저장해서 확인한다.
+	PlayerReadyCount++;
+	UE_LOG(LogTemp,Display, TEXT("HandleNetworkReady() / Player Ready Count : %d"), PlayerReadyCount);
+	if (PlayerReadyCount >= GetNumPlayers())
+	{
+		OnAllPlayerReady();
+	}
 }
 
 void AElvenRingGameMode::BroadcastLoadingScreen(const FString& MapName) const
@@ -170,13 +182,17 @@ void AElvenRingGameMode::BroadcastLoadingScreen(const FString& MapName) const
 	}
 }
 
-void AElvenRingGameMode::OnAllPlayersReady()
+void AElvenRingGameMode::OnAllPlayerLoadMap()
 {
-	bIsAllPlayersReady = true;
+	bIsAllPlayerLoadMap = true;
 	GetWorldTimerManager().ClearTimer(LoadingTimeOutHandle);
 	bDelayedStart = false;
 
-	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
+	UE_LOG(LogTemp,Display, TEXT("OnAllPlayerLoadMap() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
+}
 
+void AElvenRingGameMode::OnAllPlayerReady()
+{
+	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 	OnAllPlayersReadyDelegate.Broadcast();
 }

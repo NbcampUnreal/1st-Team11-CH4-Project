@@ -17,5 +17,5 @@ class ELVENRING_API AElvenRingGameState : public AGameState
 public:
 	AElvenRingGameState();
 	
-	virtual void BeginPlay() override;
+	virtual void HandleMatchHasStarted() override;
 };

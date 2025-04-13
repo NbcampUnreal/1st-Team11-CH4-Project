@@ -49,6 +49,14 @@ void AElvenRingController::NotifyLoadedWorld(FName WorldPackageName, bool bFinal
 	// UE_LOG(LogTemp, Display, TEXT("AElvenRingController::NotifyLoadedWorld() / %s / %d"), *WorldPackageName.ToString(), bFinalDest);
 }
 
+void AElvenRingController::ServerReportPlayerReady_Implementation()
+{
+	if (AElvenRingGameMode* GameMode = GetWorld()->GetAuthGameMode<AElvenRingGameMode>())
+	{
+		GameMode->HandleNetworkReady(this);
+	}
+}
+
 void AElvenRingController::ServerRequestLevelChange_Implementation(const FString& LevelPath)
 {
 	if (AElvenRingGameMode* GameMode =  GetWorld()->GetAuthGameMode<AElvenRingGameMode>())

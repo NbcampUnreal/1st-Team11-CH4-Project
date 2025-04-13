@@ -52,4 +52,7 @@ public:
 	void ClientShowLoadingScreen(const FString& TargetMapName);
 
 	virtual void NotifyLoadedWorld(FName WorldPackageName, bool bFinalDest) override;
+	/** Begin Play 시점에서 Ready 상태를 전달한다. */
+	UFUNCTION(Server, Reliable)
+	void ServerReportPlayerReady();
 };
