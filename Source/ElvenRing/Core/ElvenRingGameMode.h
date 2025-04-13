@@ -19,10 +19,18 @@ public:
 	AElvenRingGameMode();
 	
 protected:
+	// Call 순서
+	// StartToLeaveMap(Seamless Travel 직전)
+	// PostSeamlessTravel
+	// BeginPlay
+	// StartPlay
+	
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
 	virtual void StartPlay() override;
 	virtual void PostSeamlessTravel() override;
+	virtual void StartToLeaveMap() override;
+	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	
 public:
 	/**
@@ -33,11 +41,22 @@ public:
 	ACharacter* GetHighestDamageCharacter(const AActor* BossActor) const;
 	
 public:
+	/** Server Travel을 통해서 맵을 이동하게 하고 Client가 로딩 스크린을 출력하도록 한다. */
 	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
+	/** 모든 유저가 맵을 로딩했는지 확인 */
+	bool AreAllPlayersReady() const;
+	DECLARE_MULTICAST_DELEGATE(FOnAllPlayersReady);
+	FOnAllPlayersReady OnAllPlayersReadyDelegate;
+
 protected:
-	/** Client가 Loading Screen을 출력하도록 전달, 현재 Close 하는 것은 Client가 직접하고 있다.*/
+	/** Client가 Loading Screen을 출력하도록 전달, 현재 Close 하는 것은 Client가 OnPostLoadMap에서 직접하고 있다.*/
 	void BroadcastLoadingScreen(const FString& MapName) const;
+	/** 모든 Client가 맵을 로딩했을 떄 호출 */
+	void OnAllPlayersReady();
 	
+	bool bAfterSeamlessTravel;
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsAllPlayersReady;
 public:
 	class UEventManager* GetEventManager() const
 	{

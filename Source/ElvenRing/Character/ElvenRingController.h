@@ -50,4 +50,6 @@ public:
 	void ServerRequestLevelChange(const FString& LevelPath);
 	UFUNCTION(Client, Reliable)
 	void ClientShowLoadingScreen(const FString& TargetMapName);
+
+	virtual void NotifyLoadedWorld(FName WorldPackageName, bool bFinalDest) override;
 };

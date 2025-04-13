@@ -22,6 +22,7 @@ AElvenRingController::AElvenRingController()
 }
 void AElvenRingController::BeginPlay()
 {
+	// Seamless Travel 시에 BeginPlay는 호출되지 않고 처음 접속에서만 호출된다.
 	Super::BeginPlay();
 
 	// 현재 PlayerController에 연결된 Local Player 객체를 가져옴    
@@ -38,6 +39,14 @@ void AElvenRingController::BeginPlay()
 			}
 		}
 	}
+}
+
+void AElvenRingController::NotifyLoadedWorld(FName WorldPackageName, bool bFinalDest)
+{
+	// WorldPackageName을 통해서 맵 이름을 알 수 있고 bFianlDest를 통해서 Transition Map인지 확인할 수 있다.
+	Super::NotifyLoadedWorld(WorldPackageName, bFinalDest);
+
+	// UE_LOG(LogTemp, Display, TEXT("AElvenRingController::NotifyLoadedWorld() / %s / %d"), *WorldPackageName.ToString(), bFinalDest);
 }
 
 void AElvenRingController::ServerRequestLevelChange_Implementation(const FString& LevelPath)
