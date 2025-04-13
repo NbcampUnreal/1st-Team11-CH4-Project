@@ -162,8 +162,10 @@ void AElvenRingGameMode::HandleNetworkReady(AElvenRingController* ElvenRingContr
 	{
 		return;
 	}
-	
+
 	PlayerReadyCount++;
+	UE_LOG(LogTemp,Display, TEXT("HandleNetworkReady() / Player Ready Count : %d / Player Name : %s"), PlayerReadyCount, *ElvenRingController->GetName());
+	// Start Play 이후이기 때문에 Pending Players가 없다.	
 	if (PlayerReadyCount >= GetNumPlayers())
 	{
 		OnAllPlayerReady();
@@ -197,7 +199,7 @@ void AElvenRingGameMode::OnAllPlayerReady()
 		return;
 	}
 	
+	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 	bHasPlayersReady = true;
 	OnAllPlayersReadyDelegate.Broadcast();
-	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 }

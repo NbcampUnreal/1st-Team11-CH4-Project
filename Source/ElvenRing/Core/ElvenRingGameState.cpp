@@ -17,9 +17,9 @@ void AElvenRingGameState::HandleMatchHasStarted()
 	// Game State는 Begin Play를 호출하는 처음 부분이므로 여기서 Player Controller의 ServerReportPlayerReady를 호출한다.
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(Iterator->Get()))
+		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(Iterator->Get()); PlayerController && PlayerController->IsLocalController())
 		{
-			PlayerController->ServerReportPlayerReady();
+			PlayerController->ReportPlayerReady();
 		}
 	}
 }

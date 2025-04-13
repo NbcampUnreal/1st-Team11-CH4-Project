@@ -15,8 +15,8 @@ AElvenRingController::AElvenRingController()
 	  DodgeAction(nullptr),
 	  AttackAction(nullptr),
 	  DefenceAction(nullptr),
-	  EndDefenceAction(nullptr)
-
+	  EndDefenceAction(nullptr),
+	  InteractAction(nullptr)
 {
 	
 }
@@ -47,6 +47,11 @@ void AElvenRingController::NotifyLoadedWorld(FName WorldPackageName, bool bFinal
 	Super::NotifyLoadedWorld(WorldPackageName, bFinalDest);
 
 	// UE_LOG(LogTemp, Display, TEXT("AElvenRingController::NotifyLoadedWorld() / %s / %d"), *WorldPackageName.ToString(), bFinalDest);
+}
+
+void AElvenRingController::ReportPlayerReady()
+{
+	ServerReportPlayerReady();
 }
 
 void AElvenRingController::ServerReportPlayerReady_Implementation()
