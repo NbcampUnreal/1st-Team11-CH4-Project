@@ -57,6 +57,9 @@ protected:
 	bool bAfterSeamlessTravel;
 	UPROPERTY(BlueprintReadOnly)
 	bool bIsAllPlayersReady;
+	FTimerHandle LoadingTimeOutHandle;
+	UPROPERTY(EditDefaultsOnly)
+	float LoadingTimeOutTime;
 public:
 	class UEventManager* GetEventManager() const
 	{

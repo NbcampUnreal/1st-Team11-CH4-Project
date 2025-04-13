@@ -18,6 +18,7 @@ AElvenRingGameMode::AElvenRingGameMode()
 	EventManager = CreateDefaultSubobject<UEventManager>(TEXT("EventManager"));
 	bAfterSeamlessTravel = false;
 	bIsAllPlayersReady = false;
+	LoadingTimeOutTime = 30.0f;
 }
 
 void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage)
@@ -66,7 +67,16 @@ void AElvenRingGameMode::PostSeamlessTravel()
 	if (NumTravellingPlayers == 0)
 	{
 		OnAllPlayersReady();
+		return;
 	}
+
+	GetWorldTimerManager().SetTimer(
+		LoadingTimeOutHandle,
+		this,
+		&AElvenRingGameMode::OnAllPlayersReady,
+		LoadingTimeOutTime,
+		false
+	);
 }
 
 void AElvenRingGameMode::StartToLeaveMap()
@@ -148,6 +158,7 @@ void AElvenRingGameMode::BroadcastLoadingScreen(const FString& MapName) const
 void AElvenRingGameMode::OnAllPlayersReady()
 {
 	bIsAllPlayersReady = true;
+	GetWorldTimerManager().ClearTimer(LoadingTimeOutHandle);
 
 	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 
