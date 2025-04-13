@@ -3,14 +3,11 @@
 
 #include "ElvenRingGameMode.h"
 
-#include <rapidjson/stream.h>
-
 #include "ElvenringGameInstance.h"
 #include "ElvenRingGameState.h"
 #include "ElvenRingPlayerState.h"
 #include "ElvenRing/Character/ElvenRingController.h"
 #include "ElvenRing/Gimmick/EventManager.h"
-#include "GameFramework/PlayerState.h"
 
 AElvenRingGameMode::AElvenRingGameMode()
 {
@@ -19,6 +16,8 @@ AElvenRingGameMode::AElvenRingGameMode()
 	bAfterSeamlessTravel = false;
 	bIsAllPlayersReady = false;
 	LoadingTimeOutTime = 30.0f;
+
+	bDelayedStart = true;
 }
 
 void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage)
@@ -102,6 +101,14 @@ void AElvenRingGameMode::HandleSeamlessTravelPlayer(AController*& C)
 	}
 }
 
+void AElvenRingGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+	OnStartMatchDelegate.Broadcast();
+	UE_LOG(LogTemp, Display, TEXT("HandleMatchIsWaitingToStart() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
+}
+
 void AElvenRingGameMode::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -115,6 +122,8 @@ void AElvenRingGameMode::PostInitializeComponents()
 void AElvenRingGameMode::StartPlay()
 {
 	Super::StartPlay();
+
+	UE_LOG(LogTemp,Display, TEXT("AElvenRingGameMode::StartPlay() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 }
 
 void AElvenRingGameMode::BeginPlay()
@@ -122,6 +131,12 @@ void AElvenRingGameMode::BeginPlay()
 	Super::BeginPlay();
 
 	UE_LOG(LogTemp,Display, TEXT("AElvenRingGameMode::BeginPlay() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
+	// 이 시점에서도 bAfterSeamlessTravel이 false일 경우, Seamless Travel이 아니라 처음 맵을 연 상태이다.
+	if (!bAfterSeamlessTravel)
+	{
+		UE_LOG(LogTemp,Display,TEXT("AElvenRingGameMode::BeginPlay() / Seamless Travel이 아닙니다."));
+		bDelayedStart = false;
+	}
 }
 
 void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const
@@ -159,6 +174,7 @@ void AElvenRingGameMode::OnAllPlayersReady()
 {
 	bIsAllPlayersReady = true;
 	GetWorldTimerManager().ClearTimer(LoadingTimeOutHandle);
+	bDelayedStart = false;
 
 	UE_LOG(LogTemp,Display, TEXT("OnAllPlayersReady() / Num Players : %d / Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
 

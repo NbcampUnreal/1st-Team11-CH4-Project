@@ -17,6 +17,10 @@ class ELVENRING_API AElvenRingGameMode : public AGameMode
 
 public:
 	AElvenRingGameMode();
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartMatch);
+	UPROPERTY(BlueprintAssignable)
+	FOnStartMatch OnStartMatchDelegate;
 	
 protected:
 	// Call 순서
@@ -24,6 +28,7 @@ protected:
 	// PostSeamlessTravel
 	// BeginPlay
 	// StartPlay
+	/** Ready To Start Match가 True가 되면 Start Match가 진행된다. Tick에서 매 프레임 체크된다. */
 	
 	virtual void PostInitializeComponents() override;
 	virtual void BeginPlay() override;
@@ -31,6 +36,8 @@ protected:
 	virtual void PostSeamlessTravel() override;
 	virtual void StartToLeaveMap() override;
 	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
+	// Match Start가 될 때 호출
+	virtual void HandleMatchHasStarted() override;
 	
 public:
 	/**
