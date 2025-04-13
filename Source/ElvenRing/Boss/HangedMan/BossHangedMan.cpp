@@ -22,7 +22,6 @@ void ABossHangedMan::BeginPlay()
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackDown, FString("ElectronicAttackDown"));
 	
 	Super::BeginPlay();
-	SetBossBattleMode();
 }
 
 void ABossHangedMan::OnDeath()
@@ -34,11 +33,10 @@ void ABossHangedMan::OnDeath()
 void ABossHangedMan::ServerOnSpawnSequenceEnded_Implementation()
 {
 	Super::ServerOnSpawnSequenceEnded_Implementation();
-}
-
-void ABossHangedMan::ServerOnPhaseSequenceEnded_Implementation()
-{
-	Super::ServerOnPhaseSequenceEnded_Implementation();
+	if (HasAuthority())
+	{
+		SetBossBattleMode_Implementation();
+	}
 }
 
 float ABossHangedMan::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,

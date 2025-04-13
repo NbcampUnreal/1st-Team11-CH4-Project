@@ -235,6 +235,7 @@ FVector ABoss::GetDirectionVectorToTarget() const
 
 void ABoss::SetBossBattleMode_Implementation()
 {
+	LOG(TEXT("Begin"));
 	// 공격할 타겟 플레이어 지정
 	SetAttackTarget();
 	SetAttackTimer();
