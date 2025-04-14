@@ -22,6 +22,7 @@ class ELVENRING_API AUnitBase : public ACharacter
 public:
 	// Sets default values for this character's properties
 	AUnitBase();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDeathDelegate, AUnitBase*, Unit);
 	UPROPERTY(BlueprintAssignable, Category = "Event")
@@ -47,6 +48,8 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MaxHealth;
+
+	UPROPERTY(ReplicatedUsing = OnRep_HealthChanged)
 	float CurHealth;
 
 	float CurStamina; //ksw
@@ -71,11 +74,11 @@ public:
 	virtual void Attack(AActor* Target);
 	virtual void OnAttacked();
 	virtual void OnDeath();
-	virtual void OnHealthChanged();
-	virtual float TakeDamage
-	(
-		float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser
-	) override;
+
+	UFUNCTION(NetMulticast, reliable)
+	virtual void OnRep_HealthChanged();
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	
 	float GetMaxHealth() const
 	{
 		return MaxHealth;

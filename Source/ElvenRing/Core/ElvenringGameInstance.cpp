@@ -58,7 +58,7 @@ void UElvenringGameInstance::OnPreLoadMap(const FString& MapName)
 
 void UElvenringGameInstance::OnPostLoadMap(UWorld* World)
 {
-	UE_LOG(LogTemp, Display, TEXT("OnPostLoadMap: %s"), *World->GetName());
+	UE_LOG(LogTemp, Display, TEXT("OnPostLoadMap: %s / Authority : %s"), *World->GetName(), World->GetNetMode() == NM_Standalone ? TEXT("True") : TEXT("False"));
 	HideLoadingScreen();
 	GetTimerManager().ClearTimer(LoadTimerHandle);
 }
@@ -74,7 +74,7 @@ void UElvenringGameInstance::StartTrackLoadProgress(const FString& MapName)
 
 void UElvenringGameInstance::CheckLoadProgress()
 {
-	UE_LOG(LogTemp, Display, TEXT("Check Progress"));
+	// UE_LOG(LogTemp, Display, TEXT("Check Progress"));
 	// if (TargetMapPackageName.IsNone()) return;
 	
 	// float Percentage = GetAsyncLoadPercentage(TargetMapPackageName);

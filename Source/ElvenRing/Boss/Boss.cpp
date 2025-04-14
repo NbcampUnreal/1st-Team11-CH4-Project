@@ -11,9 +11,14 @@
 #include "Components/CapsuleComponent.h"
 #include "Effect/CameraControllerComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/BossWidget.h"
+#include "ElvenRing/UI/UIManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
+#pragma region 생성자, 초기화, Tick 함수
 ABoss::ABoss()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -45,13 +50,23 @@ ABoss::ABoss()
 	MinAttackRadius = 500.0f;
 	MinIdleRadius = 300.0f;
 	bIsAttacking = false;
+
+	bReplicates = true;
 }
 
+void ABoss::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	DOREPLIFETIME(ABoss, TargetPlayer);
+	DOREPLIFETIME(ABoss, BossState);
+	DOREPLIFETIME(ABoss, bIsAttacking);
+}
 
 void ABoss::BeginPlay()
 {
 	Super::BeginPlay();
+	LOG(TEXT("Begin"));
 
 	CurHealth = MaxHealth;
 
@@ -64,8 +79,6 @@ void ABoss::BeginPlay()
 	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 }
 
-
-
 void ABoss::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -73,29 +86,15 @@ void ABoss::Tick(float DeltaTime)
 	// 현재 상태에 해당하는 OnStateUpdate 함수 호출
 	UpdateState();
 }
+#pragma endregion
 
-void ABoss::OnDeath()
-{
-	Super::OnDeath();
-
-	LOG(TEXT("Begin"));
-	StartDeadSequence();
-	Destroy();
-}
-
-
+#pragma region StatePattern 관련 함수
 void ABoss::UpdateState()
 {
 	if (CurrentState != nullptr)
 	{
 		CurrentState->OnStateUpdate();
 	}
-}
-
-
-void ABoss::OnPhaseSequenceEnded()
-{
-	LOG(TEXT("Begin"));
 }
 
 void ABoss::ChangeState(IBossStateInterface* State)
@@ -108,60 +107,37 @@ void ABoss::ChangeState(IBossStateInterface* State)
 	CurrentState->OnStateEnter(this);
 }
 
-
-
-float ABoss::GetDistanceBetweenTarget() const
+void ABoss::ChangeToAttackStateIfConditionSatisfied()
 {
-	if (!IsValid(TargetPlayer)) return 0;
-	return FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
+	if (SpecialPattern->IsSpecialPatternAvailable())
+	{
+		ChangeState(SpecialAttackState);
+	}
+	else if (GetDistanceBetweenTarget() <= MinAttackRadius)
+	{
+		ChangeState(AttackState);	
+	}
+	else
+	{
+		SetAttackTimer();
+	}
+}
+#pragma endregion
+
+#pragma region 시퀀스 종료 핸들러 함수 
+void ABoss::ServerOnSpawnSequenceEnded_Implementation()
+{
+	LOG(TEXT("Begin"));
 }
 
-FVector ABoss::GetDirectionVectorToTarget() const
+void ABoss::ServerOnPhaseSequenceEnded_Implementation()
 {
-	if (!IsValid(TargetPlayer)) return FVector::ZeroVector;
-
-	FVector Direction = TargetPlayer->GetActorLocation() - GetActorLocation();
-	Direction.Z = 0.0f;
-	Direction.Normalize();
-
-	return Direction;
+	LOG(TEXT("Begin"));
 }
+#pragma endregion
 
-void ABoss::SetBossBattleMode()
-{
-	// 공격할 타겟 플레이어 지정
-	SetAttackTarget();
-	SetAttackTimer();
-
-	// 현재 상태를 Idle로 전환
-	CurrentState = IdleState;
-	ChangeState(CurrentState);
-
-	// 공격 활성화
-	bCanAttack = true;
-}
-
-void ABoss::MoveForward(const float MoveMultiflier)
-{
-	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed * MoveMultiflier;
-	AddMovementInput(GetActorForwardVector());
-}
-
-void ABoss::InitMoveSpeed()
-{
-	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
-}
-
-
-void ABoss::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-	bCanAttack = true;
-	ChangeState(IdleState);
-}
-
-
-
-float ABoss::PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate, FName StartSectionName)
+#pragma region Animation, Sound 재생 함수
+void ABoss::PlayAnimation_Implementation(UAnimMontage* MontageToPlay, float PlayRate, FName StartSectionName)
 {
 	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
 	
@@ -184,20 +160,16 @@ float ABoss::PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate, FName 
 			);
 		}
 	}
-
-	return 0.f;
 }
 
-void ABoss::RegisterCollision(UCapsuleComponent* Collision, const FName SocketName)
+void ABoss::PlaySound_Implementation(USoundBase* Sound)
 {
-	if (GetMesh()->DoesSocketExist(SocketName))
-	{
-		Collision->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
-		Collision->OnComponentBeginOverlap.AddDynamic(this, &ABoss::OnMeshOverlapBegin);
-		Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	AudioComponent->SetSound(Sound);
+	AudioComponent->Play();
 }
+#pragma endregion
 
+#pragma region 공격 판정 함수
 void ABoss::OnAttackStarted(TArray<UCapsuleComponent*> Collision)
 {
 	LOG(TEXT("Begin"));
@@ -219,9 +191,9 @@ void ABoss::OnAttackEnded(TArray<UCapsuleComponent*> Collision)
 }
 
 void ABoss::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
-                               int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+							   int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	LOG(TEXT("Mesh Overlap Begin with!: %s"), *OtherActor->GetName());
+	//LOG(TEXT("Mesh Overlap Begin with!: %s"), *OtherActor->GetName());
 
 	if (!bIsAttacking) return;
 
@@ -229,7 +201,7 @@ void ABoss::OnMeshOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
 	
 	if (Player)
 	{
-		LOG(TEXT("Mesh Overlap Begin with Player!"));
+		//LOG(TEXT("Mesh Overlap Begin with Player!"));
 		UGameplayStatics::ApplyDamage(Player, AttackPower, GetInstigatorController(), this, UDamageType::StaticClass());
 		bIsAttacking = false;	
 	}	
@@ -241,7 +213,73 @@ void ABoss::OnMeshOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherA
 {
 	LOG(TEXT("Mesh Overlap End: %s"), *OtherActor->GetName());
 }
+#pragma endregion
 
+#pragma region 보스 유틸 함수
+float ABoss::GetDistanceBetweenTarget() const
+{
+	if (!IsValid(TargetPlayer)) return 0;
+	return FVector::Dist(GetActorLocation(), TargetPlayer->GetActorLocation());
+}
+
+FVector ABoss::GetDirectionVectorToTarget() const
+{
+	if (!IsValid(TargetPlayer)) return FVector::ZeroVector;
+
+	FVector Direction = TargetPlayer->GetActorLocation() - GetActorLocation();
+	Direction.Z = 0.0f;
+	Direction.Normalize();
+
+	return Direction;
+}
+
+void ABoss::SetBossBattleMode_Implementation()
+{
+	LOG(TEXT("Begin"));
+	// 공격할 타겟 플레이어 지정
+	SetAttackTarget();
+	SetAttackTimer();
+
+	// 현재 상태를 Idle로 전환
+	CurrentState = IdleState;
+	ChangeState(CurrentState);
+
+	// 공격 활성화
+	bCanAttack = true;
+}
+
+void ABoss::MulticastStopBattleMode_Implementation()
+{
+	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
+}
+
+void ABoss::MoveForward(const float MoveMultiflier)
+{
+	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed * MoveMultiflier;
+	AddMovementInput(GetActorForwardVector());
+}
+
+void ABoss::InitMoveSpeed()
+{
+	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+}
+
+
+void ABoss::OnMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	bCanAttack = true;
+	ChangeState(IdleState);
+}
+
+void ABoss::RegisterCollision(UCapsuleComponent* Collision, const FName SocketName)
+{
+	if (GetMesh()->DoesSocketExist(SocketName))
+	{
+		Collision->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
+		Collision->OnComponentBeginOverlap.AddDynamic(this, &ABoss::OnMeshOverlapBegin);
+		Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
+}
 
 void ABoss::SetAttackTimer()
 {
@@ -249,15 +287,11 @@ void ABoss::SetAttackTimer()
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ABoss::ChangeToAttackStateIfConditionSatisfied, RandomAttackTime,false);
 }
 
-
-
 void ABoss::SetAttackTargetTimer()
 {
 	const float RandomGetAttackTargetTime = FMath::RandRange(GetAttackTargetInterval - 2.0f, GetAttackTargetInterval + 2.0f);
 	GetWorldTimerManager().SetTimer(GetAttackTargetTimerHandle, this, &ABoss::SetAttackTarget,RandomGetAttackTargetTime,false);
 }
-
-
 
 void ABoss::SetAttackTarget()
 {
@@ -273,13 +307,9 @@ void ABoss::SetAttackTarget()
 				TargetPlayer = Player;
 				break;
 			}
-		
 	}
-
 	SetAttackTargetTimer();
 }
-
-
 
 void ABoss::RotateToTarget(float DeltaTime)
 {
@@ -302,25 +332,18 @@ void ABoss::RotateToTarget(float DeltaTime)
 	SetActorRotation(InterpRotation);
 }
 
-
-void ABoss::ChangeToAttackStateIfConditionSatisfied()
-{
-	if (SpecialPattern->IsSpecialPatternAvailable())
-	{
-		ChangeState(SpecialAttackState);
-	}
-	else if (GetDistanceBetweenTarget() <= MinAttackRadius)
-	{
-		ChangeState(AttackState);	
-	}
-	else
-	{
-		SetAttackTimer();
-	}
-}
-
-
 void ABoss::ApplyShakeCamera(TSubclassOf<UCameraShakeBase> CameraShakeClass, const float CameraShakeScale)
 {
 	CameraController->ShakeCamera(CameraShakeClass, CameraShakeScale);
 }
+
+void ABoss::OnDeath()
+{
+	Super::OnDeath();
+
+	LOG(TEXT("Begin"));
+	Cast<UElvenringGameInstance>(GetGameInstance())->GetUIManager()->GetBossWidgetUi()->SetActiveWidget(false);
+	StartDeadSequence();
+	Destroy();
+}
+#pragma endregion

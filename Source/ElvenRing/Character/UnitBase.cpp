@@ -7,7 +7,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "ElvenRing/UI/PlayerMainUi.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/Core/ElvenRingGameMode.h"
 #include "ElvenRing/UI/UIManager.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AUnitBase::AUnitBase()
@@ -21,11 +23,17 @@ AUnitBase::AUnitBase()
 	MaxMana = 100;
 }
 
+void AUnitBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AUnitBase, CurHealth);
+}
+
 // Called when the game starts or when spawned
 void AUnitBase::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AUnitBase::AttachDelegateToWidget(ECharacterType Type)
@@ -37,7 +45,6 @@ void AUnitBase::AttachDelegateToWidget(ECharacterType Type)
 void AUnitBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 
 	//Sprint Test용도로 만든거라 따로 구현하시던지 삭제 해도됩니다. ksw
 	if (bSprint)
@@ -57,7 +64,7 @@ void AUnitBase::Tick(float DeltaTime)
 				CurStamina += 5.f * DeltaTime;
 				CurStamina = FMath::Clamp(CurStamina, 0, MaxStamina);
 				OnStaminaChanged.Broadcast(CurStamina, MaxStamina, 1);//ksw
-				UE_LOG(LogTemp, Warning, TEXT("CurStamina = %f"), CurStamina);
+				//UE_LOG(LogTemp, Warning, TEXT("CurStamina = %f"), CurStamina);
 			}
 		}
 	}
@@ -77,30 +84,39 @@ void AUnitBase::OnDeath()
 	bIsDie = true;
 }
 
-void AUnitBase::OnHealthChanged()
+void AUnitBase::OnRep_HealthChanged_Implementation()
 {
 	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
 }
 
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+	if (!HasAuthority()) return 0;
 	if (Invincibility) return 0;
-	float HitDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
-	if (Damage > 0 && !bIsDie)
+	
+	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+
+	if (ActualDamage > 0 && !bIsDie)
 	{
 		// 연출을 위해 원래 데미지 주변 값으로 계산
-		const float InterpDamage =  FMath::RandRange(Damage-Damage/5, Damage+Damage/5);
+		ActualDamage =  FMath::RandRange(Damage-Damage/5, Damage+Damage/5);
 		
-		CurHealth -= InterpDamage;
-		LOG(TEXT("Get Damaged ! Current Health : %f"), CurHealth);
+		CurHealth -= ActualDamage;
+		//LOG(TEXT("Get Damaged ! Current Health : %f"), CurHealth);
 		if (CurHealth <= 0.f) OnDeath();
 		else
 		{
 			PlayDamageAnim();
 		}
-		OnHealthChanged();//ksw
+		OnRep_HealthChanged();//ksw
+
+		if (AElvenRingGameMode* GameMode = GetWorld()->GetAuthGameMode<AElvenRingGameMode>())
+		{
+			GameMode->RecordDamage(EventInstigator, this, ActualDamage);
+		}
 	}
-	return Damage;
+	
+	return ActualDamage;
 }
 
 

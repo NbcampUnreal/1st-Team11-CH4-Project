@@ -24,12 +24,15 @@ class ELVENRING_API ABoss : public AUnitBase
 
 public:
 	ABoss();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Spawn 타입의 LevelSequence가 끝났을 때 호출하는 함수 */ 
-	virtual void OnSpawnSequenceEnded() PURE_VIRTUAL(ABoss::OnSpawnSequenceEnded, );
+	UFUNCTION(Server, Reliable)
+	virtual void ServerOnSpawnSequenceEnded();
 
 	/** Phase 타입의 LevelSequence가 끝났을 때 호출하는 함수 */
-	virtual void OnPhaseSequenceEnded();
+	UFUNCTION(Server, Reliable)
+	virtual void ServerOnPhaseSequenceEnded();
 
 	void ChangeState(IBossStateInterface* State);
 
@@ -48,8 +51,11 @@ public:
 	FVector GetDirectionVectorToTarget() const;
 
 	/** 컷신 종료 후 호출할 함수로, 보스가 전투를 시작하는 상태가 됨 */
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void SetBossBattleMode();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastStopBattleMode();
 
 	/** 특정 구간동안 빠르게 이동시키고 싶을 때 사용 */
 	UFUNCTION(BlueprintCallable)
@@ -75,7 +81,13 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void OnDeath() override;
-	virtual float PlayAnimMontage(UAnimMontage* MontageToPlay, float PlayRate = 1.0f, FName StartSectionName = NAME_None) override;
+
+	/** 애니메이션 재생을 동기화하는 함수 */
+	UFUNCTION(NetMulticast, Reliable)
+	void PlayAnimation(UAnimMontage* MontageToPlay, float PlayRate = 1.0f, FName StartSectionName = NAME_None);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void PlaySound(USoundBase* Sound);
 	
 	void RegisterCollision(UCapsuleComponent* Collision, const FName SocketName);
 	
@@ -136,10 +148,10 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Boss|Anim")
 	UAnimInstance* AnimInstance;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss|Target")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss|Target", Replicated)
 	AElvenRingCharacter* TargetPlayer;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss|Target")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Boss|Target", Replicated)
 	EBossState BossState;
 
 	IBossStateInterface* CurrentState, *IdleState, *MoveState, *AttackState, *SpecialAttackState;
@@ -159,5 +171,6 @@ private:
 	FTimerHandle GetAttackTargetTimerHandle;
 	FTimerHandle AnimationMontageHandle;
 
+	UPROPERTY(Replicated)
 	bool bIsAttacking;
 };
