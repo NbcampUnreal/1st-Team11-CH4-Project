@@ -12,7 +12,7 @@ float ABossHangedManHeart::TakeDamage(float DamageAmount, FDamageEvent const& Da
 {
 	float Damage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
-	UGameplayStatics::ApplyDamage(HangedMan, Damage, GetInstigatorController(), this, UDamageType::StaticClass());
+	UGameplayStatics::ApplyDamage(HangedMan, Damage, EventInstigator, DamageCauser, UDamageType::StaticClass());
 	
 	return Damage;
 }
