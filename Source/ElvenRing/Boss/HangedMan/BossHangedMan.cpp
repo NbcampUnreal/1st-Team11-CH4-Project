@@ -4,6 +4,9 @@
 #include "ElvenRing/ElvenRing.h"
 #include "EngineUtils.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/BossWidget.h"
+#include "ElvenRing/UI/UIManager.h"
 
 ABossHangedMan::ABossHangedMan()
 {
@@ -36,6 +39,9 @@ void ABossHangedMan::OnDeath()
 void ABossHangedMan::OnSpawnSequenceEnded()
 {
 	Super::OnSpawnSequenceEnded();
+
+	UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetWorld()->GetGameInstance());
+	GameInstance->GetUIManager()->GetBossWidgetUi()->SetName("End Of The Abyss, Bizarre");
 	if (HasAuthority())
 	{
 		SetBossBattleMode_Implementation();
