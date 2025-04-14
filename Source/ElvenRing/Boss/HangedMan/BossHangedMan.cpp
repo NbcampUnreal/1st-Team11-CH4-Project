@@ -36,6 +36,7 @@ void ABossHangedMan::ServerOnSpawnSequenceEnded_Implementation()
 	if (HasAuthority())
 	{
 		SetBossBattleMode_Implementation();
+		PlaySound(BossBattleBGM);
 	}
 }
 
