@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UnitBase.h"
 #include "BaseWeapon.h"
+#include "NiagaraSystem.h"
 #include "ElvenRing/Interaction/InteractionComponent.h"
 #include "ElvenRingCharacter.generated.h"
 
@@ -39,7 +40,11 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UNiagaraSystem* HitNiagara;
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayAttackAnimation(UAnimMontage* Montage);
 	UFUNCTION(NetMulticast, Reliable)

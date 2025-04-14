@@ -8,6 +8,7 @@
 #include "EnhancedInputComponent.h"
 #include "ElvenRing/Interaction/InteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "NiagaraFunctionLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
@@ -58,6 +59,22 @@ void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(AElvenRingCharacter, IsSprint);
+}
+
+float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
+    AActor* DamageCauser)
+{
+    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    FVector SpawnLocation = GetActorLocation();
+    FRotator SpawnRotation = GetActorRotation();
+    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),              // 현재 월드 컨텍스트
+            HitNiagara,    // 할당된 Niagara 이펙트 자산
+            SpawnLocation,           // 스폰 위치
+            SpawnRotation            // 스폰 회전 값
+        );
+    
+    return ActualDamage;
 }
 
 void AElvenRingCharacter::Multicast_PlayDodgeAnimation_Implementation(float _DodgeDuration)
