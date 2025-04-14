@@ -83,7 +83,7 @@ public:
 	{
 		return MaxHealth;
 	}
-	float CurGetHealth() const
+	float GetCurHealth() const
 	{
 		return CurHealth;
 	}

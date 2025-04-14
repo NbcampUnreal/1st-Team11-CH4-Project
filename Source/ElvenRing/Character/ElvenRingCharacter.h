@@ -21,7 +21,6 @@ class ELVENRING_API AElvenRingCharacter : public AUnitBase
 
 public:
 	AElvenRingCharacter();
-	UFUNCTION(BlueprintCallable, Category = "Attack")
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
