@@ -1,4 +1,6 @@
 #include "BossHangedMan.h"
+
+#include "BossHangedManHeart.h"
 #include "ElvenRing/ElvenRing.h"
 #include "EngineUtils.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
@@ -26,6 +28,7 @@ void ABossHangedMan::BeginPlay()
 
 void ABossHangedMan::OnDeath()
 {
+	Heart->Destroy();
 	GetWorldTimerManager().ClearTimer(LightningTimer);
 	Super::OnDeath();
 }

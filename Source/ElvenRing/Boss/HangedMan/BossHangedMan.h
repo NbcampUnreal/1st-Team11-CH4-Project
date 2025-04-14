@@ -6,6 +6,7 @@
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "BossHangedMan.generated.h"
 
+class ABossHangedManHeart;
 class ATargetPoint;
 
 UENUM()
@@ -91,6 +92,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<UAnimMontage> SpecialAttackAnim;
+
+	UPROPERTY(EditInstanceOnly, Category = "Boss|Stat")
+	TObjectPtr<ABossHangedManHeart> Heart;
 	
 	EHealthPhase HealthPhase;
 	
