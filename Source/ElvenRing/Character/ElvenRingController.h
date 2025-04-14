@@ -43,6 +43,8 @@ public:
 	UInputAction* EndDefenceAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* InteractAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* HealAction;
 
 	virtual void BeginPlay() override;
 

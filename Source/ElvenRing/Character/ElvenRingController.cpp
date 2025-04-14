@@ -18,7 +18,8 @@ AElvenRingController::AElvenRingController()
 	  AttackAction(nullptr),
 	  DefenceAction(nullptr),
 	  EndDefenceAction(nullptr),
-	  InteractAction(nullptr)
+	  InteractAction(nullptr),
+	  HealAction(nullptr)
 {
 	
 }

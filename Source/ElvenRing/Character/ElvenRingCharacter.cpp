@@ -289,6 +289,23 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                 );
             }
             
+            if (PlayerController->HealAction)
+            {
+                // IA_Heal 액션 키를 "키를 누르면" Heal() 호출
+                EnhancedInput->BindAction(
+                    PlayerController->HealAction,
+                    ETriggerEvent::Triggered,
+                    this,
+                    &AElvenRingCharacter::Heal
+                );
+
+                EnhancedInput->BindAction(
+                    PlayerController->MoveAction,
+                    ETriggerEvent::Completed,
+                    this,
+                    &AElvenRingCharacter::MoveEnd
+                );
+            }
             if (PlayerController->JumpAction)
             {
                 // IA_Jump 액션 키를 "키를 누르고 있는 동안" StartJump() 호출
@@ -390,6 +407,15 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                 }
             }    
         }
+    }
+}
+
+void AElvenRingCharacter::Heal(const FInputActionValue& value)
+{
+    CurHealth += 20;
+    if (CurHealth > MaxHealth)
+    {
+        CurHealth = MaxHealth;
     }
 }
 
@@ -614,7 +640,7 @@ void AElvenRingCharacter::DodgeCollDown()
 
 void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 {
-    if (!bCanMove) bCanMove = true;
+    bCanMove = false;;
     ResetCombo();
     if (bDefence)
     {
@@ -626,6 +652,7 @@ void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 
 void AElvenRingCharacter::StopDefence(const FInputActionValue& value)
 {
+    bCanMove = true;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     if (AnimInstance)
     {
@@ -655,8 +682,10 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
-
-    CurHealth = MaxHealth;
+    if (HasAuthority())
+    {
+        CurHealth = MaxHealth;
+    }
     Tags.Add("Friendly");
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }

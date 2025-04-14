@@ -125,6 +125,8 @@ protected:
 	void UpdateDodge();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	UFUNCTION()
+	void Heal(const FInputActionValue& value);
+	UFUNCTION()
 	void Move(const FInputActionValue& value);
 	UFUNCTION()
 	void MoveEnd(const FInputActionValue& value);
