@@ -42,7 +42,7 @@ void UGrux_AnimInstance::AnimNotify_EndHit()
 			{
 				IsHit = false;
 			}, 0.5f, false);			
-			Monster->MulticastIsHit(IsHit);
+			Monster->RPCIsHit(IsHit);
 		}
 	}
 }

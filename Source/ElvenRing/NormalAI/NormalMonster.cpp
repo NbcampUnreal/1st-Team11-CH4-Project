@@ -33,6 +33,11 @@ ANormalMonster::ANormalMonster()
 	bIsDie = false;
 	AIControllerClass = ANormalAIController::StaticClass();
 
+	// Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
+	// Capsule->InitCapsuleSize(80.f, 110.f);
+	// Capsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+
+
 	InstanceIsAttack = false;
 	InstanceIsHit = false;
 	InstanceIsDeath = false;
@@ -76,7 +81,9 @@ void ANormalMonster::UpdateHPBar()
 #pragma region 통신
 void ANormalMonster::RPCIsHit_Implementation(bool value)
 {
-	MulticastIsHit(value);
+	FVector HitLocation = GetActorLocation();
+	FRotator HitRotation = GetActorRotation();
+	MulticastIsHit(value, HitLocation, HitRotation);
 }
 
 void ANormalMonster::RPCIsAttack_Implementation(bool value)
@@ -92,18 +99,22 @@ void ANormalMonster::RPCIsDeath_Implementation(bool value)
 	if (HasAuthority())
 	{
 		GetController()->UnPossess();
-
-		UE_LOG(LogTemp, Warning, TEXT("Multicast Death호출"));
 		MulticastIsDeath(value);
 	}
 }
 
-void ANormalMonster::MulticastIsHit_Implementation(bool value)
+void ANormalMonster::MulticastIsHit_Implementation(bool value, FVector HitLocation, FRotator HitRotation)
 {
 	UGrux_AnimInstance* AnimInstance = Cast<UGrux_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->UpdateHit(value);
+		if (value == true)
+		{
+			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalMaterial, FVector(250, 300, 200),
+												   HitLocation - FVector(0.0f, 0.0f, 320.0f), FRotator(90.0f, 0.0f, 0.0f),
+												   5.0f);
+		}
 	}
 }
 
@@ -123,8 +134,14 @@ void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 	{
 		AnimInstance->UpdateDeath(value);
 	}
-	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	
+	if (HasAuthority())
+	{
+		if (UCapsuleComponent* Capsul = GetCapsuleComponent())
+		{
+			Capsul->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			UE_LOG(LogTemp, Warning, TEXT("캡슐 제거성공"))
+		}
+	}
 	//HP바 타이머 정지, 위젯 제거
 	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
 
@@ -232,6 +249,10 @@ void ANormalMonster::OnDeath()
 	InstanceIsDeath = true;
 	RPCIsDeath(InstanceIsDeath);
 	PlayRandomSound(ENormalMonsterSoundCategory::DeathSound);
+}
+
+void ANormalMonster::SpawnDecal_Implementation(FVector HitLocation, FRotator HitRotation)
+{
 }
 
 
