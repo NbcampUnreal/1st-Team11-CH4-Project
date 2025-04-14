@@ -122,7 +122,10 @@ void UMonsterWidget::NativeDestruct()
 	Super::NativeDestruct();
 
 	if (GetWorld())
-		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	{
+		GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
+	}
 }
 
 void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
