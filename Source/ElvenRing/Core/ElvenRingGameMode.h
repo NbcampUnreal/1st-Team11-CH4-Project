@@ -46,6 +46,7 @@ public:
 	 * Warning : 같은 보스가 Respawn된다거나 여러 개체가 존재하면 잘못된 계산을 할 수 있다.
 	 */
 	void RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage);
+	/** Boss에게 가장 높은 데미지를 입힌 Chracter를 반환한다. 만약, 수치가 같다면 처음 순회한 객체를 반환한다. 캐릭터가 존재하지 않을 경우 nulltpr를 반환한다.*/
 	ACharacter* GetHighestDamageCharacter(const AActor* BossActor) const;
 	
 public:
