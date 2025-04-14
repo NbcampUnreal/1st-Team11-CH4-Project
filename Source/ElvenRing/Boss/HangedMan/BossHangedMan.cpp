@@ -77,6 +77,23 @@ void ABossHangedMan::LightningAttack()
 	}
 }
 
+void ABossHangedMan::MulticastLightning_Implementation()
+{
+	for (int8 i=0; i<PlayerCount; ++i)
+	{
+		FVector SpawnLocation = FVector( PlayersLocation[i].X, PlayersLocation[i].Y, -2100.f );
+		GetWorld()->SpawnActor<AActor>(LightningNiagara, SpawnLocation, FRotator::ZeroRotator);
+	}
+
+	++CurrentLightningCount;
+	
+	if (CurrentLightningCount >= MaxLightningCount)
+	{
+		CurrentLightningCount = 0;
+		GetWorldTimerManager().ClearTimer(LightningTimer);
+	}
+}
+
 void ABossHangedMan::ElectricJavelinAttack()
 {
 	PlayAnimation(ElectricJavelinAnim);
@@ -107,23 +124,6 @@ void ABossHangedMan::Groggy()
 {
 	MulticastStopBattleMode();
 	PlayAnimation(GroggyAnim);
-}
-
-void ABossHangedMan::MulticastLightning_Implementation()
-{
-	for (int8 i=0; i<PlayerCount; ++i)
-	{
-		FVector SpawnLocation = FVector( PlayersLocation[i].X, PlayersLocation[i].Y, -2100.f );
-		GetWorld()->SpawnActor<AActor>(LightningNiagara, SpawnLocation, FRotator::ZeroRotator);
-	}
-
-	++CurrentLightningCount;
-	
-	if (CurrentLightningCount >= MaxLightningCount)
-	{
-		CurrentLightningCount = 0;
-		GetWorldTimerManager().ClearTimer(LightningTimer);
-	}
 }
 
 void ABossHangedMan::GetAllPlayersLocation()

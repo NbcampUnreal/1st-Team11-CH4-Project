@@ -26,7 +26,7 @@ class ELVENRING_API ANormalMonster : public AUnitBase
 
 public:
 	ANormalMonster();
-
+	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category="Audio")
 	UAudioComponent* AudioComponent;
 
@@ -69,7 +69,8 @@ public:
 	virtual void BeginPlay() override;
 	virtual void OnDeath() override;
 	
-
+	UFUNCTION(NetMulticast, Reliable)
+	void SpawnDecal(FVector HitLocation, FRotator HitRotation);
 #pragma endregion
 	
 #pragma region 통신관련
@@ -88,7 +89,7 @@ public:
 	void RPCIsDeath(bool value);
 	
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastIsHit(bool value);
+	void MulticastIsHit(bool value, FVector HitLocation, FRotator HitRotation);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastIsAttack(bool value);
@@ -104,7 +105,8 @@ public:
 	UWidgetComponent* HPWidgetComponent;
 	
 
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Effects")
+	UMaterialInterface* DecalMaterial;
 
 	FTimerHandle UpdateHPBarTimer;
 	FTimerHandle StayTimer;
