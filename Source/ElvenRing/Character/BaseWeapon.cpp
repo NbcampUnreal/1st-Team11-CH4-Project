@@ -50,6 +50,7 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
                                  UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep,
                                  const FHitResult& SweepResult)
 {
+	AElvenRingCharacter * Char = Cast<AElvenRingCharacter>(OtherActor);
 	// 오너 캐릭터의 데미지를 가져오는 과정
 	//근데 이거 데미지 변경될때만 하면 되는거 아닌가 오버랩 될때마다 해야함??
 	if (!HasAuthority()) return;
@@ -72,22 +73,26 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		return;
 	}
+	// 해당 캐릭터는 프랜들리(아군)임
+	if (OtherActor->Tags.Contains("Friendly"))
+	{
+		return;
+	}
+	if (Char != nullptr)
+	{
+		int hp = Char->CurGetHealth();
+		UE_LOG(LogTemp, Warning, TEXT("공격 대상: %s, 남은 체력: %d"), *OtherActor->GetName(), hp);
+	}
 	AController* InstigatorController = GetInstigatorController();
 	// 클라이언트일 경우 서버로 요청 by 백의현
 	if (!HasAuthority())
 	{
 		ServerApplyDamage(OtherActor, AttackPower, InstigatorController, this);
 	}
-
 	//UGameplayStatics::ApplyDamage(OtherActor, AttackPower, InstigatorController, this, UDamageType::StaticClass()); 백의현: 이거대신에
 	ServerApplyDamage(OtherActor, AttackPower, InstigatorController, this); //이렇게 변경
 	DamagedActors.Add(OtherActor);
-	AElvenRingCharacter * Char = Cast<AElvenRingCharacter>(OtherActor);
-	if (Char != nullptr)
-	{
-		int hp = Char->CurGetHealth();
-		UE_LOG(LogTemp, Warning, TEXT("공격 대상: %s, 남은 체력: %d"), *OtherActor->GetName(), hp);
-	}
+	
 }
 
 //by 백의현
