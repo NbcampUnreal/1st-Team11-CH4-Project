@@ -20,8 +20,6 @@ void ABossHangedMan::BeginPlay()
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ThunderBoldAttack, FString("ThunderBoldAttack"));
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackUp, FString("ElectronicAttackUp"));
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackDown, FString("ElectronicAttackDown"));
-
-	SetBossBattleMode();
 	
 	Super::BeginPlay();
 }

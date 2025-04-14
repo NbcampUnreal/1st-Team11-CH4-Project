@@ -75,7 +75,7 @@ public:
 	virtual void OnAttacked();
 	virtual void OnDeath();
 
-	UFUNCTION(NetMulticast, reliable)
+	UFUNCTION()
 	virtual void OnRep_HealthChanged();
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	
