@@ -77,7 +77,6 @@ void ABoss::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 	
 	RegisterCollision(AttackCollision, CollisionSocketName);
-	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 }
 
 void ABoss::Tick(float DeltaTime)
@@ -126,13 +125,15 @@ void ABoss::ChangeToAttackStateIfConditionSatisfied()
 #pragma endregion
 
 #pragma region 시퀀스 종료 핸들러 함수 
-void ABoss::ServerOnSpawnSequenceEnded_Implementation()
+void ABoss::OnSpawnSequenceEnded()
 {
+	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 	LOG(TEXT("Begin"));
 }
 
-void ABoss::ServerOnPhaseSequenceEnded_Implementation()
+void ABoss::OnPhaseSequenceEnded()
 {
+	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 	LOG(TEXT("Begin"));
 }
 #pragma endregion

@@ -46,9 +46,9 @@ void ABossTenebris::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ABossTenebris::ServerOnSpawnSequenceEnded_Implementation()
+void ABossTenebris::OnSpawnSequenceEnded()
 {
-	Super::ServerOnSpawnSequenceEnded_Implementation();
+	Super::OnSpawnSequenceEnded();
 
 	if (HasAuthority())
 	{
@@ -63,9 +63,9 @@ void ABossTenebris::ServerOnSpawnSequenceEnded_Implementation()
 	}
 }
 
-void ABossTenebris::ServerOnPhaseSequenceEnded_Implementation()
+void ABossTenebris::OnPhaseSequenceEnded()
 {
-	Super::ServerOnPhaseSequenceEnded_Implementation();
+	Super::OnPhaseSequenceEnded();
 
 	if (HasAuthority())
 	{
