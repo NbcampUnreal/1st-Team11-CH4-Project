@@ -5,6 +5,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/Core/ElvenRingGameMode.h"
+#include "ElvenRing/UI/ScreenEffectWidget.h"
+#include "ElvenRing/UI/UIManager.h"
 
 AElvenRingController::AElvenRingController()
 	: InputMappingContext(nullptr),
@@ -70,10 +72,11 @@ void AElvenRingController::ServerRequestLevelChange_Implementation(const FString
 	}
 }
 
-void AElvenRingController::ClientShowLoadingScreen_Implementation(const FString& TargetMapName)
+void AElvenRingController::ClientShowLoadingScreen_Implementation(const FString& TargetMapName, const float FadeOutTime)
 {
 	if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
 	{
-		GameInstance->ShowLoadingScreen(TargetMapName);
+		// GameInstance->ShowLoadingScreen(TargetMapName);
+		GameInstance->GetUIManager()->GetScreenEffectWidget()->FadeOut(FadeOutTime);
 	}
 }
