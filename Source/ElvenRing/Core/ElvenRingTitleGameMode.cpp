@@ -1,13 +1,15 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 
 #include "ElvenRingTitleGameMode.h"
 #include "ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
+#include "ElvenRing/UI/TitleMapParticle.h"
 
 AElvenRingTitleGameMode::AElvenRingTitleGameMode()
 {
 	DefaultPawnClass = nullptr;
+	static ConstructorHelpers::FClassFinder<ATitleMapParticle> BP_TitleMapParticle(TEXT("/Game/ElvenRing/Blueprints/UI/BP_TtitleParticle"));
+	if (BP_TitleMapParticle.Succeeded())
+		TitleMapParticleClass = BP_TitleMapParticle.Class;
 }
 
 void AElvenRingTitleGameMode::BeginPlay()
@@ -18,4 +20,13 @@ void AElvenRingTitleGameMode::BeginPlay()
 	{
 		EGameInstance->GetUIManager()->ShowTitleScreen(GetWorld());
 	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	FVector Location(0, 0, 100);
+	FRotator Rotation = FRotator::ZeroRotator;
+
+	ATitleMapParticle* TitleParticle = GetWorld()->SpawnActor<ATitleMapParticle>(TitleMapParticleClass, Location, Rotation, SpawnParams);
+	int32 dsfsdf = 0;
 }
