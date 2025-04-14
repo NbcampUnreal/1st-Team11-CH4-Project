@@ -4,6 +4,7 @@
 #include "UnitBase.h"
 
 #include "ElvenRing/ElvenRing.h"
+#include "ElvenRing/Boss/Boss.h"
 #include "Kismet/GameplayStatics.h"
 #include "ElvenRing/UI/PlayerMainUi.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
@@ -84,9 +85,18 @@ void AUnitBase::OnDeath()
 	bIsDie = true;
 }
 
-void AUnitBase::OnRep_HealthChanged_Implementation()
+void AUnitBase::OnRep_HealthChanged()
 {
-	OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
+	// 로컬 플레이어인 경우에만 UI 업데이트
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC && PC->GetPawn() == this)
+	{
+		OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
+	}
+	else if (Cast<ABoss>(this))
+	{
+		OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
+	}
 }
 
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
