@@ -8,7 +8,8 @@ public class ElvenRing : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","UMG", "LevelSequence", "MovieScene" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput","UMG", "LevelSequence", "MovieScene","NetCore", "Niagara" });
+		PublicDependencyModuleNames.AddRange(new string[] {"OnlineSubsystem", "OnlineSubsystemUtils", "OnlineSubsystemSteam"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });
 

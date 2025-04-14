@@ -4,6 +4,9 @@
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
 #include "ElvenRing/Boss/BossPattern/BossSpecialPatternComponent.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/BossWidget.h"
+#include "ElvenRing/UI/UIManager.h"
 
 ABossArtorias::ABossArtorias()
 {
@@ -28,8 +31,11 @@ void ABossArtorias::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ABossArtorias::ServerOnSpawnSequenceEnded_Implementation()
+void ABossArtorias::OnSpawnSequenceEnded()
 {
+	Super::OnSpawnSequenceEnded();
+	UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetWorld()->GetGameInstance());
+	GameInstance->GetUIManager()->GetBossWidgetUi()->SetName("Artorias, The Guardian Of Dark Castle");
 	if (HasAuthority())
 	{
 		SetBossBattleMode();

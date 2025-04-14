@@ -92,6 +92,10 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UStaticMeshComponent> Mesh;
 
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> OpenSound;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<USoundBase> CloseSound;
 private:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;

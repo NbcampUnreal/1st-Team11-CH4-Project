@@ -5,6 +5,7 @@
 #include "ElvenRing/Boss/Boss.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/BossWidget.h"
 #include "ElvenRing/UI/UIManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -86,13 +87,13 @@ void ANormalLevelSequenceActor::OnSequenceEnded()
 	{
 		// 모든 클라이언트에게 플레이어 활성화 전파
 		MulticastSetAllPlayerUnhidden();
-
-		// 서버에게 시퀀스 종료 이벤트 전파
-		ServerOnSequenceEnded();
 	}
+
+	// 서버에게 시퀀스 종료 이벤트 전파
+	CheckCurrentSequenceType();
 }
 
-void ANormalLevelSequenceActor::ServerOnSequenceEnded_Implementation()
+void ANormalLevelSequenceActor::CheckCurrentSequenceType()
 {
 	// 재생하는 LevelSequence 타입에 따라 로직 처리
 	FTimerHandle TimerHandle;
@@ -134,7 +135,7 @@ void ANormalLevelSequenceActor::OnSpawnSequenceEnded()
 	{
 		if (IsValid(Boss))
 		{
-			Boss->ServerOnSpawnSequenceEnded();
+			Boss->OnSpawnSequenceEnded();
 			return;
 		}
 	}
@@ -146,7 +147,7 @@ void ANormalLevelSequenceActor::OnPhaseSequenceEnded()
 	{
 		if (IsValid(Boss))
 		{
-			Boss->ServerOnPhaseSequenceEnded();
+			Boss->OnPhaseSequenceEnded();
 			return;
 		}
 	}
@@ -154,6 +155,7 @@ void ANormalLevelSequenceActor::OnPhaseSequenceEnded()
 
 void ANormalLevelSequenceActor::OnDeadSequenceEnded_Implementation()
 {
+	Instance->GetUIManager()->GetBossWidgetUi()->SetActiveWidget(false);
 	Instance->GetUIManager()->ShowMessage("Enemy Defeated !", EMessageType::SystemMessage);
 	USoundBase* MySound = LoadObject<USoundBase>(nullptr, TEXT("/Script/Engine.SoundWave'/Game/ElvenRing/Resources/SFX/UI/BossKilled.BossKilled'"));
 	if (MySound)

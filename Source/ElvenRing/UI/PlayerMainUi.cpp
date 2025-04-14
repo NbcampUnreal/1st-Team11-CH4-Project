@@ -145,7 +145,6 @@ void UPlayerMainUi::UpdateSt(float CurSt, float StMax, int32 State)
 		DecreaseSt(CurSt, StMax);
 	else
 		RecoverSt(CurSt, StMax);
-	UE_LOG(LogTemp, Warning, TEXT("CurStamina = %f/ Max %f"), CurrentSt, MaxSt);
 }
 
 void UPlayerMainUi::BindToPlayer(AUnitBase* Player)

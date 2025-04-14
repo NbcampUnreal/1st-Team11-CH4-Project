@@ -27,12 +27,10 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Spawn 타입의 LevelSequence가 끝났을 때 호출하는 함수 */ 
-	UFUNCTION(Server, Reliable)
-	virtual void ServerOnSpawnSequenceEnded();
+	virtual void OnSpawnSequenceEnded();
 
 	/** Phase 타입의 LevelSequence가 끝났을 때 호출하는 함수 */
-	UFUNCTION(Server, Reliable)
-	virtual void ServerOnPhaseSequenceEnded();
+	virtual void OnPhaseSequenceEnded();
 
 	void ChangeState(IBossStateInterface* State);
 
@@ -53,6 +51,9 @@ public:
 	/** 컷신 종료 후 호출할 함수로, 보스가 전투를 시작하는 상태가 됨 */
 	UFUNCTION(Server, Reliable, BlueprintCallable)
 	void SetBossBattleMode();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastStopBattleMode();
 
 	/** 특정 구간동안 빠르게 이동시키고 싶을 때 사용 */
 	UFUNCTION(BlueprintCallable)

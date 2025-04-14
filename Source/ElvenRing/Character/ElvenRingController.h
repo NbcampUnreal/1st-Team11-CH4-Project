@@ -43,6 +43,8 @@ public:
 	UInputAction* EndDefenceAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* InteractAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* HealAction;
 
 	virtual void BeginPlay() override;
 
@@ -50,4 +52,13 @@ public:
 	void ServerRequestLevelChange(const FString& LevelPath);
 	UFUNCTION(Client, Reliable)
 	void ClientShowLoadingScreen(const FString& TargetMapName);
+
+	virtual void NotifyLoadedWorld(FName WorldPackageName, bool bFinalDest) override;
+public:
+	void ReportPlayerReady();
+	
+protected:
+	/** Begin Play 시점에서 Ready 상태를 전달한다. */
+	UFUNCTION(Server, Reliable)
+	void ServerReportPlayerReady();
 };

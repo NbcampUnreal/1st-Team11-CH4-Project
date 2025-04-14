@@ -5,6 +5,20 @@ UBossNormalPatternComponent::UBossNormalPatternComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	PatternCount = 0;
+	CurrentAttackIndex = 0;
+	AttackOrder.Empty();
+}
+
+void UBossNormalPatternComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	for (int8 i=0; i<PatternCount; ++i)
+	{
+		AttackOrder.Add(i);
+	}
+
+	ShuffleAttackOrder();
 }
 
 void UBossNormalPatternComponent::ExecuteAttackPattern()
@@ -15,11 +29,33 @@ void UBossNormalPatternComponent::ExecuteAttackPattern()
 		LOG(TEXT("Pattern No Exist"));
 		return;
 	}
-
-	// 보유한 패턴 중 랜덤으로 1개 실행
-	const int8 RandNum = FMath::RandRange(0, PatternCount - 1);
-	if (Patterns.IsValidIndex(RandNum))
+	
+	const int8 Index = AttackOrder[CurrentAttackIndex];
+	
+	if (Patterns.IsValidIndex(Index))
 	{
-		Patterns[RandNum].Execute();	
+		Patterns[Index].Execute();	
+	}
+
+	if (CurrentAttackIndex < PatternCount-1)
+	{
+		++CurrentAttackIndex;
+	}
+	else
+	{
+		CurrentAttackIndex = 0;
+		ShuffleAttackOrder();
+	}
+}
+
+void UBossNormalPatternComponent::ShuffleAttackOrder()
+{
+	for (int8 i=0; i<PatternCount; ++i)
+	{
+		const int8 RandNum = FMath::RandRange(0, PatternCount - 1);
+		if (i != RandNum)
+		{
+			AttackOrder.Swap(i, RandNum);
+		}
 	}
 }

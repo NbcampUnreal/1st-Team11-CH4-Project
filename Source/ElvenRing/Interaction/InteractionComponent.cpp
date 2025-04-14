@@ -194,12 +194,9 @@ void UInteractionComponent::LogInteractLost()
 
 bool UInteractionComponent::IsOwnerLocallyControlled() const
 {
-	if (AActor* Owner = GetOwner())
+	if (APawn* Owner = Cast<APawn>(GetOwner()))
 	{
-		if (APlayerController* PlayerController = Cast<APlayerController>(Owner->GetInstigatorController()))
-		{
-			return PlayerController->IsLocalController();
-		}
+		return Owner->IsLocallyControlled();
 	}
 	return false;
 }
@@ -227,16 +224,13 @@ void UInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (IsOwnerLocallyControlled())
+	if (bStartSearchOnBeginPlay)
 	{
-		if (bStartSearchOnBeginPlay)
-		{
-			StartSearch();
-		}
-		if (bShouldLog)
-		{
-			OnInteractableFound.AddDynamic(this, &UInteractionComponent::LogInteractFound);
-			OnInteractableLost.AddDynamic(this, &UInteractionComponent::LogInteractLost);
-		}
+		StartSearch();
+	}
+	if (bShouldLog)
+	{
+		OnInteractableFound.AddDynamic(this, &UInteractionComponent::LogInteractFound);
+		OnInteractableLost.AddDynamic(this, &UInteractionComponent::LogInteractLost);
 	}
 }

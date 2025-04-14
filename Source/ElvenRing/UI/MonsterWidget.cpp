@@ -86,7 +86,6 @@ void UMonsterWidget::RecoverHp(float TargetHp, float HpMax)
 	UpdateProgressBar(FElement);
 	//HpProgressBar->SetPercent(FElement.TargetProgressBarPer);
 	//HpProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
-	//UpdateProgressBar(FElement);
 }
 void UMonsterWidget::UpdateHp(float TargetHp, float HpMax, int32 State)
 {
@@ -124,7 +123,10 @@ void UMonsterWidget::NativeDestruct()
 	if(TempMonster)
 		TempMonster->OnHpChanged.RemoveDynamic(this, &UMonsterWidget::UpdateHp);
 	if (GetWorld())
-		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	{
+		GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
+		GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
+	}
 }
 
 void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)

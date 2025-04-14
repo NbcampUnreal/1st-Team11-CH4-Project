@@ -18,6 +18,8 @@ public:
 	void DisableCollision();
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void ResetDamagedActors();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	USoundCue* AttackSoundCue;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -39,5 +41,9 @@ public:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 						UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 						bool bFromSweep, const FHitResult &SweepResult);
-	
+
+	UFUNCTION(Server, Reliable)
+	void ServerApplyDamage(AActor* Target, float DamageAmount, AController* InstigatorController, AActor* DamageCauser);
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastPlayAttackSound();
 };
