@@ -26,6 +26,12 @@ AElvenRingGameMode::AElvenRingGameMode()
 
 void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage)
 {
+	if (!IsValid(EventInstigator))
+	{
+		UE_LOG(LogTemp,Warning, TEXT("Record Damage : EventInstigator is not valid. Damage may not be recorded."));
+		return;
+	}
+	
 	if (EventInstigator->IsA(APlayerController::StaticClass()))
 	{
 		if (AElvenRingPlayerState* PlayerState = EventInstigator->GetPlayerState<AElvenRingPlayerState>())
