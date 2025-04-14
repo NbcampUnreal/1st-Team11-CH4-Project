@@ -83,8 +83,11 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	ServerApplyDamage(OtherActor, AttackPower, InstigatorController, this); //이렇게 변경
 	DamagedActors.Add(OtherActor);
 	AElvenRingCharacter * Char = Cast<AElvenRingCharacter>(OtherActor);
-	int hp = Char->CurGetHealth();
-	UE_LOG(LogTemp, Warning, TEXT("공격 대상: %s, 남은 체력: %d"), *OtherActor->GetName(), hp);
+	if (Char != nullptr)
+	{
+		int hp = Char->CurGetHealth();
+		UE_LOG(LogTemp, Warning, TEXT("공격 대상: %s, 남은 체력: %d"), *OtherActor->GetName(), hp);
+	}
 }
 
 //by 백의현

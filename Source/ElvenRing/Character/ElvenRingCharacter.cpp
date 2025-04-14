@@ -450,6 +450,7 @@ void AElvenRingCharacter::StartSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
     {
+        IsSprint = true;
         GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
     }
 }
@@ -458,6 +459,7 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 {
     if (GetCharacterMovement())
     {
+        IsSprint = false;
         GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
     }
 }
