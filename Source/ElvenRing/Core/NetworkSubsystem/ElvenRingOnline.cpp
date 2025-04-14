@@ -145,7 +145,8 @@ void UElvenRingOnline::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 				{
 					PlayerController->ClientTravel(ConnectString, TRAVEL_Absolute);
 					UE_LOG(LogTemp,Display,TEXT("Connect String: %s"), *ConnectString);
-					GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Join Session Success"));
+					FString DebugMessage= FString::Printf(TEXT("Join Session Success, Client Travel To %s"), *ConnectString);
+					GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, DebugMessage);
 				}
 				else
 				{
