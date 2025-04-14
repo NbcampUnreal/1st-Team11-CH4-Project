@@ -33,9 +33,9 @@ void ABossHangedMan::OnDeath()
 	Super::OnDeath();
 }
 
-void ABossHangedMan::ServerOnSpawnSequenceEnded_Implementation()
+void ABossHangedMan::OnSpawnSequenceEnded()
 {
-	Super::ServerOnSpawnSequenceEnded_Implementation();
+	Super::OnSpawnSequenceEnded();
 	if (HasAuthority())
 	{
 		SetBossBattleMode_Implementation();

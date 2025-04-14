@@ -28,8 +28,9 @@ void ABossArtorias::BeginPlay()
 	Super::BeginPlay();
 }
 
-void ABossArtorias::ServerOnSpawnSequenceEnded_Implementation()
+void ABossArtorias::OnSpawnSequenceEnded()
 {
+	Super::OnSpawnSequenceEnded();
 	if (HasAuthority())
 	{
 		SetBossBattleMode();
