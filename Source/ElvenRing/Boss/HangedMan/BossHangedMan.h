@@ -26,7 +26,6 @@ public:
 	ABossHangedMan();
 
 	virtual void ServerOnSpawnSequenceEnded_Implementation() override;
-	virtual void ServerOnPhaseSequenceEnded_Implementation() override;
 	
 protected:
 	virtual void BeginPlay() override;

@@ -17,6 +17,8 @@ void UBossNormalPatternComponent::BeginPlay()
 	{
 		AttackOrder.Add(i);
 	}
+
+	ShuffleAttackOrder();
 }
 
 void UBossNormalPatternComponent::ExecuteAttackPattern()

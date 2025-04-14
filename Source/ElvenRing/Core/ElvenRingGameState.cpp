@@ -3,14 +3,23 @@
 
 #include "ElvenRingGameState.h"
 
-#include "ElvenRingPlayerState.h"
+#include "ElvenRing/Character/ElvenRingController.h"
 
 AElvenRingGameState::AElvenRingGameState()
 {
-	bActorSeamlessTraveled = true;
 }
 
-void AElvenRingGameState::BeginPlay()
+void AElvenRingGameState::HandleMatchHasStarted()
 {
-	Super::BeginPlay();
+	Super::HandleMatchHasStarted();
+
+	// Player Controller가 Seamless Travel을 할 경우 Begin Play가 호출되지 않는다.
+	// Game State는 Begin Play를 호출하는 처음 부분이므로 여기서 Player Controller의 ServerReportPlayerReady를 호출한다.
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(Iterator->Get()); PlayerController && PlayerController->IsLocalController())
+		{
+			PlayerController->ReportPlayerReady();
+		}
+	}
 }
