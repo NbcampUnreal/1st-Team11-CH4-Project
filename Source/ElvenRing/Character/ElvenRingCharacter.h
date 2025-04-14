@@ -22,12 +22,6 @@ class ELVENRING_API AElvenRingCharacter : public AUnitBase
 
 public:
 	AElvenRingCharacter();
-	UFUNCTION(BlueprintCallable, Category = "Attack")
-	
-	float GetCurHealth()
-	{
-		return CurHealth;
-	}
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)

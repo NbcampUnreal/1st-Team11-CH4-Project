@@ -82,7 +82,7 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 	if (Char != nullptr)
 	{
-		int hp = Char->CurGetHealth();
+		int hp = Char->GetCurHealth();
 		UE_LOG(LogTemp, Warning, TEXT("공격 대상: %s, 남은 체력: %d"), *OtherActor->GetName(), hp);
 	}
 	AController* InstigatorController = GetInstigatorController();
