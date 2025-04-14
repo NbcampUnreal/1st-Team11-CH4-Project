@@ -22,6 +22,7 @@ class ELVENRING_API AElvenRingCharacter : public AUnitBase
 public:
 	AElvenRingCharacter();
 	UFUNCTION(BlueprintCallable, Category = "Attack")
+	
 	float GetCurHealth()
 	{
 		return CurHealth;
@@ -36,12 +37,17 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
 	bool bInput;
 
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayAttackAnimation(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_PlayDodgeAnimation(float _DodgeDuration);
 	//공격 함수 및 변수들
-    
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)
 	int AttackIndex;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)
 	bool bIsAttacking;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack")
 	bool bCanCombo;
@@ -51,9 +57,13 @@ protected:
 	UAnimMontage* AttackMontage2;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
 	UAnimMontage* AttackMontage3;
-
 	FTimerHandle ComboTimerHandle;
 	void OnAttackInput();
+	UFUNCTION(Server, Reliable)
+	void Server_OnAttackInput();
+	void OnDodgeInput(const FInputActionValue& Value);
+	UFUNCTION(Server, Reliable)
+	void Server_OnDodgeInput(const FInputActionValue& Value);
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void OnAttackAnimationEnd();
 	void ComboEnd();
@@ -76,7 +86,12 @@ protected:
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed; 	// 실제 스프린트 속도
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement",Replicated)
+	bool IsSprint = false;
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStartSprint();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerStopSprint();
 	//구르기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
 	float DodgeCool = 0.3f;
@@ -96,6 +111,7 @@ protected:
 	FVector DodgeTargetLocation;
 	
 	FTimerHandle DodgeTimerHandle;  
+	FTimerHandle JumpTimerHandle;  
 	FTimerHandle DodgeStopTimerHandle;
 	FTimerHandle DodgeStopTestTimerHandle;
 
@@ -115,6 +131,7 @@ protected:
 	void MoveEnd(const FInputActionValue& value);
 	UFUNCTION()
 	void StartJump(const FInputActionValue& value);
+	void SetBoolTrue();
 	UFUNCTION()
 	void StopJump(const FInputActionValue& value);
 	UFUNCTION()
@@ -134,7 +151,8 @@ protected:
 	UFUNCTION()
 	void StopDefence(const FInputActionValue& value);
 	void Interact(const FInputActionValue& InputActionValue);
-
+	
+	virtual void Landed(const FHitResult& Hit) override;
 	virtual void Tick(float DeltaTime) override;//ksw
 	virtual void BeginPlay() override;//ksw
 };

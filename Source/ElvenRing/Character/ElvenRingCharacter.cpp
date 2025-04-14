@@ -9,9 +9,13 @@
 #include "ElvenRing/Interaction/InteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AElvenRingCharacter::AElvenRingCharacter()
 {
+    //네트워크
+    bReplicates = true;
+    
     //스프링 암
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
@@ -28,6 +32,46 @@ AElvenRingCharacter::AElvenRingCharacter()
     AttackIndex = 0;
     bIsAttacking = false;
     bCanCombo = false;
+
+    //테스트용
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationYaw   = false;
+    bUseControllerRotationRoll  = false;
+    GetCharacterMovement()->bOrientRotationToMovement = true;
+}
+
+
+
+void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMontage* Montage)
+{
+    if (Montage)
+    {
+        if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+        {
+            bCanMove = false;
+            AnimInstance->Montage_Play(Montage);
+        }
+    }
+}
+void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+    Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+    DOREPLIFETIME(AElvenRingCharacter, IsSprint);
+}
+
+void AElvenRingCharacter::Multicast_PlayDodgeAnimation_Implementation(float _DodgeDuration)
+{
+    if (DodgeMontage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            float MontageLength = DodgeMontage->GetPlayLength();
+            float PlayRate = MontageLength / _DodgeDuration;
+            AnimInstance->Montage_Play(DodgeMontage,PlayRate);
+        }
+    }
 }
 
 void AElvenRingCharacter::ToggleInput(bool _bInput)
@@ -74,7 +118,10 @@ void AElvenRingCharacter::OnAttackInput()
         bCanMove = false;
         bIsAttacking = true;
         AttackIndex = 1;
-        PlayAttackAnimation();
+        if (HasAuthority())
+        {
+            Multicast_PlayAttackAnimation(AttackMontage1);
+        }
     }
     // 이미 공격 중일 때, 콤보 입력 가능하면 연계
     else if (bIsAttacking && bCanCombo && AttackIndex < 3)
@@ -87,8 +134,28 @@ void AElvenRingCharacter::OnAttackInput()
             GetWorldTimerManager().ClearTimer(ComboTimerHandle);
         }
         AttackIndex++;
-        PlayAttackAnimation();
+        UAnimMontage* MontageToPlay = (AttackIndex == 2 ? AttackMontage2 : AttackMontage3);
+        if (MontageToPlay && HasAuthority())
+        {
+            Multicast_PlayAttackAnimation(MontageToPlay);
+        }
     }
+}
+
+void AElvenRingCharacter::OnDodgeInput(const FInputActionValue& Value)
+{
+    StartDodge(Value);
+    
+    // 만약 클라이언트라면 서버에도 dodge 입력을 알림
+    if (!HasAuthority())
+    {
+        Server_OnDodgeInput(Value);
+    }
+}
+
+void AElvenRingCharacter::Server_OnAttackInput_Implementation()
+{
+    OnAttackInput();
 }
 
 void AElvenRingCharacter::PlayAttackAnimation()
@@ -115,6 +182,40 @@ void AElvenRingCharacter::PlayAttackAnimation()
     {
         AnimInstance->Montage_Play(CurrentMontage);
     }
+}
+
+void AElvenRingCharacter::ServerStartSprint_Implementation()
+{
+    IsSprint = true;
+    if (GetCharacterMovement())
+    {
+        GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+    }
+}
+
+bool AElvenRingCharacter::ServerStartSprint_Validate()
+{
+    return true;
+}
+
+void AElvenRingCharacter::ServerStopSprint_Implementation()
+{
+    IsSprint = false;
+    if (GetCharacterMovement())
+    {
+        GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+    }
+}
+
+bool AElvenRingCharacter::ServerStopSprint_Validate()
+{
+    return true;
+}
+
+
+void AElvenRingCharacter::Server_OnDodgeInput_Implementation(const FInputActionValue& Value)
+{
+    StartDodge(Value);
 }
 
 void AElvenRingCharacter::OnAttackAnimationEnd()
@@ -226,7 +327,7 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                         PlayerController->DodgeAction,
                         ETriggerEvent::Completed,
                         this,
-                        &AElvenRingCharacter::StartDodge
+                        &AElvenRingCharacter::OnDodgeInput
                     );
                 }
 
@@ -247,7 +348,7 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
                         PlayerController->AttackAction,
                         ETriggerEvent::Triggered,
                         this,
-                        &AElvenRingCharacter::OnAttackInput
+                        &AElvenRingCharacter::Server_OnAttackInput
                     );
                 }
                 if (PlayerController->DefenceAction)
@@ -309,6 +410,7 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
             //float MontageLength = DefenceMontage->GetPlayLength(); 일단 빼두자 언제 또 써야할지도 모른다.....
             
             AnimInstance->Montage_Play(DefenceMontage);
+            AnimInstance->Montage_SetNextSection("End", "Start", DefenceMontage);
         }
     }
 }
@@ -327,15 +429,19 @@ void AElvenRingCharacter::Move(const FInputActionValue& value)
 	MoveInput = value.Get<FVector2D>();
     if (!bCanMove) return;
 
+    const FRotator Rotation = Controller->GetControlRotation();
+    const FRotator YawRotation(0, Rotation.Yaw, 0);
+    const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+    const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
-        AddMovementInput(GetActorForwardVector(), MoveInput.X);
+        AddMovementInput(ForwardDirection, MoveInput.X);
         
     }
 
     if (!FMath::IsNearlyZero(MoveInput.Y))
     {
-        AddMovementInput(GetActorRightVector(), MoveInput.Y);
+        AddMovementInput(RightDirection, MoveInput.Y);
     }
 }
 void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
@@ -345,11 +451,18 @@ void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
+    if (bJump) return;
     if (bIsAttacking) return;
     if (value.Get<bool>())
     {
         Jump();
+        bJump = true;
     }
+}
+
+void AElvenRingCharacter::SetBoolTrue()
+{
+    bJump = false;
 }
 
 void AElvenRingCharacter::StopJump(const FInputActionValue& value)
@@ -360,6 +473,13 @@ void AElvenRingCharacter::StopJump(const FInputActionValue& value)
     }
 }
 
+void AElvenRingCharacter::Landed(const FHitResult& Hit)
+{
+    Super::Landed(Hit);
+
+    
+    GetWorld()->GetTimerManager().SetTimer(JumpTimerHandle, this, &AElvenRingCharacter::SetBoolTrue, 0.5f, false);
+}
 void AElvenRingCharacter::Look(const FInputActionValue& value)
 {
     FVector2D LookInput = value.Get<FVector2D>();
@@ -370,17 +490,36 @@ void AElvenRingCharacter::Look(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartSprint(const FInputActionValue& value)
 {
-    if (GetCharacterMovement())
+    // 서버 권한(HasAuthority)을 체크
+    if (HasAuthority())
     {
-        GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+        // 서버라면 직접 상태 변경
+        IsSprint = true;
+        if (GetCharacterMovement())
+        {
+            GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+        }
+    }
+    else
+    {
+        // 클라이언트라면 서버 RPC 호출
+        ServerStartSprint();
     }
 }
 
 void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 {
-    if (GetCharacterMovement())
+    if (HasAuthority())
     {
-        GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+        IsSprint = false;
+        if (GetCharacterMovement())
+        {
+            GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+        }
+    }
+    else
+    {
+        ServerStopSprint();
     }
 }
 
@@ -393,7 +532,6 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     CurrentWeapon->DisableCollision();
     ResetCombo();
     FVector DodgeDirection = FVector(MoveInput.Y,(-1)*MoveInput.X,0.0f).GetSafeNormal();
-    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
     if (DodgeDirection.IsNearlyZero())
     {
         DodgeDirection = GetActorForwardVector();
@@ -404,9 +542,6 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
         const FVector RightVector = GetActorRightVector();
         DodgeDirection = (ForwardVector * MoveInput.X + RightVector * MoveInput.Y).GetSafeNormal();
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("DodgeDirection: %s"), *DodgeDirection.ToString());
-
     DodgeStartLocation = GetActorLocation();
     DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
     DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
@@ -414,7 +549,11 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     bdodge = true;
     bIsDodging = true;
     DodgeTime = 0.f;
-    PlayDodgeAnimation(DodgeDuration);
+    
+    if (HasAuthority())
+    {
+        Multicast_PlayDodgeAnimation(DodgeDuration);
+    }
     
     const float DodgeUpdate = 0.01f;
     GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::UpdateDodge, DodgeUpdate, true);
@@ -457,7 +596,6 @@ void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
     ResetCombo();
     if (bDefence)
     {
-        PlayDefenceAnimation(DefenceSpeed);
         return;
     }
     PlayDefenceAnimation(DefenceSpeed);
@@ -497,6 +635,6 @@ void AElvenRingCharacter::BeginPlay()
     AttachDelegateToWidget(ECharacterType::Player);
 
     CurHealth = MaxHealth;
-    
+    Tags.Add("Friendly");
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }

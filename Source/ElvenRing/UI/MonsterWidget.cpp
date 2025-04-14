@@ -86,7 +86,7 @@ void UMonsterWidget::RecoverHp(float TargetHp, float HpMax)
 	UpdateProgressBar(FElement);
 	//HpProgressBar->SetPercent(FElement.TargetProgressBarPer);
 	//HpProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
-	UpdateProgressBar(FElement);
+	// UpdateProgressBar(FElement);
 }
 void UMonsterWidget::UpdateHp(float TargetHp, float HpMax, int32 State)
 {
