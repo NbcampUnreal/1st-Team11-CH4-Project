@@ -12,6 +12,7 @@
 #include "Effect/CameraControllerComponent.h"
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/Core/ElvenRingGameMode.h"
 #include "ElvenRing/UI/BossWidget.h"
 #include "ElvenRing/UI/UIManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -76,7 +77,6 @@ void ABoss::BeginPlay()
 	GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
 	
 	RegisterCollision(AttackCollision, CollisionSocketName);
-	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 }
 
 void ABoss::Tick(float DeltaTime)
@@ -125,13 +125,15 @@ void ABoss::ChangeToAttackStateIfConditionSatisfied()
 #pragma endregion
 
 #pragma region 시퀀스 종료 핸들러 함수 
-void ABoss::ServerOnSpawnSequenceEnded_Implementation()
+void ABoss::OnSpawnSequenceEnded()
 {
+	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 	LOG(TEXT("Begin"));
 }
 
-void ABoss::ServerOnPhaseSequenceEnded_Implementation()
+void ABoss::OnPhaseSequenceEnded()
 {
+	AttachDelegateToWidget(ECharacterType::Boss);//ksw
 	LOG(TEXT("Begin"));
 }
 #pragma endregion
@@ -295,11 +297,21 @@ void ABoss::SetAttackTargetTimer()
 
 void ABoss::SetAttackTarget()
 {
-	// 딜량이 높은 플레이어 우선으로 타겟 설정해야함
-	// 공격 중에 SetAttackTarget이 호출되어도 이미 이전 타겟을 향해 공격 중이기 때문에
-	// 새로운 타겟이 설정되어도 문제가 없을 것으로 보임
+	AElvenRingGameMode* GameMode = Cast<AElvenRingGameMode>(GetWorld()->GetAuthGameMode());
+
+	if (IsValid(GameMode))
+	{
+		ACharacter* Character = GameMode->GetHighestDamageCharacter(this);
+		LOG(TEXT("Character %s"), *Character->GetName())
+		if (IsValid(Character))
+		{
+			AElvenRingCharacter* Player = Cast<AElvenRingCharacter>(Character);
+			LOG(TEXT("Player %s"), *Player->GetName())
+			TargetPlayer = Player;
+		}
+	}
 	
-	for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
+	/*for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
 	{
 			if (IsValid(Player)) // NewTarget이 유효한지 체크
 			{
@@ -307,7 +319,7 @@ void ABoss::SetAttackTarget()
 				TargetPlayer = Player;
 				break;
 			}
-	}
+	}*/
 	SetAttackTargetTimer();
 }
 

@@ -46,8 +46,8 @@ private:
 	void MulticastPlaySequence();
     
 	/** 시퀀스 종료 멀티캐스트 함수 */
-	UFUNCTION(Server, Reliable)
-	void ServerOnSequenceEnded();
+	UFUNCTION()
+	void CheckCurrentSequenceType();
     
 	/** 플레이어 가시성 제어 멀티캐스트 함수 */
 	UFUNCTION(NetMulticast, Reliable)

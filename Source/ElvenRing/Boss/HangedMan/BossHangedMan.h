@@ -6,6 +6,7 @@
 #include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "BossHangedMan.generated.h"
 
+class ABossHangedManHeart;
 class ATargetPoint;
 
 UENUM()
@@ -25,7 +26,7 @@ class ELVENRING_API ABossHangedMan : public ABoss
 public:
 	ABossHangedMan();
 
-	virtual void ServerOnSpawnSequenceEnded_Implementation() override;
+	virtual void OnSpawnSequenceEnded() override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -91,6 +92,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Boss|Anim")
 	TObjectPtr<UAnimMontage> SpecialAttackAnim;
+
+	UPROPERTY(EditInstanceOnly, Category = "Boss|Stat")
+	TObjectPtr<ABossHangedManHeart> Heart;
 	
 	EHealthPhase HealthPhase;
 	
