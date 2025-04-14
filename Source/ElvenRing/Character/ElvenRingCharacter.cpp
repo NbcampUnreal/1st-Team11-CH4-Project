@@ -9,6 +9,7 @@
 #include "ElvenRing/Interaction/InteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AElvenRingCharacter::AElvenRingCharacter()
 {
@@ -31,6 +32,12 @@ AElvenRingCharacter::AElvenRingCharacter()
     AttackIndex = 0;
     bIsAttacking = false;
     bCanCombo = false;
+
+    //테스트용
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationYaw   = false;
+    bUseControllerRotationRoll  = false;
+    GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 
@@ -49,7 +56,8 @@ void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMont
 void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-    // AttackIndex 변수 복제 설정
+
+    DOREPLIFETIME(AElvenRingCharacter, IsSprint);
 }
 
 void AElvenRingCharacter::Multicast_PlayDodgeAnimation_Implementation(float _DodgeDuration)
@@ -175,6 +183,35 @@ void AElvenRingCharacter::PlayAttackAnimation()
         AnimInstance->Montage_Play(CurrentMontage);
     }
 }
+
+void AElvenRingCharacter::ServerStartSprint_Implementation()
+{
+    IsSprint = true;
+    if (GetCharacterMovement())
+    {
+        GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+    }
+}
+
+bool AElvenRingCharacter::ServerStartSprint_Validate()
+{
+    return true;
+}
+
+void AElvenRingCharacter::ServerStopSprint_Implementation()
+{
+    IsSprint = false;
+    if (GetCharacterMovement())
+    {
+        GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+    }
+}
+
+bool AElvenRingCharacter::ServerStopSprint_Validate()
+{
+    return true;
+}
+
 
 void AElvenRingCharacter::Server_OnDodgeInput_Implementation(const FInputActionValue& Value)
 {
@@ -373,6 +410,7 @@ void AElvenRingCharacter::PlayDefenceAnimation(float _DefenceSpeed)
             //float MontageLength = DefenceMontage->GetPlayLength(); 일단 빼두자 언제 또 써야할지도 모른다.....
             
             AnimInstance->Montage_Play(DefenceMontage);
+            AnimInstance->Montage_SetNextSection("End", "Start", DefenceMontage);
         }
     }
 }
@@ -391,15 +429,19 @@ void AElvenRingCharacter::Move(const FInputActionValue& value)
 	MoveInput = value.Get<FVector2D>();
     if (!bCanMove) return;
 
+    const FRotator Rotation = Controller->GetControlRotation();
+    const FRotator YawRotation(0, Rotation.Yaw, 0);
+    const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+    const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
     if (!FMath::IsNearlyZero(MoveInput.X))
     {
-        AddMovementInput(GetActorForwardVector(), MoveInput.X);
+        AddMovementInput(ForwardDirection, MoveInput.X);
         
     }
 
     if (!FMath::IsNearlyZero(MoveInput.Y))
     {
-        AddMovementInput(GetActorRightVector(), MoveInput.Y);
+        AddMovementInput(RightDirection, MoveInput.Y);
     }
 }
 void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
@@ -448,19 +490,36 @@ void AElvenRingCharacter::Look(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartSprint(const FInputActionValue& value)
 {
-    if (GetCharacterMovement())
+    // 서버 권한(HasAuthority)을 체크
+    if (HasAuthority())
     {
+        // 서버라면 직접 상태 변경
         IsSprint = true;
-        GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+        if (GetCharacterMovement())
+        {
+            GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+        }
+    }
+    else
+    {
+        // 클라이언트라면 서버 RPC 호출
+        ServerStartSprint();
     }
 }
 
 void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 {
-    if (GetCharacterMovement())
+    if (HasAuthority())
     {
         IsSprint = false;
-        GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+        if (GetCharacterMovement())
+        {
+            GetCharacterMovement()->MaxWalkSpeed = MoveSpeed;
+        }
+    }
+    else
+    {
+        ServerStopSprint();
     }
 }
 
@@ -537,7 +596,6 @@ void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
     ResetCombo();
     if (bDefence)
     {
-        PlayDefenceAnimation(DefenceSpeed);
         return;
     }
     PlayDefenceAnimation(DefenceSpeed);

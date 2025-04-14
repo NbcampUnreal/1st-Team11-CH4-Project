@@ -7,11 +7,13 @@
 #include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 #include "GameFramework/Controller.h"
 // Sets default values
 ABaseWeapon::ABaseWeapon()
 {
 	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WeaponMesh"));
 	RootComponent = WeaponMesh;
 
@@ -92,9 +94,17 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	//UGameplayStatics::ApplyDamage(OtherActor, AttackPower, InstigatorController, this, UDamageType::StaticClass()); 백의현: 이거대신에
 	ServerApplyDamage(OtherActor, AttackPower, InstigatorController, this); //이렇게 변경
 	DamagedActors.Add(OtherActor);
+	MulticastPlayAttackSound();
 	
 }
 
+void ABaseWeapon::MulticastPlayAttackSound_Implementation()
+{
+	if (AttackSoundCue)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, AttackSoundCue, GetActorLocation());
+	}
+}
 //by 백의현
 void ABaseWeapon::ServerApplyDamage_Implementation(AActor* Target, float DamageAmount,
                                                    AController* InstigatorController, AActor* DamageCauser)
