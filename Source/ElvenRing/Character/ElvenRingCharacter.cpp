@@ -507,10 +507,8 @@ void AElvenRingCharacter::Look(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartSprint(const FInputActionValue& value)
 {
-    // 서버 권한(HasAuthority)을 체크
     if (HasAuthority())
     {
-        // 서버라면 직접 상태 변경
         IsSprint = true;
         if (GetCharacterMovement())
         {
@@ -519,7 +517,6 @@ void AElvenRingCharacter::StartSprint(const FInputActionValue& value)
     }
     else
     {
-        // 클라이언트라면 서버 RPC 호출
         ServerStartSprint();
     }
 }
@@ -542,23 +539,31 @@ void AElvenRingCharacter::StopSprint(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
 {
-    if (GetCharacterMovement()->IsFalling()) return;
-    if (bIsDodging) return;
-    bCanMove = false;;
+    if (GetCharacterMovement()->IsFalling() || bIsDodging)
+    {
+        return;
+    }
+    
+    bCanMove = false;
     Invincibility = true;
     CurrentWeapon->DisableCollision();
     ResetCombo();
-    FVector DodgeDirection = FVector(MoveInput.Y,(-1)*MoveInput.X,0.0f).GetSafeNormal();
-    if (DodgeDirection.IsNearlyZero())
+
+    FVector2D InputVector = Value.Get<FVector2D>();
+    FVector DodgeDirection;
+    if (!InputVector.IsNearlyZero())
     {
-        DodgeDirection = GetActorForwardVector();
+        const FRotator ControlRotation = GetControlRotation();
+        const FRotator YawRotation(0, ControlRotation.Yaw, 0);
+        const FVector CameraForward = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+        const FVector CameraRight   = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+        DodgeDirection = (InputVector.Y * CameraForward + InputVector.X * CameraRight).GetSafeNormal();
     }
     else
     {
-        const FVector ForwardVector = GetActorForwardVector();
-        const FVector RightVector = GetActorRightVector();
-        DodgeDirection = (ForwardVector * MoveInput.X + RightVector * MoveInput.Y).GetSafeNormal();
+        DodgeDirection = GetActorForwardVector();
     }
+
     DodgeStartLocation = GetActorLocation();
     DodgeTargetLocation = DodgeStartLocation + DodgeDirection * DodgeDistance;
     DodgeVelocity = DodgeDirection * (DodgeDistance / DodgeDuration);
@@ -575,7 +580,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     const float DodgeUpdate = 0.01f;
     GetWorld()->GetTimerManager().SetTimer(DodgeTimerHandle, this, &AElvenRingCharacter::UpdateDodge, DodgeUpdate, true);
     GetWorld()->GetTimerManager().SetTimer(DodgeStopTimerHandle, this, &AElvenRingCharacter::StopDodge, DodgeDuration, false);
-    GetWorld()->GetTimerManager().SetTimer(DodgeStopTestTimerHandle, this, &AElvenRingCharacter::DodgeCollDown, DodgeDuration+DodgeCool, false);
+    GetWorld()->GetTimerManager().SetTimer(DodgeStopTestTimerHandle, this, &AElvenRingCharacter::DodgeCollDown, DodgeDuration + DodgeCool, false);
 }
 
 void AElvenRingCharacter::UpdateDodge()
