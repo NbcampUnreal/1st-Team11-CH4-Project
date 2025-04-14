@@ -3,6 +3,9 @@
 #include "ElvenRing/ElvenRing.h"
 #include "ElvenRing/Boss/BossPattern/BossNormalPatternComponent.h"
 #include "ElvenRing/Boss/BossPattern/BossSpecialPatternComponent.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/BossWidget.h"
+#include "ElvenRing/UI/UIManager.h"
 #include "Kismet/GameplayStatics.h"
 
 ABossTenebris::ABossTenebris()
@@ -49,7 +52,9 @@ void ABossTenebris::BeginPlay()
 void ABossTenebris::OnSpawnSequenceEnded()
 {
 	Super::OnSpawnSequenceEnded();
-
+	UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetWorld()->GetGameInstance());
+	GameInstance->GetUIManager()->GetBossWidgetUi()->SetName("The Last Dragon, Tenebris");
+	
 	if (HasAuthority())
 	{
 		PlayAnimation(BressAfterMoveFrontAnim);
@@ -66,6 +71,8 @@ void ABossTenebris::OnSpawnSequenceEnded()
 void ABossTenebris::OnPhaseSequenceEnded()
 {
 	Super::OnPhaseSequenceEnded();
+	UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetWorld()->GetGameInstance());
+	GameInstance->GetUIManager()->GetBossWidgetUi()->SetName("The Last Dragon, Tenebris");
 
 	if (HasAuthority())
 	{
