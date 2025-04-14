@@ -39,6 +39,7 @@ protected:
 	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	// Match Start가 될 때 호출, Client들이 Begin Play가 시작된다.
 	virtual void HandleMatchHasStarted() override;
+	virtual APawn* SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform) override;
 	
 public:
 	/**

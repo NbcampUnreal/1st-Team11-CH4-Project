@@ -6,6 +6,7 @@
 #include "ElvenringGameInstance.h"
 #include "ElvenRingGameState.h"
 #include "ElvenRingPlayerState.h"
+#include "ElvenRing/Character/ElvenRingCharacter.h"
 #include "ElvenRing/Character/ElvenRingController.h"
 #include "ElvenRing/Gimmick/EventManager.h"
 
@@ -89,6 +90,26 @@ void AElvenRingGameMode::StartToLeaveMap()
 	// 하지만, Game Mode는 재생성되므로 이 값을 이용할 수 없다.
 	// 로딩 스크린을 이용하거나 아니면 Player State를 이용하거나 Game Instance를 경유해서 데이터 넘기는 방법을 고려할 필요가 있다.
 	UE_LOG(LogTemp,Display,TEXT("StartToLeaveMap : Num Of Players : %d, Traveling Players : %d"), GetNumPlayers(), NumTravellingPlayers);
+	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+	{
+		AElvenRingController* PlayerController = Cast<AElvenRingController>(*Iterator);
+		if (!IsValid(PlayerController))
+		{
+			continue;
+		}
+		AElvenRingPlayerState* PlayerState = Cast<AElvenRingPlayerState>(PlayerController->PlayerState);
+		if (!IsValid(PlayerState))
+		{
+			continue;
+		}
+		AElvenRingCharacter* Character = Cast<AElvenRingCharacter>(PlayerController->GetCharacter());
+		if (!IsValid(Character))
+		{
+			continue;
+		}
+
+		PlayerState->SaveCharacterStatus(Character);
+	}
 }
 
 void AElvenRingGameMode::HandleSeamlessTravelPlayer(AController*& C)
@@ -106,6 +127,22 @@ void AElvenRingGameMode::HandleSeamlessTravelPlayer(AController*& C)
 void AElvenRingGameMode::HandleMatchHasStarted()
 {
 	Super::HandleMatchHasStarted();
+}
+
+APawn* AElvenRingGameMode::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer,
+	const FTransform& SpawnTransform)
+{
+	APawn* NewPawn = Super::SpawnDefaultPawnAtTransform_Implementation(NewPlayer, SpawnTransform);
+
+	if (AElvenRingPlayerState* PlayerState = NewPlayer->GetPlayerState<AElvenRingPlayerState>(); PlayerState->HasSaved())
+	{
+		if (AElvenRingCharacter* Character = Cast<AElvenRingCharacter>(NewPawn))
+		{
+			PlayerState->LoadCharacterStatus(Character);
+		}
+	}
+
+	return NewPawn;
 }
 
 void AElvenRingGameMode::PostInitializeComponents()
