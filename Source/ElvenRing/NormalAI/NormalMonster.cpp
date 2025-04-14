@@ -8,6 +8,7 @@
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Components/AudioComponent.h"
 #include "Components/WidgetComponent.h" //ksw
 #include "Components/CapsuleComponent.h"
@@ -112,8 +113,9 @@ void ANormalMonster::MulticastIsHit_Implementation(bool value, FVector HitLocati
 		if (value == true)
 		{
 			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalMaterial, FVector(250, 300, 200),
-												   HitLocation - FVector(0.0f, 0.0f, 320.0f), FRotator(90.0f, 0.0f, 0.0f),
-												   5.0f);
+			                                       HitLocation - FVector(0.0f, 0.0f, 320.0f),
+			                                       FRotator(90.0f, 0.0f, 0.0f),
+			                                       5.0f);
 		}
 	}
 }
@@ -134,14 +136,19 @@ void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 	{
 		AnimInstance->UpdateDeath(value);
 	}
-	if (HasAuthority())
+
+	if (UCharacterMovementComponent* MovementComp = GetCharacterMovement())
 	{
-		if (UCapsuleComponent* Capsul = GetCapsuleComponent())
-		{
-			Capsul->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-			UE_LOG(LogTemp, Warning, TEXT("캡슐 제거성공"))
-		}
+		MovementComp->GravityScale = 0.0f;  // 중력 제거
+		UE_LOG(LogTemp, Warning, TEXT("중력 제거 완료"));
 	}
+
+	if (UCapsuleComponent* Capsul = GetCapsuleComponent())
+	{
+		Capsul->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		UE_LOG(LogTemp, Warning, TEXT("캡슐 제거성공"))
+	}
+
 	//HP바 타이머 정지, 위젯 제거
 	GetWorldTimerManager().ClearTimer(UpdateHPBarTimer);
 
@@ -152,6 +159,21 @@ void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 	if (HPWidgetComponent)
 	{
 		HPWidgetComponent->DestroyComponent();
+	}
+}
+
+void ANormalMonster::OnRep_HealthChanged()
+{
+	Super::OnRep_HealthChanged();
+	// 로컬 플레이어인 경우에만 UI 업데이트
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC && PC->GetPawn() == this)
+	{
+		OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
+	}
+	else if (Cast<ANormalMonster>(this))
+	{
+		OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
 	}
 }
 
@@ -257,6 +279,8 @@ void ANormalMonster::SpawnDecal_Implementation(FVector HitLocation, FRotator Hit
 
 
 #pragma endregion
+
+
 void ANormalMonster::SetWidget(UUserWidget* Widget)
 {
 	HPWidgetComponent->SetWidget(Widget);

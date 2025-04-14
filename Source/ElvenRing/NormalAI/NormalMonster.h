@@ -96,6 +96,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastIsDeath(bool value);
+	
+	virtual void OnRep_HealthChanged() override;
+
 #pragma endregion
 
 	void SetWidget(UUserWidget* Widget); //ksw
