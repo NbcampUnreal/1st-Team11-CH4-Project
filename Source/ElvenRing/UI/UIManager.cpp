@@ -123,7 +123,7 @@ void UUIManager::ShowTitleScreen(UWorld* World)
     }
 }
 
-void UUIManager::ShowWaitingRoom(UWorld* World)
+void UUIManager::ShowWaitingRoom(UWorld* World, AWaitingRoomPlayerCardsRT* WaitingRoomPlayerCardsRT)
 {
     if (!WaitingRoomWidget && WaitingRoomWidgetClass && World)
         WaitingRoomWidget = CreateWidget<UWaitingRoomWidget>(World, WaitingRoomWidgetClass);
@@ -131,7 +131,7 @@ void UUIManager::ShowWaitingRoom(UWorld* World)
     if (WaitingRoomWidget)
     {
         WaitingRoomWidget->AddToViewport();
-
+        WaitingRoomWidget->SetPlayerCardRT(WaitingRoomPlayerCardsRT);
         if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
         {
             PC->bShowMouseCursor = true;

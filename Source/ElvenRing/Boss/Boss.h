@@ -27,12 +27,10 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Spawn 타입의 LevelSequence가 끝났을 때 호출하는 함수 */ 
-	UFUNCTION(Server, Reliable)
-	virtual void ServerOnSpawnSequenceEnded();
+	virtual void OnSpawnSequenceEnded();
 
 	/** Phase 타입의 LevelSequence가 끝났을 때 호출하는 함수 */
-	UFUNCTION(Server, Reliable)
-	virtual void ServerOnPhaseSequenceEnded();
+	virtual void OnPhaseSequenceEnded();
 
 	void ChangeState(IBossStateInterface* State);
 

@@ -19,7 +19,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void ResetDamagedActors();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-	USoundCue* AttackSoundCue;
+	class USoundCue* AttackSoundCue;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

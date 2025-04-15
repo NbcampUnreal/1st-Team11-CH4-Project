@@ -3,6 +3,7 @@
 
 #include "Door.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -43,6 +44,15 @@ void ADoor::Open()
 	bIsOpen = true;
 	SetNetDormancy(DORM_DormantAll);
 	StartDoorMovement();
+	if (OpenSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			OpenSound,
+			GetActorLocation()
+		);
+	}
+	UE_LOG(LogTemp,Display, TEXT("Door Opened / Authority : %s"), *FString(HasAuthority() ? TEXT("True") : TEXT("False")));
 }
 
 void ADoor::Close()
@@ -55,6 +65,14 @@ void ADoor::Close()
 	bIsOpen = false;
 	SetNetDormancy(DORM_DormantAll);
 	StartDoorMovement();
+	if (CloseSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			CloseSound,
+			GetActorLocation()
+		);
+	}
 }
 
 void ADoor::Toggle()
@@ -97,6 +115,23 @@ void ADoor::UpdateDoorMovement()
 void ADoor::OnRep_IsOpen()
 {
 	StartDoorMovement();
+	UE_LOG(LogTemp,Display, TEXT("Door Opened / Authority : %s"), *FString(HasAuthority() ? TEXT("True") : TEXT("False")));
+	if (bIsOpen && OpenSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			OpenSound,
+			GetActorLocation()
+		);
+	}
+	else if (!bIsOpen && CloseSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			GetWorld(),
+			CloseSound,
+			GetActorLocation()
+		);
+	}
 }
 
 FString ADoor::GetInteractText()

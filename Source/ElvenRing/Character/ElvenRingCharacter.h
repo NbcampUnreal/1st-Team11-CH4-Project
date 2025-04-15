@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UnitBase.h"
 #include "BaseWeapon.h"
+#include "NiagaraSystem.h"
 #include "ElvenRing/Interaction/InteractionComponent.h"
 #include "ElvenRingCharacter.generated.h"
 
@@ -21,12 +22,6 @@ class ELVENRING_API AElvenRingCharacter : public AUnitBase
 
 public:
 	AElvenRingCharacter();
-	UFUNCTION(BlueprintCallable, Category = "Attack")
-	
-	float GetCurHealth()
-	{
-		return CurHealth;
-	}
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	USpringArmComponent* SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
@@ -39,7 +34,11 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 protected:
+	UPROPERTY(EditDefaultsOnly, Category = "Effects")
+	UNiagaraSystem* HitNiagara;
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayAttackAnimation(UAnimMontage* Montage);
 	UFUNCTION(NetMulticast, Reliable)
@@ -98,10 +97,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
 	float DodgeDuration = 0.8f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
-	float DodgeDistance = 1000.0f;
+	float DodgeDistance = 3000.0f;
 	float DodgeTime = 0.f;
 	bool bIsDodging = false;
 	FVector DodgeVelocity;
+	float OriginalMaxSpeed;
 	//방어 관련함수
 	float DefenceSpeed = 1.f;
 	bool bDefence;
@@ -125,6 +125,8 @@ protected:
 	void OnDefenceMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void UpdateDodge();
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	UFUNCTION()
+	void Heal(const FInputActionValue& value);
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
 	UFUNCTION()

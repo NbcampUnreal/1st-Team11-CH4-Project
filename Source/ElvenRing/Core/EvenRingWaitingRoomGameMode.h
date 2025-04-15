@@ -6,9 +6,8 @@
 #include "GameFramework/GameMode.h"
 #include "EvenRingWaitingRoomGameMode.generated.h"
 
-/**
- * 
- */
+class AWaitingRoomPlayerCardsRT;
+
 UCLASS()
 class ELVENRING_API AEvenRingWaitingRoomGameMode : public AGameMode
 {
@@ -17,4 +16,8 @@ public:
 	AEvenRingWaitingRoomGameMode();
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<AWaitingRoomPlayerCardsRT> WaitingRoomPlayerCardsRTClass;
+	AWaitingRoomPlayerCardsRT* WaitingRoomPlayerCardsRT;
 };

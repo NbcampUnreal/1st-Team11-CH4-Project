@@ -3,8 +3,41 @@
 
 #include "ElvenRingPlayerState.h"
 
+#include "ElvenRing/Character/ElvenRingCharacter.h"
+
+void FStatusSaved::SaveStatus(class AElvenRingCharacter* Character)
+{
+	if (!Character)
+	{
+		return;
+	}
+
+	CurHealth = Character->GetCurHealth();
+	CurStamina = Character->GetCurStamina();
+	CurMana = Character->GetCurMana();
+}
+
+void FStatusSaved::LodStatus(class AElvenRingCharacter* Character) const
+{
+	Character->SetCurrentHealth(CurHealth);
+	Character->SetCurrentStamina(CurStamina);
+	Character->SetCurrentMana(CurMana);
+}
+
 AElvenRingPlayerState::AElvenRingPlayerState()
 {
+	bHasSaved = false;
+}
+
+void AElvenRingPlayerState::SaveCharacterStatus(AElvenRingCharacter* Character)
+{
+	StatusSaved.SaveStatus(Character);
+	bHasSaved = true;
+}
+
+void AElvenRingPlayerState::LoadCharacterStatus(class AElvenRingCharacter* Character)
+{
+	StatusSaved.LodStatus(Character);
 }
 
 void AElvenRingPlayerState::RecordPlayerDamage(AActor* DamagedActor, float Damage)
@@ -70,7 +103,6 @@ UClass* AElvenRingPlayerState::GetNativeClass(const AActor* Actor)
 void AElvenRingPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-
 }
 
 void AElvenRingPlayerState::CopyProperties(APlayerState* PlayerState)
@@ -80,5 +112,7 @@ void AElvenRingPlayerState::CopyProperties(APlayerState* PlayerState)
 	if (AElvenRingPlayerState* OtherPlayerState = Cast<AElvenRingPlayerState>(PlayerState))
 	{
 		OtherPlayerState->BossDamageRecord = BossDamageRecord;
+		OtherPlayerState->StatusSaved = StatusSaved;
+		OtherPlayerState->bHasSaved = bHasSaved;
 	};
 }

@@ -43,13 +43,15 @@ public:
 	UInputAction* EndDefenceAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* InteractAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* HealAction;
 
 	virtual void BeginPlay() override;
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestLevelChange(const FString& LevelPath);
 	UFUNCTION(Client, Reliable)
-	void ClientShowLoadingScreen(const FString& TargetMapName);
+	void ClientShowLoadingScreen(const FString& TargetMapName, float FadeOutTime);
 
 	virtual void NotifyLoadedWorld(FName WorldPackageName, bool bFinalDest) override;
 public:
