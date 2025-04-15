@@ -16,15 +16,22 @@ AElvenRingGameMode::AElvenRingGameMode()
 	EventManager = CreateDefaultSubobject<UEventManager>(TEXT("EventManager"));
 	bAfterSeamlessTravel = false;
 	bIsAllPlayerLoadMap = false;
-	LoadingTimeOutTime = 30.0f;
+	LoadingTimeOutTime = 60.0f;
 	PlayerReadyCount = 0;
 	bHasPlayersReady = false;
+	TravelDelayTime = 0.3f;
 	
 	bDelayedStart = true;
 }
 
 void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage)
 {
+	if (!IsValid(EventInstigator))
+	{
+		UE_LOG(LogTemp,Warning, TEXT("Record Damage : EventInstigator is not valid. Damage may not be recorded."));
+		return;
+	}
+	
 	if (EventInstigator->IsA(APlayerController::StaticClass()))
 	{
 		if (AElvenRingPlayerState* PlayerState = EventInstigator->GetPlayerState<AElvenRingPlayerState>())
@@ -171,18 +178,40 @@ void AElvenRingGameMode::BeginPlay()
 	}
 }
 
-void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const
+void AElvenRingGameMode::HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName)
 {
 	if (GetNetMode() == NM_Standalone)
 	{
 		// PlayerController->ClientTravel(LevelName, TRAVEL_Absolute);
-		GetWorld()->ServerTravel(LevelName);
-		BroadcastLoadingScreen(LevelName);
+		BroadcastLoadingScreen(LevelName, TravelDelayTime);
+
+		FTimerDelegate ServerTravelDelegate;
+		ServerTravelDelegate.BindLambda([this, LevelName]()
+		{
+			GetWorld()->ServerTravel(LevelName);
+		});
+		GetWorldTimerManager().SetTimer(
+			TravelDelayHandle,
+			ServerTravelDelegate,
+			TravelDelayTime,
+			false
+		);
 	}
 	else
 	{
-		GetWorld()->ServerTravel(LevelName);
-		BroadcastLoadingScreen(LevelName);
+		BroadcastLoadingScreen(LevelName, TravelDelayTime);
+
+		FTimerDelegate ServerTravelDelegate;
+		ServerTravelDelegate.BindLambda([this, LevelName]()
+		{
+			GetWorld()->ServerTravel(LevelName);
+		});
+		GetWorldTimerManager().SetTimer(
+			TravelDelayHandle,
+			ServerTravelDelegate,
+			TravelDelayTime,
+			false
+		);
 	}
 }
 
@@ -209,13 +238,13 @@ void AElvenRingGameMode::HandleNetworkReady(AElvenRingController* ElvenRingContr
 	}
 }
 
-void AElvenRingGameMode::BroadcastLoadingScreen(const FString& MapName) const
+void AElvenRingGameMode::BroadcastLoadingScreen(const FString& MapName, float FadeOutTime) const
 {
 	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
 	{
 		if (AElvenRingController* PlayerController = Cast<AElvenRingController>(*It))
 		{
-			PlayerController->ClientShowLoadingScreen(MapName);
+			PlayerController->ClientShowLoadingScreen(MapName, FadeOutTime);
 		}
 	}
 }
