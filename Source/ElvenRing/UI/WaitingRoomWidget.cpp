@@ -11,7 +11,8 @@
 
 void UWaitingRoomWidget::OnStartButtonClicked()
 {
-    UGameplayStatics::OpenLevel(this, FName("ElvenRuins_fix"));
+    // UGameplayStatics::OpenLevel(this, FName("ElvenRuins_fix"));
+    GetWorld()->ServerTravel(TEXT("ElvenRuins_fix"));
    // UE_LOG(LogTemp, Warning, TEXT("OpenLevel(this, TEXT(BattleMap))"));
 }
 
