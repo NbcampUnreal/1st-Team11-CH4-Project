@@ -54,6 +54,13 @@ void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMont
         }
     }
 }
+
+void AElvenRingCharacter::OnDeath()
+{
+    Super::OnDeath();
+    
+}
+
 void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -73,7 +80,10 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnLocation,           // 스폰 위치
             SpawnRotation            // 스폰 회전 값
         );
-    
+    if (CurHealth <= 0)
+    {
+        OnDeath();
+    }
     return ActualDamage;
 }
 
