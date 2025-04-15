@@ -58,7 +58,8 @@ void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMont
 void AElvenRingCharacter::OnDeath()
 {
     Super::OnDeath();
-    
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    AnimInstance->Montage_Play(DieMontage);
 }
 
 void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -71,6 +72,8 @@ void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
 {
+    if (Invincibility) return 0;
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
@@ -80,6 +83,7 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnLocation,           // 스폰 위치
             SpawnRotation            // 스폰 회전 값
         );
+    AnimInstance->Montage_Play(HitMontage);
     if (CurHealth <= 0)
     {
         OnDeath();
