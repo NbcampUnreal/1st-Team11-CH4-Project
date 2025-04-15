@@ -80,10 +80,10 @@ void AWaitingRoomPlayerCardsRT::TempCreatePlayerCard()
 					APlayerCard* CreatePlayerCard = GetWorld()->SpawnActor<APlayerCard>(
 						PlayerCardClass, SpawnLocation, SpawnRotation, SpawnParams
 					);
-					CreatePlayerCard->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 					if (CreatePlayerCard)
 					{
+						CreatePlayerCard->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 						CreatePlayerCard->SetName(FText::FromString(TEXT("Guest")));
 						CreatePlayerCard->SetIndex(Index);
 						PlayerCards.Add(CreatePlayerCard);
