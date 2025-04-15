@@ -42,7 +42,7 @@ public:
 	bool HasSaved() const { return bHasSaved; }
 protected:
 	UPROPERTY(VisibleInstanceOnly)
-	FStatusSaved StatusSaved;
+	FStatusSaved SavedStatus;
 	bool bHasSaved;
 
 public:
@@ -51,6 +51,7 @@ public:
 	void RecordDodge(AUnitBase* DamagedActor, float Damage);
 	float GetBossDamage(const AActor* BossActor) const;
 	void ResetPlayerDamage(AActor* BossClass);
+	void AddRespawnCount() { RespawnCount++; }
 protected:
 	static UClass* GetNativeClass(const AActor* Actor);
 	TMap<UClass*, float> BossDamageRecord;

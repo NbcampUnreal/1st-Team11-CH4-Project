@@ -90,6 +90,26 @@ void AElvenRingGameMode::RecordInvincible(AController* EventInstigator, AUnitBas
 	}
 }
 
+void AElvenRingGameMode::HandlePlayerDeath(AController* DeadController)
+{
+	if (!IsValid(DeadController))
+	{
+		return;
+	}
+
+	if (!DeadController->GetPawn())
+	{
+		DeadController->UnPossess();
+	}
+
+	if (AElvenRingPlayerState* PlayerState = DeadController->GetPlayerState<AElvenRingPlayerState>())
+	{
+		PlayerState->AddRespawnCount();
+	}
+
+	RestartPlayer(DeadController);
+}
+
 void AElvenRingGameMode::PostSeamlessTravel()
 {
 	Super::PostSeamlessTravel();
