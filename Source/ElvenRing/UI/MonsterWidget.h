@@ -59,6 +59,10 @@ public:
 	FVector2D UIScale  = FVector2D(1.0f, 1.0f);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
 	FVector2D	UIPos = FVector2D::ZeroVector;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
+	float	HpBarSizeScreenMin = 0.3f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
+	float	HpBarSizeCalculMeasureDistLimit = 3000.f;
 
 	UFUNCTION(BlueprintCallable, Category =  "UI")
 	void SetUiSize(FVector2D  Scale, FVector2D Pos);
@@ -74,14 +78,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Ui")
 	void SetActiveWidget(bool bShow);
+
+	void RealTimeInGameWidgetScale();
 protected:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeDestruct() override;
-	
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 private:
 	FTimerHandle HpTimerHandle;
 	FTimerHandle HpTimerDelayHandle;
+	FTimerHandle HpScaleTimerHandle;
+
 	AUnitBase* TempMonster = nullptr;
 	void UpdateProgressBar(FMRamdaElement& FElement);
 };
