@@ -14,7 +14,9 @@ class ELVENRING_API ABaseWeapon : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ABaseWeapon();
+	UFUNCTION(BlueprintCallable,Category="Collision")
 	void EnableCollision();
+	UFUNCTION(BlueprintCallable,Category="Collision")
 	void DisableCollision();
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void ResetDamagedActors();
