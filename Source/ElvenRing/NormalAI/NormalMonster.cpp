@@ -20,8 +20,7 @@
 
 ANormalMonster::ANormalMonster()
 {
-	MaxHealth = 100;
-	CurHealth = MaxHealth;
+	MaxHealth = 1000;
 	AttackPower = 10;
 	MoveSpeed = 10;
 
@@ -58,6 +57,7 @@ ANormalMonster::ANormalMonster()
 void ANormalMonster::BeginPlay()
 {
 	Super::BeginPlay();
+	CurHealth = MaxHealth;
 	SetReplicates(true);
 	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
 	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
