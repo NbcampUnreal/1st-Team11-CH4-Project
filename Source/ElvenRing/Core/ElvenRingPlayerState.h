@@ -42,7 +42,7 @@ public:
 	bool HasSaved() const { return bHasSaved; }
 protected:
 	UPROPERTY(VisibleInstanceOnly)
-	FStatusSaved StatusSaved;
+	FStatusSaved SavedStatus;
 	bool bHasSaved;
 
 public:

@@ -31,13 +31,13 @@ AElvenRingPlayerState::AElvenRingPlayerState()
 
 void AElvenRingPlayerState::SaveCharacterStatus(AElvenRingCharacter* Character)
 {
-	StatusSaved.SaveStatus(Character);
+	SavedStatus.SaveStatus(Character);
 	bHasSaved = true;
 }
 
 void AElvenRingPlayerState::LoadCharacterStatus(class AElvenRingCharacter* Character)
 {
-	StatusSaved.LodStatus(Character);
+	SavedStatus.LodStatus(Character);
 }
 
 void AElvenRingPlayerState::RecordPlayerDamage(AActor* DamagedActor, float Damage)
@@ -131,7 +131,7 @@ void AElvenRingPlayerState::CopyProperties(APlayerState* PlayerState)
 	if (AElvenRingPlayerState* OtherPlayerState = Cast<AElvenRingPlayerState>(PlayerState))
 	{
 		OtherPlayerState->BossDamageRecord = BossDamageRecord;
-		OtherPlayerState->StatusSaved = StatusSaved;
+		OtherPlayerState->SavedStatus = SavedStatus;
 		OtherPlayerState->bHasSaved = bHasSaved;
 		OtherPlayerState->TotalDamageDealt = TotalDamageDealt;
 		OtherPlayerState->TotalDamageTaken = TotalDamageTaken;
