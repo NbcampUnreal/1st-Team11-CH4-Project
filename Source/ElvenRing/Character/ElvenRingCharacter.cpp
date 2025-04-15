@@ -83,7 +83,11 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnLocation,           // 스폰 위치
             SpawnRotation            // 스폰 회전 값
         );
+    if (bIsAttacking) bCanMove = false;
     AnimInstance->Montage_Play(HitMontage);
+
+    ResetCombo();
+    CurrentWeapon->DisableCollision();
     if (CurHealth <= 0)
     {
         OnDeath();
@@ -508,6 +512,8 @@ void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
+    if (bIsDodging) return;
+    if (bDefence) return;
     if (bJump) return;
     if (bIsAttacking) return;
     if (value.Get<bool>())

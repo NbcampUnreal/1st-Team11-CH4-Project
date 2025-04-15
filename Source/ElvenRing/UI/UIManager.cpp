@@ -14,9 +14,12 @@
 #include "BossWidget.h"
 #include "MonsterWidget.h"
 #include "MessageWidgetBase.h"
+#include "ScorePageWidget.h"
 #include "ScreenEffectWidget.h"
 #include "ElvenRing/Character/UnitBase.h"
 #include "Components/EditableTextBox.h"
+
+
 
 UUIManager::UUIManager()
 {
@@ -64,6 +67,12 @@ UUIManager::UUIManager()
     else
         UE_LOG(LogTemp, Warning, TEXT("BossWidgetClass: %s"), *GetNameSafe(BossWidgetClass));
 
+    static ConstructorHelpers::FClassFinder<UScorePageWidget> WBP_ScorePageWidget(TEXT("/Game/ElvenRing/Blueprints/UI/WBP_ScorePageWidget"));
+    if (WBP_ScorePageWidget.Succeeded())
+        ScorePageWidgetClass = WBP_ScorePageWidget.Class;
+    else
+        UE_LOG(LogTemp, Warning, TEXT("ScorePageWidgetClass: %s"), *GetNameSafe(ScorePageWidgetClass));
+
     static ConstructorHelpers::FClassFinder<UScreenEffectWidget> WBP_ScreenEffectWidget(TEXT("/Game/ElvenRing/Blueprints/UI/WBP_ScreenEffectWidget"));
     if (WBP_ScreenEffectWidget.Succeeded())
         ScreenEffectWidgetClass = WBP_ScreenEffectWidget.Class;
@@ -94,6 +103,9 @@ void UUIManager::InitUi(UWorld* World)
 
     if (BossWidgetClass)
         BossWidget = CreateWidget<UBossWidget>(World, BossWidgetClass);
+
+    if (ScorePageWidgetClass)
+        ScorePageWidget = CreateWidget<UScorePageWidget>(World, ScorePageWidgetClass);
 
     if (ScreenEffectWidgetClass)
         ScreenEffectWidget = CreateWidget<UScreenEffectWidget>(World, ScreenEffectWidgetClass);
@@ -199,6 +211,15 @@ void UUIManager::ShowMessage(const FString& Message, EMessageType MsgType)
    }
 }
 
+void UUIManager::ShowScorePageWidget(UWorld* World)
+{
+    if (!ScorePageWidget && ScorePageWidgetClass && World)
+        ScorePageWidget = CreateWidget<UScorePageWidget>(World, ScorePageWidgetClass);
+
+    if (ScorePageWidget && !ScorePageWidget->IsInViewport())
+        ScorePageWidget->AddToViewport();
+}
+
 void UUIManager::ShowBossWidget(UWorld* World)
 {
     if (!BossWidget && BossWidgetClass && World)
@@ -228,6 +249,7 @@ void UUIManager::ClearAllWidgets()
     PlayerMainUiWedget = nullptr;
     MonsterWidget = nullptr;
     BossWidget = nullptr;
+    ScorePageWidget = nullptr;
     ScreenEffectWidget = nullptr;
 
     MonsterHpWidgets.Empty(); 
@@ -292,6 +314,11 @@ void UUIManager::CreateBindNormalMonsterWidgetUi(UWorld* World,AUnitBase* Unit)
     }
     else
         UE_LOG(LogTemp, Warning, TEXT("Error!! CreateBindNormalMonsterWidgetUi MonsterWidgetClass World"));
+}
+
+void UUIManager::UpdateGameResultStat(int32 idx, EResultStat Stat, int Value)
+{
+    ScorePageWidget->SetResultStat(idx, Stat, Value);
 }
 
 UMessageWidgetBase* UUIManager::GetMessageWidgetSafe(EMessageType MsgType) const

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "CommonTypes.h"
 #include "UIManager.generated.h"
 
 class UMainTitleWidget;
@@ -17,7 +18,9 @@ class UMonsterWidget;
 class UMessageWidgetBase;
 class UScreenEffectWidget;
 class AWaitingRoomPlayerCardsRT;
+class UScorePageWidget;
 class AUnitBase;
+//struct EResultStat;
 
 UENUM(BlueprintType)
 enum class EMessageType : uint8
@@ -54,7 +57,8 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowMessage(const FString& Message, EMessageType MsgType);
 
-  
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowScorePageWidget(UWorld* World);
 
     void ShowBossWidget(UWorld* World);
 
@@ -83,6 +87,12 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     void CreateBindNormalMonsterWidgetUi(UWorld* World, AUnitBase* Unit);
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    UScorePageWidget* GetScorePageWidget() const { return ScorePageWidget; };
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void UpdateGameResultStat(int32 idx, EResultStat Stat, int Value);
 
     UMessageWidgetBase* GetMessageWidgetSafe(EMessageType MsgType) const;
 
@@ -115,6 +125,9 @@ protected:
     UBossWidget* BossWidget;
 
     UPROPERTY()
+    UScorePageWidget* ScorePageWidget;
+    
+    UPROPERTY()
     UScreenEffectWidget* ScreenEffectWidget;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -142,7 +155,11 @@ protected:
     TSubclassOf<UBossWidget> BossWidgetClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UScorePageWidget> ScorePageWidgetClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UScreenEffectWidget> ScreenEffectWidgetClass;
+
 private:
    // UWorld* CachedWorld = nullptr;
     TArray<UMessageWidgetBase*> MessageWidgets; 
