@@ -11,7 +11,9 @@ enum class ELevelPath : uint8
 	Artorias UMETA(DisplayName = "Artorias"),
 	Tenebris UMETA(DisplayName = "Tenebris"),
 	HangedMan UMETA(DisplayName = "HangedMan"),
-	Title UMETA(DisplayName = "Title")
+	Title UMETA(DisplayName = "Title"),
+	Result UMETA(DisplayName = "Result"),
+
 };
 
 class UElvenringGameInstance;
