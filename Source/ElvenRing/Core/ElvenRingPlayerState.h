@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ElvenRing/Character/UnitBase.h"
 #include "GameFramework/PlayerState.h"
 #include "ElvenRingPlayerState.generated.h"
 
@@ -39,7 +40,6 @@ public:
 	void SaveCharacterStatus(class AElvenRingCharacter* Character);
 	void LoadCharacterStatus(class AElvenRingCharacter* Character);
 	bool HasSaved() const { return bHasSaved; }
-
 protected:
 	UPROPERTY(VisibleInstanceOnly)
 	FStatusSaved StatusSaved;
@@ -47,11 +47,17 @@ protected:
 
 public:
 	void RecordPlayerDamage(AActor* DamagedActor, float Damage);
+	void RecordPlayerDamageTaken(AActor* DamagedActor, float Damage);
+	void RecordDodge(AUnitBase* DamagedActor, float Damage);
 	float GetBossDamage(const AActor* BossActor) const;
 	void ResetPlayerDamage(AActor* BossClass);
 protected:
 	static UClass* GetNativeClass(const AActor* Actor);
 	TMap<UClass*, float> BossDamageRecord;
+	float TotalDamageDealt;
+	float TotalDamageTaken;
+	float TotalDodgeCount;
+	int RespawnCount;
 
 protected:
 	virtual void BeginPlay() override;

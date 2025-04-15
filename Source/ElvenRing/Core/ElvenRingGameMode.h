@@ -49,6 +49,7 @@ public:
 	void RecordDamage(AController* EventInstigator, AActor* DamagedActor, float Damage);
 	/** Boss에게 가장 높은 데미지를 입힌 Chracter를 반환한다. 만약, 수치가 같다면 처음 순회한 객체를 반환한다. 캐릭터가 존재하지 않을 경우 nulltpr를 반환한다.*/
 	ACharacter* GetHighestDamageCharacter(const AActor* BossActor) const;
+	void RecordInvincible(AController* EventInstigator, AUnitBase* DamagedActor, float Damage);
 	
 public:
 	/** Server Travel을 통해서 맵을 이동하게 하고 Client가 로딩 스크린을 출력하도록 한다. */
