@@ -27,7 +27,7 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	bool bStartSearchOnBeginPlay;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractableFound, FString, InteractText);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInteractableFound, const FString&, InteractText);
 	/* 상호작용 가능 Actor가 발견되었을 때 호출된다. */
 	UPROPERTY(BlueprintAssignable)
 	FOnInteractableFound OnInteractableFound;
@@ -52,6 +52,7 @@ protected:
 	/* 현재 상호작용 가능한 Actor */
 	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<AActor> CurrentInteractable;
+	FString CurrentInteractText;
 
 	/* 이전 프레임에서 Current Interactable 존재 여부, Weak Pointer로 저장하고 있는데 도중에 파괴된 것을 확인하기 위해 필요 */
 	bool bHasTarget;
@@ -88,7 +89,7 @@ protected:
 	bool ValidateInteractable(AActor* InteractableActor) const;
 protected:
 	UFUNCTION()
-	void LogInteractFound(FString InteractText);
+	void LogInteractFound(const FString& InteractText);
 	UFUNCTION()
 	void LogInteractLost();
 	bool IsOwnerLocallyControlled() const;

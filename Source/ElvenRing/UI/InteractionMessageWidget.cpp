@@ -4,6 +4,7 @@
 #include "InteractionMessageWidget.h"
 
 #include "Components/TextBlock.h"
+#include "ElvenRing/Character/ElvenRingCharacter.h"
 
 void UInteractionMessageWidget::ShowMessageText_Implementation(const FString& Message)
 {
@@ -19,13 +20,25 @@ void UInteractionMessageWidget::HideMessageText()
 	PlayFadeOutAnimation();
 }
 
+void UInteractionMessageWidget::BindToPlayer(AUnitBase* Unit)
+{
+	if (AElvenRingCharacter* Player = Cast<AElvenRingCharacter>(Unit))
+	{
+		if (UInteractionComponent* InteractionComponent = Player->FindComponentByClass<UInteractionComponent>())
+		{
+			InteractionComponent->OnInteractableFound.AddDynamic(this, &UInteractionMessageWidget::ShowMessageText);
+			InteractionComponent->OnInteractableLost.AddDynamic(this, &UInteractionMessageWidget::HideMessageText);
+		}
+		else
+		{
+			UE_LOG(LogTemp,Display, TEXT("InteractionComponent is not found"));
+		}
+	}
+}
+
 void UInteractionMessageWidget::OnFadeAnimationEnd()
 {
-	if (bIsForwarded)
-	{
-		SetVisibility(ESlateVisibility::Visible);
-	}
-	else
+	if (!bIsForwarded)
 	{
 		SetVisibility(ESlateVisibility::Collapsed);
 	}
@@ -41,7 +54,7 @@ void UInteractionMessageWidget::PlayFadeInAnimation()
 		
 		UnbindAllFromAnimationFinished(FadeAnim);
 		BindToAnimationFinished(FadeAnim, OnFadeFinishedDelegate);
-		
+
 		PlayAnimationForward(FadeAnim);
 	}
 }
@@ -64,6 +77,7 @@ void UInteractionMessageWidget::PlayFadeOutAnimation()
 void UInteractionMessageWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+	SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void UInteractionMessageWidget::NativeDestruct()
