@@ -128,6 +128,10 @@ void AElvenRingCharacter::OnAttackInput()
     if (bdodge) return;
     if (!bIsAttacking)
     {
+        if (CurrentWeapon)
+        {
+            CurrentWeapon->EnableCollision();
+        }
         bCanMove = false;
         bIsAttacking = true;
         AttackIndex = 1;
@@ -243,6 +247,10 @@ void AElvenRingCharacter::ComboEnd()
     if (bCanCombo)
     {
         ResetCombo();
+        if (CurrentWeapon)
+        {
+            CurrentWeapon->DisableCollision();
+        }
     }
 }
 
@@ -486,8 +494,6 @@ void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
-    if (bIsDodging) return;
-    if (bDefence) return;
     if (bJump) return;
     if (bIsAttacking) return;
     if (value.Get<bool>())
@@ -636,7 +642,7 @@ void AElvenRingCharacter::DodgeCollDown()
 
 void AElvenRingCharacter::StartDefence(const FInputActionValue& value)
 {
-    bCanMove = false;
+    bCanMove = false;;
     ResetCombo();
     if (bDefence)
     {
@@ -678,11 +684,13 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
+
     if (HasAuthority())
     {
         CurHealth = MaxHealth;
     }
     GetCharacterMovement()->RotationRate = FRotator(0.f, 780.f, 0.f);
+
     Tags.Add("Friendly");
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }
