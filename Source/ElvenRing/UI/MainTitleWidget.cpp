@@ -4,6 +4,8 @@
 #include "MainTitleWidget.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "ElvenRing/Core/NetworkSubsystem/ElvenRingOnline.h"
+#include "OnlineSessionSettings.h"
 #include "Kismet/GameplayStatics.h"
 
 void UMainTitleWidget::NativeConstruct()
@@ -51,8 +53,62 @@ void UMainTitleWidget::OnMultiButtonClicked()
     GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
     GetWorld()->GetTimerManager().SetTimer(AlphaPingpongTimerHandle, this, &UMainTitleWidget::PingpongText, 0.05f, true);
 
-    //ConnetingTimer();
-     UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"));
+    ConnetingTimer();
+	if (UElvenRingOnline* ElvenRingOnline = GetGameInstance()->GetSubsystem<UElvenRingOnline>())
+	{
+		ElvenRingOnline->FindSession(
+			FOnElvenRingFindSessionComplete::CreateLambda([this, ElvenRingOnline](bool bWasSuccessful, const TArray<FOnlineSessionSearchResult>& SearchResults) 
+			{
+				FString LogMessage = FString::Printf(TEXT("Find Session Complete : %d results"), SearchResults.Num());
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, LogMessage);
+				if (bWasSuccessful && SearchResults.Num() > 0)
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Join Session"));
+					const FOnlineSessionSearchResult& SearchResult = SearchResults[0];
+					ElvenRingOnline->JoinSession(SearchResult, FOnElvenRingJoinSessionComplete::CreateLambda([this](FName SessionName, const EOnJoinSessionCompleteResult::Type Result) 
+					{
+						// Join은 Join Session에서 진행되므로 리소스만 정리
+						if (Result == EOnJoinSessionCompleteResult::Success)
+						{
+							GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
+							GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+						}
+						else
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Failed to join"));
+							FRamdaConnect FRConnect;
+							FRConnect.TimerHandle = &TimerHandle;
+							FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
+							CloseConnectMaseege(FRConnect);
+						}
+					}));
+				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try Create New Session"));
+					ElvenRingOnline->CreateSession(4, FOnElvenRingCreateSessionComplete::CreateLambda([this](FName SessionName, bool bWasSuccessful)
+					{
+						if (bWasSuccessful)
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Create Session Success"));
+							GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
+							GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+							UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"), true, TEXT("listen"));
+						}
+						else
+						{
+							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Failed to create session"));
+							FRamdaConnect FRConnect;
+							FRConnect.TimerHandle = &TimerHandle;
+							FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
+							CloseConnectMaseege(FRConnect);
+						}
+					}));
+				}
+			}) // CreateLambda
+		); // FindSession
+	}
+     // UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"));
 }
 
 void UMainTitleWidget::PingpongText()
@@ -87,34 +143,8 @@ void UMainTitleWidget::ConnetingTimer()
    
     FString ErrorMassege = TEXT("Connecting..");
     TextConnection->SetText(FText::FromString(ErrorMassege));
-
-	FRamdaConnect FRConnect;
-	FRConnect.TimerHandle = &TimerHandle;
-
-    FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
-	GetWorld()->GetTimerManager().SetTimer
-	(
-		*FRConnect.TimerHandle,
-		FTimerDelegate::CreateLambda([this, FRConnect]() mutable
-		{
-            FRConnect.ElapsedTime += GetWorld()->GetTimeSeconds() - FRConnect.PrevTime;
-				
-			if (10.f <= FRConnect.ElapsedTime)
-			{
-                GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
-
-                FString ErrorMassege = TEXT("Connection failed.Please try again");
-
-                TextConnection->SetColorAndOpacity(FLinearColor(1.f,1.f,1.f,1.f));
-                TextConnection->SetText(FText::FromString(ErrorMassege));
-
-                CloseConnectMaseege(FRConnect);
-				//GetWorld()->GetTimerManager().ClearTimer(*FRConnect.TimerHandle);
-			}
-            FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
-		}), 0.05f, true
-	);
 }
+
 void UMainTitleWidget::CloseConnectMaseege(FRamdaConnect& FRConnect)
 {
     GetWorld()->GetTimerManager().ClearTimer(*FRConnect.TimerHandle);

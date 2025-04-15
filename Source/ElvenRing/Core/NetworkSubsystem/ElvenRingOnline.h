@@ -24,11 +24,11 @@ public:
 	virtual void Deinitialize() override;
 
 	/** Session을 생성한다. Session을 생성하고 맵을 이동하지는 않는다. 생성 후에 InCallback을 호출한다. */
-	void CreateSession(int32 MaxPlayers, FOnElvenRingCreateSessionComplete& InCallback);
+	void CreateSession(int32 MaxPlayers, const FOnElvenRingCreateSessionComplete& InCallback);
 	/** 참여 가능한 Session을 찾는다. 완료 후에 InCallback을 호출한다. */
-	void FindSession(FOnElvenRingFindSessionComplete& InCallback);
+	void FindSession(const FOnElvenRingFindSessionComplete& InCallback);
 	/** Join을 실행한다. Join이 성공하면 Callback 후에 맵을 이동한다. 만약에 Join에 실패하면 그대로 반환한다. */
-	void JoinSession(const FOnlineSessionSearchResult& SearchResult, FOnElvenRingJoinSessionComplete& InCallback);
+	void JoinSession(const FOnlineSessionSearchResult& SearchResult, const FOnElvenRingJoinSessionComplete& InCallback);
 	// void DestroySession();
 
 protected:	
