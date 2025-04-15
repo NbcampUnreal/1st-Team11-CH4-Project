@@ -676,10 +676,8 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
-    if (HasAuthority())
-    {
-        CurHealth = MaxHealth;
-    }
+
+    CurHealth = MaxHealth;
     Tags.Add("Friendly");
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }
