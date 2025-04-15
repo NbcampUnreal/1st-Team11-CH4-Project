@@ -97,10 +97,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
 	float DodgeDuration = 0.8f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
-	float DodgeDistance = 1000.0f;
+	float DodgeDistance = 3000.0f;
 	float DodgeTime = 0.f;
 	bool bIsDodging = false;
 	FVector DodgeVelocity;
+	float OriginalMaxSpeed;
 	//방어 관련함수
 	float DefenceSpeed = 1.f;
 	bool bDefence;
