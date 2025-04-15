@@ -241,6 +241,14 @@ void UUIManager::ShowScorePageWidget(UWorld* World)
 
     if (ScorePageWidget && !ScorePageWidget->IsInViewport())
         ScorePageWidget->AddToViewport();
+
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
+    {
+        PC->bShowMouseCursor = true;
+        FInputModeUIOnly InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        PC->SetInputMode(InputMode);
+    } 
 }
 
 void UUIManager::ShowBossWidget(UWorld* World)
