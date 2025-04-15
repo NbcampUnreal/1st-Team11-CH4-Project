@@ -24,6 +24,7 @@ void ANormalLevelSequenceActor::BeginPlay()
 	LevelPathMap.Add(ELevelPath::Artorias, TEXT("/Game/Dark_Castle/Maps/level"));
 	LevelPathMap.Add(ELevelPath::HangedMan, TEXT("/Game/SoulCave/SoulCave/LV_Soul_Cave"));
 	LevelPathMap.Add(ELevelPath::Title, TEXT("/Game/ElvenRing/Maps/Dev/Ksw/TitleMap"));
+	LevelPathMap.Add(ELevelPath::Result, TEXT("/Game/ElvenRing/Maps/Dev/Ksw/ResutStatMap"));
 }
 
 void ANormalLevelSequenceActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -178,6 +179,6 @@ void ANormalLevelSequenceActor::OnDeadSequenceEnded_Implementation()
 			{
 				GetWorld()->ServerTravel(*Path + "?listen");
 			}
-		}), 3.0f, false);
+		}), SceneTransitionDelay, false);
 	}
 }
