@@ -26,7 +26,11 @@ class ELVENRING_API ANormalMonster : public AUnitBase
 
 public:
 	ANormalMonster();
-	
+
+	virtual void BeginPlay() override;
+
+#pragma region Sound
+
 	UPROPERTY(EditAnywhere,BlueprintReadWrite, Category="Audio")
 	UAudioComponent* AudioComponent;
 
@@ -46,7 +50,7 @@ public:
 	void PlaySound(USoundBase*Sound);
 	UFUNCTION(Server, Reliable)
 	void PlayRandomSound(ENormalMonsterSoundCategory Category);
-
+#pragma endregion
 	
 #pragma region 전투관련
 	UFUNCTION(BlueprintCallable, Category="AI")
@@ -66,11 +70,9 @@ public:
 	
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 							 class AController* EventInstigator, AActor* DamageCauser) override;
-	virtual void BeginPlay() override;
 	virtual void OnDeath() override;
 	
-	UFUNCTION(NetMulticast, Reliable)
-	void SpawnDecal(FVector HitLocation, FRotator HitRotation);
+
 #pragma endregion
 	
 #pragma region 통신관련
@@ -80,22 +82,22 @@ public:
 	bool InstanceIsDeath;
 	
 	UFUNCTION(Server, Reliable)
-	void RPCIsHit(bool value);
+	virtual void RPCIsHit(bool value,AActor* DamageCauser);
 
 	UFUNCTION(Server, Reliable)
-	void RPCIsAttack(bool value);
+	virtual void RPCIsAttack(bool value);
 	
 	UFUNCTION(Server, Reliable)
-	void RPCIsDeath(bool value);
+	virtual void RPCIsDeath(bool value);
 	
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastIsHit(bool value, FVector HitLocation, FRotator HitRotation);
+	virtual void MulticastIsHit(bool value, FVector HitLocation, FRotator HitRotation);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastIsAttack(bool value);
+	virtual void MulticastIsAttack(bool value);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastIsDeath(bool value);
+	virtual void MulticastIsDeath(bool value);
 	
 	virtual void OnRep_HealthChanged() override;
 
@@ -107,10 +109,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="AI")
 	UWidgetComponent* HPWidgetComponent;
 	
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Effects")
 	UMaterialInterface* DecalMaterial;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SelectMonster")
+	bool MonsterSelect;
+	
 	FTimerHandle UpdateHPBarTimer;
 	FTimerHandle StayTimer;
 };

@@ -34,11 +34,6 @@ ANormalMonster::ANormalMonster()
 	bIsDie = false;
 	AIControllerClass = ANormalAIController::StaticClass();
 
-	// Capsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Capsule"));
-	// Capsule->InitCapsuleSize(80.f, 110.f);
-	// Capsule->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-
-
 	InstanceIsAttack = false;
 	InstanceIsHit = false;
 	InstanceIsDeath = false;
@@ -70,20 +65,17 @@ void ANormalMonster::BeginPlay()
 
 void ANormalMonster::UpdateHPBar()
 {
-	if (APlayerController* PC = GetWorld()->GetFirstPlayerController())
+	if (HPWidgetComponent)
 	{
-		FVector CamLoc = PC->PlayerCameraManager->GetCameraLocation();
-		FVector MyLoc = HPWidgetComponent->GetComponentLocation();
-
-		FRotator LookRot = (CamLoc - MyLoc).Rotation();
-		HPWidgetComponent->SetWorldRotation(LookRot);
+		HPWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 	}
 }
+
 #pragma region 통신
-void ANormalMonster::RPCIsHit_Implementation(bool value)
+void ANormalMonster::RPCIsHit_Implementation(bool value, AActor* DamageCauser)
 {
 	FVector HitLocation = GetActorLocation();
-	FRotator HitRotation = GetActorRotation();
+	FRotator HitRotation = DamageCauser->GetActorRotation();
 	MulticastIsHit(value, HitLocation, HitRotation);
 }
 
@@ -114,7 +106,7 @@ void ANormalMonster::MulticastIsHit_Implementation(bool value, FVector HitLocati
 		{
 			UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DecalMaterial, FVector(250, 300, 200),
 			                                       HitLocation - FVector(0.0f, 0.0f, 320.0f),
-			                                       FRotator(90.0f, 0.0f, 0.0f),
+			                                       HitRotation,
 			                                       5.0f);
 		}
 	}
@@ -139,7 +131,7 @@ void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 
 	if (UCharacterMovementComponent* MovementComp = GetCharacterMovement())
 	{
-		MovementComp->GravityScale = 0.0f;  // 중력 제거
+		MovementComp->GravityScale = 0.0f; // 중력 제거
 		UE_LOG(LogTemp, Warning, TEXT("중력 제거 완료"));
 	}
 
@@ -226,7 +218,7 @@ float ANormalMonster::TakeDamage(float Damage, FDamageEvent const& DamageEvent, 
 {
 	Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 	InstanceIsHit = true;
-	RPCIsHit(InstanceIsHit);
+	RPCIsHit(InstanceIsHit, DamageCauser);
 	PlayRandomSound(ENormalMonsterSoundCategory::HitSound);
 
 	return Damage;
@@ -259,7 +251,6 @@ void ANormalMonster::PlayerDetected(UObject* TargetCharacter)
 {
 	AAIController* AIController = Cast<AAIController>(GetController());
 	UBlackboardComponent* BlackboardComp = AIController->GetBlackboardComponent();
-	PlayRandomSound(ENormalMonsterSoundCategory::MoveSound);
 	BlackboardComp->SetValueAsBool(TEXT("PlayerDetectedKey"), true);
 	BlackboardComp->SetValueAsBool(TEXT("IsWatingKey"), false);
 	BlackboardComp->SetValueAsObject(TEXT("TargetActor"), (TargetCharacter));
@@ -272,11 +263,6 @@ void ANormalMonster::OnDeath()
 	RPCIsDeath(InstanceIsDeath);
 	PlayRandomSound(ENormalMonsterSoundCategory::DeathSound);
 }
-
-void ANormalMonster::SpawnDecal_Implementation(FVector HitLocation, FRotator HitRotation)
-{
-}
-
 
 #pragma endregion
 
