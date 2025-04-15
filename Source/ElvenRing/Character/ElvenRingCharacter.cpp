@@ -83,6 +83,7 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnLocation,           // 스폰 위치
             SpawnRotation            // 스폰 회전 값
         );
+    if (bIsAttacking) bCanMove = false;
     AnimInstance->Montage_Play(HitMontage);
     if (CurHealth <= 0)
     {

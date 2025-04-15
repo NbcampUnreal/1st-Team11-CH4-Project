@@ -64,6 +64,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MoveSpeed;
 	bool bCanAttack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Move")
 	bool bCanMove = true;
 	bool bIsHit;
 	bool bIsDie;
