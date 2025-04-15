@@ -141,15 +141,15 @@ FString ADoor::GetInteractText()
 {
 	if (IsLocked())
 	{
-		return LockInteractText.IsEmpty() ? TEXT("E: 잠금 해제") : LockInteractText;
+		return LockInteractText.IsEmpty() ? DefaultLockInteractText : LockInteractText;
 	}
 	if (bIsOpen)
 	{
-		return CloseInteractText.IsEmpty() ? TEXT("E: 문을 닫습니다.") : CloseInteractText;
+		return CloseInteractText.IsEmpty() ? DefaultCloseInteractText : CloseInteractText;
 	}
 	else
 	{
-		return OpenInteractText.IsEmpty() ? TEXT("E: 문을 엽니다.") : OpenInteractText;
+		return OpenInteractText.IsEmpty() ? DefaultOpenInteractText : OpenInteractText;
 	}
 }
 
