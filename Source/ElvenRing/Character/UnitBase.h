@@ -64,8 +64,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MoveSpeed;
 	bool bCanAttack;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	bool bCanMove = true;
 	bool bIsHit;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stat")
 	bool bIsDie;
 	bool bSprint; //ksw;
 	void AttachDelegateToWidget(ECharacterType Type);//ksw;
