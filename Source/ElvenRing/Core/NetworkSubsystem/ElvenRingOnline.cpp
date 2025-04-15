@@ -29,7 +29,7 @@ void UElvenRingOnline::Deinitialize()
 	Super::Deinitialize();
 }
 
-void UElvenRingOnline::CreateSession(int32 MaxPlayers, FOnElvenRingCreateSessionComplete& InCallback)
+void UElvenRingOnline::CreateSession(int32 MaxPlayers, const FOnElvenRingCreateSessionComplete& InCallback)
 {
 	if (IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(GetWorld()))
 	{
@@ -71,7 +71,7 @@ void UElvenRingOnline::CreateSession(int32 MaxPlayers, FOnElvenRingCreateSession
 	}
 }
 
-void UElvenRingOnline::FindSession(FOnElvenRingFindSessionComplete& InCallback)
+void UElvenRingOnline::FindSession(const FOnElvenRingFindSessionComplete& InCallback)
 {
 	UE_LOG(LogTemp, Display, TEXT("SearchSession"));
 	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("SearchSession"));
@@ -161,7 +161,7 @@ void UElvenRingOnline::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 	}
 }
 
-void UElvenRingOnline::JoinSession(const FOnlineSessionSearchResult& SearchResult, FOnElvenRingJoinSessionComplete& InCallback)
+void UElvenRingOnline::JoinSession(const FOnlineSessionSearchResult& SearchResult, const FOnElvenRingJoinSessionComplete& InCallback)
 {
 	if (IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(GetWorld()))
 	{
