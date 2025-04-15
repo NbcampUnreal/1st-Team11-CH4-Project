@@ -684,11 +684,13 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
+
     if (HasAuthority())
     {
         CurHealth = MaxHealth;
     }
     GetCharacterMovement()->RotationRate = FRotator(0.f, 780.f, 0.f);
+
     Tags.Add("Friendly");
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }

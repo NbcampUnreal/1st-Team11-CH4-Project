@@ -12,16 +12,7 @@ ANormalAIController::ANormalAIController()
 void ANormalAIController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (BehaviorTreeAsset && BlackboardComp)
-	{
-		UseBlackboard(BehaviorTreeAsset->BlackboardAsset, BlackboardComp); // 블랙보드 연결
-		RunBehaviorTree(BehaviorTreeAsset); // Behavior Tree 실행
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("BehaviorTreeAsset 또는 BlackboardComp가 nullptr입니다!"));
-	}
+	
 }
 
 void ANormalAIController::OnPossess(APawn* InPawn)
