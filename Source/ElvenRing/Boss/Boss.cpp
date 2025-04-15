@@ -311,15 +311,6 @@ void ABoss::SetAttackTarget()
 		}
 	}
 	
-	/*for (AElvenRingCharacter* Player : TActorRange<AElvenRingCharacter>(GetWorld()))
-	{
-			if (IsValid(Player)) // NewTarget이 유효한지 체크
-			{
-				//LOG(TEXT("Target set to: %s"), *Player->GetName());
-				TargetPlayer = Player;
-				break;
-			}
-	}*/
 	SetAttackTargetTimer();
 }
 
