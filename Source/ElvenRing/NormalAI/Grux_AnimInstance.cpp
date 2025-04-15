@@ -4,8 +4,6 @@
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
 #include "ElvenRing/NormalAI/NormalMonster.h"
 
-#include "ElvenRing/ElvenRing.h"
-
 UGrux_AnimInstance::UGrux_AnimInstance()
 {
 	IsAttacking = false;
@@ -23,6 +21,11 @@ void UGrux_AnimInstance::UpdateAttack(bool value)
 void UGrux_AnimInstance::UpdateHit(bool value)
 {
 	IsHit = value;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
+		{
+			IsHit = false;
+			AActor* OwnerActor = GetOwningActor();
+		}, 0.8f, false);	
 }
 
 void UGrux_AnimInstance::UpdateDeath(bool value)
@@ -32,30 +35,27 @@ void UGrux_AnimInstance::UpdateDeath(bool value)
 
 void UGrux_AnimInstance::AnimNotify_EndHit()
 {
+	IsHit=false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
 	{
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
-		{	IsHit=false;
-			GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
-			{
-				IsHit = false;
-			}, 0.5f, false);			
-			Monster->RPCIsHit(IsHit);
+		{	
+			Monster->RPCIsHit(IsHit,OwnerActor);
 		}
 	}
 }
 
 void UGrux_AnimInstance::AnimNotify_EndAttack()
 {
+	IsAttacking=false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
 	{
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
 		{
-			IsAttacking=false;
 			Monster->MulticastIsAttack(IsAttacking);
 		}
 	}

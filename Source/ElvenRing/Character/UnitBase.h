@@ -49,7 +49,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Stat")
 	float MaxHealth;
 
-	UPROPERTY(ReplicatedUsing = OnRep_HealthChanged)
+	UPROPERTY(VisibleAnywhere, ReplicatedUsing = OnRep_HealthChanged)
 	float CurHealth;
 
 	float CurStamina; //ksw
@@ -87,9 +87,31 @@ public:
 	{
 		return CurHealth;
 	}
+	float GetCurStamina() const
+	{
+		return CurStamina;
+	}
+	float GetCurMana() const
+	{
+		return CurMana;
+	}
 	float GetAttackPower() const
 	{
 		return AttackPower;
+	}
+	// 직접적으로 내부 Property를 외부로 노출하는 것은 좋지 않지만 시간이 없으므로 현재는 Setter를 이용해서 직접적으로 수정하게 한다.
+		
+	void SetCurrentHealth(float NewHealth)
+	{
+		CurHealth = NewHealth;
+	}
+	void SetCurrentStamina(float NewStamina)
+	{
+		CurStamina = NewStamina;
+	}
+	void SetCurrentMana(float NewMana)
+	{
+		CurMana = NewMana;
 	}
 	virtual void PlayDamageAnim();
 	virtual void PlayDeathAnim();

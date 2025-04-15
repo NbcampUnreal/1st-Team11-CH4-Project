@@ -9,9 +9,11 @@ UCLASS()
 class ELVENRING_API UGrux_AnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
-	UGrux_AnimInstance();
 
 public:
+
+	UGrux_AnimInstance();
+	
 	UFUNCTION()
 	void UpdateAttack(bool value);
 
@@ -41,4 +43,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AnimNotify_EndAttack();
+
+	bool InsSelect;
 };

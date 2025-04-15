@@ -6,9 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "ElvenRingTitleGameMode.generated.h"
 
-/**
- * 
- */
+class ATitleMapParticle;
 UCLASS()
 class ELVENRING_API AElvenRingTitleGameMode : public AGameMode
 {
@@ -18,4 +16,7 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditDefaultsOnly, Category = "UI")
+	TSubclassOf<ATitleMapParticle> TitleMapParticleClass;
+	ATitleMapParticle* TitleMapParticle;
 };

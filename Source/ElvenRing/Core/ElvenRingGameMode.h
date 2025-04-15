@@ -39,6 +39,7 @@ protected:
 	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	// Match Start가 될 때 호출, Client들이 Begin Play가 시작된다.
 	virtual void HandleMatchHasStarted() override;
+	virtual APawn* SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform) override;
 	
 public:
 	/**
@@ -51,7 +52,7 @@ public:
 	
 public:
 	/** Server Travel을 통해서 맵을 이동하게 하고 Client가 로딩 스크린을 출력하도록 한다. */
-	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName) const;
+	void HandleLevelTransition(APlayerController* PlayerController, const FString& LevelName);
 	/** 모든 유저가 맵을 로딩했는지 확인 */
 	bool AreAllPlayersReady() const;
 	/** Player Controller Begin Play에서 호출*/
@@ -59,7 +60,7 @@ public:
 
 protected:
 	/** Client가 Loading Screen을 출력하도록 전달, 현재 Close 하는 것은 Client가 OnPostLoadMap에서 직접하고 있다.*/
-	void BroadcastLoadingScreen(const FString& MapName) const;
+	void BroadcastLoadingScreen(const FString& MapName, float FadeOutTime) const;
 	/** 모든 Client가 맵을 로딩했을 떄 호출, Start Match로 게임이 진행 된다. */
 	void OnAllPlayerLoadMap();
 	/** 모든 Client가 BeginPlay가 호출된 다음에 호출 */
@@ -75,6 +76,9 @@ protected:
 	int32 PlayerReadyCount;
 	/** Player Ready 호출 기록 */
 	bool bHasPlayersReady;
+	UPROPERTY(EditDefaultsOnly)
+	float TravelDelayTime;
+	FTimerHandle TravelDelayHandle;
 public:
 	class UEventManager* GetEventManager() const
 	{

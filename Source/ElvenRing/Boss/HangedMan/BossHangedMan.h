@@ -26,7 +26,7 @@ class ELVENRING_API ABossHangedMan : public ABoss
 public:
 	ABossHangedMan();
 
-	virtual void ServerOnSpawnSequenceEnded_Implementation() override;
+	virtual void OnSpawnSequenceEnded() override;
 	
 protected:
 	virtual void BeginPlay() override;

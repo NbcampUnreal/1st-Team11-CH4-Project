@@ -598,6 +598,8 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     bIsDodging = true;
     DodgeTime = 0.f;
     
+    OriginalMaxSpeed = GetCharacterMovement()->MaxWalkSpeed;
+    GetCharacterMovement()->MaxWalkSpeed = OriginalMaxSpeed * 1.2; 
     if (HasAuthority())
     {
         Multicast_PlayDodgeAnimation(DodgeDuration);
@@ -617,7 +619,6 @@ void AElvenRingCharacter::UpdateDodge()
     AddMovementInput(DodgeVelocity.GetSafeNormal(), MoveDistance);
     DodgeTime += DodgeUpdate;
 }
-
 void AElvenRingCharacter::Interact(const FInputActionValue& InputActionValue)
 {
     UE_LOG(LogTemp, Display, TEXT("Interact Pressed"));
@@ -631,6 +632,7 @@ void AElvenRingCharacter::StopDodge()
     bCanMove = true;
     bdodge = false;
     CurrentWeapon->ResetDamagedActors();
+    GetCharacterMovement()->MaxWalkSpeed = OriginalMaxSpeed;
 }
 
 void AElvenRingCharacter::DodgeCollDown()
@@ -683,7 +685,12 @@ void AElvenRingCharacter::BeginPlay()
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
 
-    CurHealth = MaxHealth;
+    if (HasAuthority())
+    {
+        CurHealth = MaxHealth;
+    }
+    GetCharacterMovement()->RotationRate = FRotator(0.f, 780.f, 0.f);
+
     Tags.Add("Friendly");
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }

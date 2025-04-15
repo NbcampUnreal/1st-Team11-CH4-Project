@@ -16,6 +16,7 @@ class UBossWidget;
 class UMonsterWidget;
 class UMessageWidgetBase;
 class UScreenEffectWidget;
+class AWaitingRoomPlayerCardsRT;
 class AUnitBase;
 
 UENUM(BlueprintType)
@@ -39,7 +40,7 @@ public:
     void ShowTitleScreen(UWorld* World);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
-    void ShowWaitingRoom(UWorld* World);
+    void ShowWaitingRoom(UWorld* World, AWaitingRoomPlayerCardsRT* WaitingRoomPlayerCardsRT);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     void SetActiveCharactersUI(bool bActive);
@@ -65,6 +66,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     UPlayerMainUi* GetPlayerMainUi() const { return PlayerMainUiWedget; };
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    UWaitingRoomWidget* GetWaitingRoomUi() const { return WaitingRoomWidget; };
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     UScreenEffectWidget* GetScreenEffectWidget();
