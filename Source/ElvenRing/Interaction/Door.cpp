@@ -9,6 +9,9 @@
 
 // Sets default values
 ADoor::ADoor()
+	:DefaultLockInteractText(TEXT("문이 닫혀 있습니다")),
+	DefaultOpenInteractText(TEXT("E: 문을 엽니다.")),
+	DefaultCloseInteractText(TEXT("E: 문을 닫습니다."))
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
@@ -138,9 +141,16 @@ FString ADoor::GetInteractText()
 {
 	if (IsLocked())
 	{
-		return TEXT("Locked");
+		return LockInteractText.IsEmpty() ? TEXT("E: 잠금 해제") : LockInteractText;
 	}
-	return bIsOpen ? TEXT("Close Door") : TEXT("Open Door");
+	if (bIsOpen)
+	{
+		return CloseInteractText.IsEmpty() ? TEXT("E: 문을 닫습니다.") : CloseInteractText;
+	}
+	else
+	{
+		return OpenInteractText.IsEmpty() ? TEXT("E: 문을 엽니다.") : OpenInteractText;
+	}
 }
 
 void ADoor::Interact(APlayerController* Player)
@@ -155,7 +165,7 @@ void ADoor::Interact(APlayerController* Player)
 
 bool ADoor::CanInteract()
 {
-	return true;
+	return (bIsOpen && bCanClose) || (!bIsOpen && bCanOpen);
 }
 
 // Called when the game starts or when spawned
