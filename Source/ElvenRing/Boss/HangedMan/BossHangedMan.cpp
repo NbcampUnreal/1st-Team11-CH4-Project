@@ -21,10 +21,10 @@ ABossHangedMan::ABossHangedMan()
 void ABossHangedMan::BeginPlay()
 {
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::LightningAttack, FString("LightningAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectricJavelinAttack, FString("ElectricJavelinAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossHangedMan::ThunderBoldAttack, FString("ThunderBoldAttack"));
-	//NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackUp, FString("ElectronicAttackUp"));
-	//NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackDown, FString("ElectronicAttackDown"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectricJavelinAttack, FString("ElectricJavelinAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ThunderBoldAttack, FString("ThunderBoldAttack"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackUp, FString("ElectronicAttackUp"));
+	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackDown, FString("ElectronicAttackDown"));
 	
 	Super::BeginPlay();
 }

@@ -75,7 +75,7 @@ protected:
     TArray<bool> bDegCntArr = {false,false,false };
     //bool bCheck;
     FTimerHandle TimerHandle1;
-
+    TArray<FTimerHandle > ShockTimerHandles;
     virtual void NativeConstruct() override;
     virtual void NativeDestruct() override;
 };
