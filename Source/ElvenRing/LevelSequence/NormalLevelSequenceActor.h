@@ -4,6 +4,16 @@
 #include "LevelSequenceActor.h"
 #include "NormalLevelSequenceActor.generated.h"
 
+UENUM(BlueprintType)
+enum class ELevelPath : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Artorias UMETA(DisplayName = "Artorias"),
+	Tenebris UMETA(DisplayName = "Tenebris"),
+	HangedMan UMETA(DisplayName = "HangedMan"),
+	Title UMETA(DisplayName = "Title")
+};
+
 class UElvenringGameInstance;
 class ULevelSequence;
 class ABoss;
@@ -64,6 +74,15 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Boss")
 	ESequenceType SequenceType;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Boss")
+	ELevelPath NextLevelPath;
+
+	UPROPERTY(VisibleAnywhere, Category = "Level Sequence")
+	TMap<ELevelPath, FString> LevelPathMap;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Boss")
+	float SceneTransitionDelay = 10.0f;
 
 	UPROPERTY()
 	ULevelSequencePlayer* LevelSequencePlayer;

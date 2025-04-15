@@ -18,6 +18,12 @@ void ANormalLevelSequenceActor::BeginPlay()
 	CurrentLevelSequence = GetSequence();
 
 	Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+
+	// 레벨 경로 맵 초기화
+	LevelPathMap.Add(ELevelPath::Tenebris, TEXT("/Game/FantasyCombatArena/Levels/L_Tenebris"));
+	LevelPathMap.Add(ELevelPath::Artorias, TEXT("/Game/Dark_Castle/Maps/level"));
+	LevelPathMap.Add(ELevelPath::HangedMan, TEXT("/Game/SoulCave/SoulCave/LV_Soul_Cave"));
+	LevelPathMap.Add(ELevelPath::Title, TEXT("/Game/ElvenRing/Maps/Dev/Ksw/TitleMap"));
 }
 
 void ANormalLevelSequenceActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -161,5 +167,17 @@ void ANormalLevelSequenceActor::OnDeadSequenceEnded_Implementation()
 	if (MySound)
 	{
 		UGameplayStatics::PlaySound2D(GetWorld(), MySound);
+	}
+
+	if (HasAuthority())
+	{
+		FTimerHandle ServerTravelTimerHandle;
+		GetWorldTimerManager().SetTimer(ServerTravelTimerHandle, FTimerDelegate::CreateLambda([&]
+		{
+			if (const FString* Path = LevelPathMap.Find(NextLevelPath))
+			{
+				GetWorld()->ServerTravel(*Path + "?listen");
+			}
+		}), 3.0f, false);
 	}
 }
