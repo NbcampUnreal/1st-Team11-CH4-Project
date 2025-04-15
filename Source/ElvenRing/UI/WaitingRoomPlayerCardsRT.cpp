@@ -96,7 +96,8 @@ void AWaitingRoomPlayerCardsRT::TempCreatePlayerCard()
 					}
 					//}
 				}
-				PrveTime = GetWorld()->GetTimeSeconds();
+				else
+					PrveTime = GetWorld()->GetTimeSeconds();
 			}), 0.1f, true
 	);
 }

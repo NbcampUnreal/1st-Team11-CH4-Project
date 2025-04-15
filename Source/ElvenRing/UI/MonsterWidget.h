@@ -24,6 +24,8 @@ struct FMRamdaElement
 	float Duration = 1.f;
 	float DelayTime = 0.1f;
 	float PrevTime = 0.f;
+	FTimerHandle* HpTimerDelayHandle;
+	FTimerHandle* HpTimerHandle;
 	UProgressBar* MyProgressBar = nullptr;
 	UProgressBar* MyProgressYellowBar = nullptr;
 	void ClearPointer()

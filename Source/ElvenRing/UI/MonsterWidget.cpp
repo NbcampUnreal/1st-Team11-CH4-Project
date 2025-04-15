@@ -136,29 +136,34 @@ void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 	if (!FElement.Recover)
 		DamageText->SetText( FElement.DamageTextValue );
 
+	GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
+	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
+
+	FElement.HpTimerDelayHandle = &HpTimerDelayHandle;
+	FElement.HpTimerHandle = &HpTimerHandle;
+
+	TWeakObjectPtr<UMonsterWidget> SafeThis = this;
 	GetWorld()->GetTimerManager().SetTimer
 	(
-		HpTimerDelayHandle,
-		FTimerDelegate::CreateLambda([this, FElement]() mutable
+		*FElement.HpTimerDelayHandle,
+		FTimerDelegate::CreateLambda([SafeThis,FElement]() mutable
 			{
-				if (!this)
-				{
-					//UE_LOG(LogTemp, Warning, TEXT("this ERROR!!!!!!!!!!!!! "));
-					return;
-				}
+				if (!SafeThis.IsValid())return;
+				UWorld* World = SafeThis->GetWorld();
+				if (!World)return;
 
-				FElement.PrevTime = GetWorld()->GetTimeSeconds();
-				GetWorld()->GetTimerManager().SetTimer
+				FElement.PrevTime = World->GetTimeSeconds();
+				World->GetTimerManager().SetTimer
 				(
-					HpTimerHandle,
-					FTimerDelegate::CreateLambda([this, FElement]() mutable
+					*FElement.HpTimerHandle,
+					FTimerDelegate::CreateLambda([SafeThis, FElement]() mutable
 					{
-							if (!this)
-							{
-								//UE_LOG(LogTemp, Warning, TEXT("this ERROR!!!!!!!!!!!!! "));
-								return;
-							}
-						FElement.ElapsedTime += GetWorld()->GetTimeSeconds() - FElement.PrevTime;
+						if (!SafeThis.IsValid())
+							return;
+						UWorld* World = SafeThis->GetWorld();
+						if (!World)return;
+
+						FElement.ElapsedTime += World->GetTimeSeconds() - FElement.PrevTime;
 						float Alpha = FMath::Clamp(FElement.ElapsedTime / FElement.Duration, 0.f, 1.f);
 						float CurValue = FMath::Lerp(FElement.CurProgressBarPer, FElement.TargetProgressBarPer, Alpha);
 						//UE_LOG(LogTemp, Warning, TEXT("ElapsedTime : %f / PrevTime :  %f / TimeSeconds :  %f "), FEmt.ElapsedTime, FEmt.PrevTime, GetWorld()->GetTimeSeconds());
@@ -171,18 +176,20 @@ void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 								FElement.MyProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
 							else
 							{
-								DamageText->SetText(FText::GetEmpty());
+								SafeThis->DamageText->SetText(FText::GetEmpty());
 								if (KINDA_SMALL_NUMBER >= FElement.MyProgressBar->GetPercent())
 								{
-									TempMonster->OnHpChanged.RemoveDynamic(this, &UMonsterWidget::UpdateHp);
-									TempMonster = nullptr;
+									SafeThis->TempMonster->OnHpChanged.RemoveDynamic(SafeThis.Get(), &UMonsterWidget::UpdateHp);
+									SafeThis->TempMonster = nullptr;
 									//UE_LOG(LogTemp, Warning, TEXT(" RemoveDynamic!!!!!! Monster"));
 								}
 							}
 							FElement.ClearPointer();
-							GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
+							World->GetTimerManager().ClearTimer(*FElement.HpTimerHandle);
 						}
-						FElement.PrevTime = GetWorld()->GetTimeSeconds();
+						else
+							FElement.PrevTime = World->GetTimeSeconds();
+
 					}), 0.05f, true
 				);
 			}), FElement.DelayTime, false

@@ -74,22 +74,37 @@ void UBossWidget::UpdateProgressBar(FMRamdaElement& FElement)
 	if (!FElement.Recover)
 		DamageText->SetText(FElement.DamageTextValue);
 
+	GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
+	GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
+
+	FElement.HpTimerDelayHandle = &HpTimerDelayHandle;
+	FElement.HpTimerHandle = &HpTimerHandle;
+
+	TWeakObjectPtr<UBossWidget> SafeThis = this;
 	GetWorld()->GetTimerManager().SetTimer
 	(
-		HpTimerDelayHandle,
-		FTimerDelegate::CreateLambda([this, FElement]() mutable
+		*FElement.HpTimerDelayHandle,
+		FTimerDelegate::CreateLambda([SafeThis, FElement]() mutable
 			{
-				if (!this)
+				if (!SafeThis.IsValid())
 					return;
-				FElement.PrevTime = GetWorld()->GetTimeSeconds();
-				GetWorld()->GetTimerManager().SetTimer
+				UWorld* World = SafeThis->GetWorld();
+				if (!World)
+					return;
+
+				FElement.PrevTime = World->GetTimeSeconds();
+				World->GetTimerManager().SetTimer
 				(
-					HpTimerHandle,
-					FTimerDelegate::CreateLambda([this, FElement]() mutable
+					*FElement.HpTimerHandle,
+					FTimerDelegate::CreateLambda([SafeThis, FElement]() mutable
 						{
-							if (!this)
+							if (!SafeThis.IsValid())
 								return;
-							FElement.ElapsedTime += GetWorld()->GetTimeSeconds() - FElement.PrevTime;
+							UWorld* World = SafeThis->GetWorld();
+							if (!World)
+								return;
+
+							FElement.ElapsedTime += World->GetTimeSeconds() - FElement.PrevTime;
 							float Alpha = FMath::Clamp(FElement.ElapsedTime / FElement.Duration, 0.f, 1.f);
 							float CurValue = FMath::Lerp(FElement.CurProgressBarPer, FElement.TargetProgressBarPer, Alpha);
 							//UE_LOG(LogTemp, Warning, TEXT("ElapsedTime : %f / PrevTime :  %f / TimeSeconds :  %f "), FEmt.ElapsedTime, FEmt.PrevTime, GetWorld()->GetTimeSeconds());
@@ -101,12 +116,13 @@ void UBossWidget::UpdateProgressBar(FMRamdaElement& FElement)
 								if (FElement.Recover)
 									FElement.MyProgressYellowBar->SetPercent(FElement.TargetProgressBarPer);
 								else
-									DamageText->SetText(FText::GetEmpty());
+									SafeThis->DamageText->SetText(FText::GetEmpty());
 
 								FElement.ClearPointer();
-								GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
+								World->GetTimerManager().ClearTimer(*FElement.HpTimerHandle);
 							}
-							FElement.PrevTime = GetWorld()->GetTimeSeconds();
+							else
+								FElement.PrevTime = World->GetTimeSeconds();
 						}), 0.05f, true
 				);
 			}), FElement.DelayTime, false
