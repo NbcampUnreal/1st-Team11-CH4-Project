@@ -13,6 +13,7 @@ class UInGameWidget;
 class UPlayerMainUi;
 class UMessageWidget;
 class UBattleMessageWidget;
+class UInteractionMessageWidget;
 class UBossWidget;
 class UMonsterWidget;
 class UMessageWidgetBase;
@@ -55,8 +56,11 @@ public:
     void ShowPlayerMainUi(UWorld* World);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowInteractionMessage(UWorld* World);
+    
+    UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowMessage(const FString& Message, EMessageType MsgType);
-
+    
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowScorePageWidget(UWorld* World);
 
@@ -113,6 +117,9 @@ protected:
     UBattleMessageWidget* BattleMessageWidget;
 
     UPROPERTY()
+    UInteractionMessageWidget* InteractionMessageWidget;
+    
+    UPROPERTY()
     UPlayerMainUi* PlayerMainUiWedget;
 
     UPROPERTY()
@@ -144,6 +151,9 @@ protected:
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UBattleMessageWidget> BattleMessageWidgetClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UInteractionMessageWidget> InteractionMessageWidgetClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UPlayerMainUi> PlayerMainUiClass;

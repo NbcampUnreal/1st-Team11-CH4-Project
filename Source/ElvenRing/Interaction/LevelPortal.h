@@ -25,6 +25,8 @@ protected:
 	UStaticMeshComponent* MeshComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString LevelPath;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString InteractionText;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -18,7 +18,22 @@ ALever::ALever()
 
 FString ALever::GetInteractText()
 {
-	return TEXT("Lever Pull");
+	if (bIsLocked)
+	{
+		return LockedText.IsEmpty() ? DefaultLockedText : LockedText;
+	}
+	if (bIsLeverOn)
+	{
+		return LeverOffText.IsEmpty() ? DefaultLeverOffText : LeverOffText;
+	}
+	if (!bIsLeverOn)
+	{
+		return LeverOnText.IsEmpty() ? DefaultLeverOnText : LeverOnText;
+	}
+	else
+	{
+		return TEXT("");
+	}
 }
 
 void ALever::Interact(APlayerController* Player)
@@ -33,7 +48,7 @@ void ALever::Interact(APlayerController* Player)
 
 bool ALever::CanInteract()
 {
-	return true;
+	return (bIsLeverOn && bCanLeverOff) || (!bIsLeverOn && bCanLeverOn);
 }
 
 void ALever::BeginPlay()
