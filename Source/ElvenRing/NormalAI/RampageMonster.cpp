@@ -15,7 +15,8 @@
 
 void ARampageMonster::BeginPlay()
 {
-	AUnitBase::BeginPlay(); //
+	AUnitBase::BeginPlay();
+	CurHealth = MaxHealth;
 	SetReplicates(true);
 	//AttachDelegateToWidget(ECharacterType::RampageMonster);
 	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ARampageMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
