@@ -15,18 +15,18 @@
 
 void ARampageMonster::BeginPlay()
 {
-	AUnitBase::BeginPlay();
-	CurHealth = MaxHealth;
-	SetReplicates(true);
-	//AttachDelegateToWidget(ECharacterType::RampageMonster);
-	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ARampageMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
+	Super::BeginPlay();
+	// CurHealth = MaxHealth;
+	// SetReplicates(true);
+	// //AttachDelegateToWidget(ECharacterType::RampageMonster);
+	// GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ARampageMonster::UpdateHPBar, 0.1f, true);
 }
 
 ARampageMonster::ARampageMonster()
 {
 }
 
-void ARampageMonster::MulticastIsHit(bool value, FVector HitLocation, FRotator HitRotation)
+void ARampageMonster::MulticastIsHit_Implementation(bool value, FVector HitLocation, FRotator HitRotation)
 {
 	URampage_AnimInstance* AnimInstance = Cast<URampage_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -42,8 +42,10 @@ void ARampageMonster::MulticastIsHit(bool value, FVector HitLocation, FRotator H
 	}
 }
 
-void ARampageMonster::MulticastIsAttack(bool value)
+void ARampageMonster::MulticastIsAttack_Implementation(bool value)
 {
+	//Super::MulticastIsAttack_Implementation(value);
+	// OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
 	URampage_AnimInstance* AnimInstance = Cast<URampage_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
@@ -51,7 +53,7 @@ void ARampageMonster::MulticastIsAttack(bool value)
 	}
 }
 
-void ARampageMonster::MulticastIsDeath(bool value)
+void ARampageMonster::MulticastIsDeath_Implementation(bool value)
 {
 	URampage_AnimInstance* AnimInstance = Cast<URampage_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -83,8 +85,6 @@ void ARampageMonster::MulticastIsDeath(bool value)
 		HPWidgetComponent->DestroyComponent();
 	}
 }
-
-
 
 void ARampageMonster::OnRep_HealthChanged()
 {

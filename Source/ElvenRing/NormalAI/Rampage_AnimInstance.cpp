@@ -17,11 +17,11 @@ void URampage_AnimInstance::UpdateAttack(bool value)
 void URampage_AnimInstance::UpdateHit(bool value)
 {
 	IsHit = value;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
-	{
-		IsHit = false;
-		AActor* OwnerActor = GetOwningActor();
-	}, 0.1f, false);	
+	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	// {
+	// 	IsHit = false;
+	// 	AActor* OwnerActor = GetOwningActor();
+	// }, 0.1f, false);
 }
 
 void URampage_AnimInstance::UpdateDeath(bool value)
@@ -30,14 +30,15 @@ void URampage_AnimInstance::UpdateDeath(bool value)
 }
 
 void URampage_AnimInstance::AnimNotify_EndHit()
-{IsHit=false;
+{
+	IsHit = false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
 	{
 		ARampageMonster* Monster = Cast<ARampageMonster>(OwnerActor);
 		if (Monster)
-		{	
-			Monster->RPCIsHit(IsHit,OwnerActor);
+		{
+			Monster->RPCIsHit(IsHit, OwnerActor);
 		}
 	}
 }
@@ -50,7 +51,7 @@ void URampage_AnimInstance::AnimNotify_EndAttack()
 		ARampageMonster* Monster = Cast<ARampageMonster>(OwnerActor);
 		if (Monster)
 		{
-			IsAttacking=false;
+			IsAttacking = false;
 			Monster->MulticastIsAttack(IsAttacking);
 		}
 	}
