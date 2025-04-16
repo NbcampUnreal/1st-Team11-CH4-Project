@@ -619,7 +619,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     DodgeTime = 0.f;
     
     OriginalMaxSpeed = GetCharacterMovement()->MaxWalkSpeed;
-    GetCharacterMovement()->MaxWalkSpeed = OriginalMaxSpeed * 1.2; 
+    GetCharacterMovement()->MaxWalkSpeed = DodgeSpeed; 
     if (HasAuthority())
     {
         Multicast_PlayDodgeAnimation(DodgeDuration);
