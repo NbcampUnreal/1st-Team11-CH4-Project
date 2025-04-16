@@ -12,6 +12,8 @@
 void UPlayerMainUi::NativeConstruct()
 {
 	Super::NativeConstruct();
+	UpdateFrameSize(MpProgressBar, MpProgressYellowBar, MpFrameImg2, MpFrameImg3, 0.6f);
+	UpdateFrameSize(StProgressBar, StProgressYellowBar, StFrameImg2, StFrameImg3, 0.9f);
 	//UElvenringGameInstance* ElvenringGameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
 	//ElvenringGameInstance->GetUIManager()->GetScreenEffectWidget()->FadeOutIn();
 }
@@ -205,25 +207,31 @@ void UPlayerMainUi::DecreaseProgressBar(FRamdaElement& FEmt)
 {
 	FEmt.CurProgressBarPer = FEmt.MyYellowProgressBar->GetPercent();
 	FEmt.TargetProgressBarPer = FEmt.TargetValue / FEmt.ValueMax;
-
+	TWeakObjectPtr<UPlayerMainUi> SafeThis = this;
 	GetWorld()->GetTimerManager().SetTimer
 	(
 		
 		*FEmt.DelayTimerHandle,
-		FTimerDelegate::CreateLambda([this, FEmt]() mutable
+		FTimerDelegate::CreateLambda([SafeThis, FEmt]() mutable
 		{
-			if (!this)
-				return;
-			FEmt.PrevTime = GetWorld()->GetTimeSeconds();
-			//==========================================================================
-			GetWorld()->GetTimerManager().SetTimer
+			if (!SafeThis.IsValid())return;
+
+			UWorld* World = SafeThis->GetWorld();
+
+			if (!World)return;
+			FEmt.PrevTime = World->GetTimeSeconds();
+			World->GetTimerManager().SetTimer
 			(
 				*FEmt.TimerHandle,
-				FTimerDelegate::CreateLambda([this, FEmt]() mutable
+				FTimerDelegate::CreateLambda([SafeThis, FEmt]() mutable
 				{
-					if (!this)
-						return;
-					FEmt.ElapsedTime += GetWorld()->GetTimeSeconds() - FEmt.PrevTime;
+					if (!SafeThis.IsValid())return;
+
+					UWorld* World = SafeThis->GetWorld();
+
+					if (!World)return;
+
+					FEmt.ElapsedTime += World->GetTimeSeconds() - FEmt.PrevTime;
 					float Alpha = FMath::Clamp(FEmt.ElapsedTime / FEmt.Duration, 0.f, 1.f);
 					float CurValue = FMath::Lerp(FEmt.CurProgressBarPer, FEmt.TargetProgressBarPer, Alpha);
 					//UE_LOG(LogTemp, Warning, TEXT("ElapsedTime : %f / PrevTime :  %f / TimeSeconds :  %f "), FEmt.ElapsedTime, FEmt.PrevTime, GetWorld()->GetTimeSeconds());
@@ -233,9 +241,11 @@ void UPlayerMainUi::DecreaseProgressBar(FRamdaElement& FEmt)
 					{
 						FEmt.MyYellowProgressBar->SetPercent(FEmt.TargetProgressBarPer);
 						FEmt.ClearPointer();
-						GetWorld()->GetTimerManager().ClearTimer(*FEmt.TimerHandle);
+						World->GetTimerManager().ClearTimer(*FEmt.TimerHandle);
 					}
-					FEmt.PrevTime = GetWorld()->GetTimeSeconds();
+					else 
+						FEmt.PrevTime = World->GetTimeSeconds();
+
 				}),0.05f,true
 			);
 			//==========================================================================	
@@ -251,23 +261,29 @@ void UPlayerMainUi::RecoverProgressBar1(FRamdaElement& FEmt)
 {
 	FEmt.CurProgressBarPer = FEmt.MyProgressBar->GetPercent();
 	FEmt.TargetProgressBarPer = FEmt.TargetValue / FEmt.ValueMax;
-
+	TWeakObjectPtr<UPlayerMainUi> SafeThis = this;
 	GetWorld()->GetTimerManager().SetTimer
 	(
 		*FEmt.DelayTimerHandle,
-		FTimerDelegate::CreateLambda([this, FEmt]() mutable
+		FTimerDelegate::CreateLambda([SafeThis, FEmt]() mutable
 			{
-				if (!this)
-					return;
-				FEmt.PrevTime = GetWorld()->GetTimeSeconds();
-				GetWorld()->GetTimerManager().SetTimer
+				if (!SafeThis.IsValid() )return;
+				UWorld* World = SafeThis->GetWorld();
+				if (!World)return;
+
+				FEmt.PrevTime = World->GetTimeSeconds();
+				World->GetTimerManager().SetTimer
 				(
 					*FEmt.TimerHandle,
-					FTimerDelegate::CreateLambda([this, FEmt]() mutable
+					FTimerDelegate::CreateLambda([SafeThis, FEmt]() mutable
 						{
-							if (!this)
-								return;
-							FEmt.ElapsedTime += GetWorld()->GetTimeSeconds() - FEmt.PrevTime;
+							if (!SafeThis.IsValid() )return;
+
+							UWorld* World = SafeThis->GetWorld();
+
+							if (!World)return;
+
+							FEmt.ElapsedTime += World->GetTimeSeconds() - FEmt.PrevTime;
 							float Alpha = FMath::Clamp(FEmt.ElapsedTime / FEmt.Duration, 0.f, 1.f);
 							float CurValue = FMath::Lerp(FEmt.CurProgressBarPer, FEmt.TargetProgressBarPer, Alpha);
 							//UE_LOG(LogTemp, Warning, TEXT("ElapsedTime : %f / PrevTime :  %f / TimeSeconds :  %f "), FEmt.ElapsedTime, FEmt.PrevTime, GetWorld()->GetTimeSeconds());
@@ -278,9 +294,10 @@ void UPlayerMainUi::RecoverProgressBar1(FRamdaElement& FEmt)
 								FEmt.MyProgressBar->SetPercent(FEmt.TargetProgressBarPer);
 								FEmt.MyYellowProgressBar->SetPercent(FEmt.TargetProgressBarPer);
 								FEmt.ClearPointer();
-								GetWorld()->GetTimerManager().ClearTimer(*FEmt.TimerHandle);
+								World->GetTimerManager().ClearTimer(*FEmt.TimerHandle);
 							}
-							FEmt.PrevTime = GetWorld()->GetTimeSeconds();
+							else
+								FEmt.PrevTime = World->GetTimeSeconds();
 						}), 0.05f, true
 				);
 			}), FEmt.DelayTime, false

@@ -39,6 +39,14 @@ void AElvenRingGameMode::RecordDamage(AController* EventInstigator, AActor* Dama
 			PlayerState->RecordPlayerDamage(DamagedActor, Damage);
 		}
 	}
+
+	if (AElvenRingCharacter* Character = Cast<AElvenRingCharacter>(DamagedActor))
+	{
+		if (AElvenRingPlayerState* PlayerState = Character->GetPlayerState<AElvenRingPlayerState>())
+		{
+			PlayerState->RecordPlayerDamageTaken(DamagedActor, Damage);
+		}
+	}
 }
 
 ACharacter* AElvenRingGameMode::GetHighestDamageCharacter(const AActor* BossActor) const
@@ -63,6 +71,43 @@ ACharacter* AElvenRingGameMode::GetHighestDamageCharacter(const AActor* BossActo
 	}
 
 	return HighestDamageCharacter;
+}
+
+void AElvenRingGameMode::RecordInvincible(AController* EventInstigator, AUnitBase* DamagedActor, float Damage)
+{
+	if (!IsValid(EventInstigator))
+	{
+		UE_LOG(LogTemp,Warning, TEXT("Record Damage : EventInstigator is not valid. Damage may not be recorded."));
+		return;
+	}
+
+	if (AElvenRingCharacter* Character = Cast<AElvenRingCharacter>(DamagedActor))
+	{
+		if (AElvenRingPlayerState* PlayerState = Character->GetPlayerState<AElvenRingPlayerState>())
+		{
+			PlayerState->RecordDodge(DamagedActor, Damage);
+		}
+	}
+}
+
+void AElvenRingGameMode::HandlePlayerDeath(AController* DeadController)
+{
+	if (!IsValid(DeadController))
+	{
+		return;
+	}
+
+	if (!DeadController->GetPawn())
+	{
+		DeadController->UnPossess();
+	}
+
+	if (AElvenRingPlayerState* PlayerState = DeadController->GetPlayerState<AElvenRingPlayerState>())
+	{
+		PlayerState->AddRespawnCount();
+	}
+
+	RestartPlayer(DeadController);
 }
 
 void AElvenRingGameMode::PostSeamlessTravel()

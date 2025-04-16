@@ -45,6 +45,7 @@ void UWaitingRoomWidget::NativeConstruct()
         ShockWaves[i]->SetVisibility(ESlateVisibility::Collapsed);
 
     OpenNamePopup();
+    ShockTimerHandles.AddDefaulted(3);
 }
 void UWaitingRoomWidget::GuestMode()
 {
@@ -110,11 +111,11 @@ void UWaitingRoomWidget::CloseShockWave(FSlateBrush& Brush, UMaterialInstanceDyn
     //    UMaterialInstanceDynamic* DynMat1 = UMaterialInstanceDynamic::Create(Mat, this);
       //  if (DynMat1)
         float ElapsedTime = 0.f;
-        FTimerHandle* TimerHandle = new FTimerHandle();
+       // FTimerHandle TimerHandle2 ;
         {
             GetWorld()->GetTimerManager().SetTimer(
-                *TimerHandle,
-                FTimerDelegate::CreateLambda([this, ElapsedTime, TimerHandle, &Brush, Index, DynMat]() mutable
+                ShockTimerHandles[Index],
+                FTimerDelegate::CreateLambda([this, ElapsedTime,  &Brush, Index, DynMat]() mutable
                     {
                         ElapsedTime += 0.01f;
                         DynMat->SetScalarParameterValue("ElapsedTime", ElapsedTime);
@@ -129,8 +130,7 @@ void UWaitingRoomWidget::CloseShockWave(FSlateBrush& Brush, UMaterialInstanceDyn
                             bDegCntArr[Index] = false;
 
                            // UE_LOG(LogTemp, Warning, TEXT("Shockwave 종료 (Index %d)"), Index);
-                            GetWorld()->GetTimerManager().ClearTimer(*TimerHandle);
-                            delete TimerHandle;
+                            GetWorld()->GetTimerManager().ClearTimer(ShockTimerHandles[Index]);
                         }
                     }),
                 0.01f, true

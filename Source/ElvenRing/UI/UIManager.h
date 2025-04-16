@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "CommonTypes.h"
 #include "UIManager.generated.h"
 
 class UMainTitleWidget;
@@ -12,12 +13,15 @@ class UInGameWidget;
 class UPlayerMainUi;
 class UMessageWidget;
 class UBattleMessageWidget;
+class UInteractionMessageWidget;
 class UBossWidget;
 class UMonsterWidget;
 class UMessageWidgetBase;
 class UScreenEffectWidget;
 class AWaitingRoomPlayerCardsRT;
+class UScorePageWidget;
 class AUnitBase;
+//struct EResultStat;
 
 UENUM(BlueprintType)
 enum class EMessageType : uint8
@@ -52,9 +56,13 @@ public:
     void ShowPlayerMainUi(UWorld* World);
 
     UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowInteractionMessage(UWorld* World);
+    
+    UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowMessage(const FString& Message, EMessageType MsgType);
-
-  
+    
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void ShowScorePageWidget(UWorld* World);
 
     void ShowBossWidget(UWorld* World);
 
@@ -84,6 +92,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void CreateBindNormalMonsterWidgetUi(UWorld* World, AUnitBase* Unit);
 
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    UScorePageWidget* GetScorePageWidget() const { return ScorePageWidget; };
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void UpdateGameResultStat(int32 idx, EResultStat Stat, int Value);
+
     UMessageWidgetBase* GetMessageWidgetSafe(EMessageType MsgType) const;
 
 protected:
@@ -103,6 +117,9 @@ protected:
     UBattleMessageWidget* BattleMessageWidget;
 
     UPROPERTY()
+    UInteractionMessageWidget* InteractionMessageWidget;
+    
+    UPROPERTY()
     UPlayerMainUi* PlayerMainUiWedget;
 
     UPROPERTY()
@@ -114,6 +131,9 @@ protected:
     UPROPERTY()
     UBossWidget* BossWidget;
 
+    UPROPERTY()
+    UScorePageWidget* ScorePageWidget;
+    
     UPROPERTY()
     UScreenEffectWidget* ScreenEffectWidget;
 
@@ -133,6 +153,9 @@ protected:
     TSubclassOf<UBattleMessageWidget> BattleMessageWidgetClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UInteractionMessageWidget> InteractionMessageWidgetClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UPlayerMainUi> PlayerMainUiClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
@@ -142,7 +165,11 @@ protected:
     TSubclassOf<UBossWidget> BossWidgetClass;
 
     UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UScorePageWidget> ScorePageWidgetClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
     TSubclassOf<UScreenEffectWidget> ScreenEffectWidgetClass;
+
 private:
    // UWorld* CachedWorld = nullptr;
     TArray<UMessageWidgetBase*> MessageWidgets; 

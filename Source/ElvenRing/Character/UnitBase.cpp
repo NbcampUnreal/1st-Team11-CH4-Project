@@ -102,7 +102,14 @@ void AUnitBase::OnRep_HealthChanged()
 float  AUnitBase::TakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (!HasAuthority()) return 0;
-	if (Invincibility) return 0;
+	if (Invincibility)
+	{
+		if (AElvenRingGameMode* GameMode = GetWorld()->GetAuthGameMode<AElvenRingGameMode>())
+		{
+			GameMode->RecordInvincible(EventInstigator, this, Damage);
+		}
+		return 0;
+	}
 	
 	float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 

@@ -31,13 +31,13 @@ AElvenRingPlayerState::AElvenRingPlayerState()
 
 void AElvenRingPlayerState::SaveCharacterStatus(AElvenRingCharacter* Character)
 {
-	StatusSaved.SaveStatus(Character);
+	SavedStatus.SaveStatus(Character);
 	bHasSaved = true;
 }
 
 void AElvenRingPlayerState::LoadCharacterStatus(class AElvenRingCharacter* Character)
 {
-	StatusSaved.LodStatus(Character);
+	SavedStatus.LodStatus(Character);
 }
 
 void AElvenRingPlayerState::RecordPlayerDamage(AActor* DamagedActor, float Damage)
@@ -50,7 +50,26 @@ void AElvenRingPlayerState::RecordPlayerDamage(AActor* DamagedActor, float Damag
 	float& TotalDamage = BossDamageRecord.FindOrAdd(GetNativeClass(DamagedActor), 0.f);
 	TotalDamage += Damage;
 
+	TotalDamageDealt += Damage;
+	
 	UE_LOG(LogTemp,Display, TEXT("Player ID: %s, Damage Recorded: %s -> %f"), *GetName(), *GetNativeClass(DamagedActor)->GetName(), TotalDamage);
+}
+
+void AElvenRingPlayerState::RecordPlayerDamageTaken(AActor* DamagedActor, float Damage)
+{
+	if (!DamagedActor || Damage < 0.f)
+	{
+		return;
+	}
+
+	TotalDamageTaken += Damage;
+
+	UE_LOG(LogTemp,Display,TEXT("Player ID: %s, Damage Taken: %s -> %f"), *GetName(), *GetNativeClass(DamagedActor)->GetName(), TotalDamageTaken);
+}
+
+void AElvenRingPlayerState::RecordDodge(AUnitBase* DamagedActor, float Damage)
+{
+	TotalDodgeCount++;
 }
 
 float AElvenRingPlayerState::GetBossDamage(const AActor* BossActor) const
@@ -112,7 +131,11 @@ void AElvenRingPlayerState::CopyProperties(APlayerState* PlayerState)
 	if (AElvenRingPlayerState* OtherPlayerState = Cast<AElvenRingPlayerState>(PlayerState))
 	{
 		OtherPlayerState->BossDamageRecord = BossDamageRecord;
-		OtherPlayerState->StatusSaved = StatusSaved;
+		OtherPlayerState->SavedStatus = SavedStatus;
 		OtherPlayerState->bHasSaved = bHasSaved;
+		OtherPlayerState->TotalDamageDealt = TotalDamageDealt;
+		OtherPlayerState->TotalDamageTaken = TotalDamageTaken;
+		OtherPlayerState->TotalDodgeCount = TotalDodgeCount;
+		OtherPlayerState->RespawnCount = RespawnCount;
 	};
 }

@@ -32,6 +32,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
 	bool bInput;
 
+	virtual void OnDeath() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
@@ -80,6 +81,10 @@ protected:
 	UAnimMontage* AttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* DefenceMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* DieMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* HitMontage;
 	//달리기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
@@ -99,11 +104,13 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
 	float DodgeDistance = 3000.0f;
 	float DodgeTime = 0.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
 	bool bIsDodging = false;
 	FVector DodgeVelocity;
 	float OriginalMaxSpeed;
 	//방어 관련함수
 	float DefenceSpeed = 1.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Defence")
 	bool bDefence;
 	FTimerHandle DefenceTimerHandle;  
 	

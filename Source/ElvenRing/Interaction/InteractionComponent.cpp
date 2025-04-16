@@ -67,8 +67,20 @@ void UInteractionComponent::SearchInteractable()
 		{
 			if (IInteractable* Interactable = Cast<IInteractable>(NewInteractable))
 			{
-				FString InteractText = Interactable->GetInteractText();
-				OnInteractableFound.Broadcast(InteractText);
+				CurrentInteractText = Interactable->GetInteractText();
+				OnInteractableFound.Broadcast(CurrentInteractText);
+			}
+		}
+	}
+	else if (NewInteractable) // OldInteractable == NewInteractable
+	{
+		if (IInteractable* Interactable = Cast<IInteractable>(NewInteractable))
+		{
+			FString NewInteractText = Interactable->GetInteractText();
+			if (CurrentInteractText != NewInteractText)
+			{
+				CurrentInteractText = NewInteractText;
+				OnInteractableFound.Broadcast(NewInteractText);
 			}
 		}
 	}
@@ -182,7 +194,7 @@ bool UInteractionComponent::ValidateInteractable(AActor* InteractableActor) cons
 	return Interactable && Interactable->CanInteract();
 }
 
-void UInteractionComponent::LogInteractFound(FString InteractText)
+void UInteractionComponent::LogInteractFound(const FString& InteractText)
 {
 	UE_LOG(LogTemp, Display, TEXT("Interactable Found: %s"), *InteractText);
 }

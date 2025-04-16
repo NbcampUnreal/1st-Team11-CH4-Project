@@ -54,6 +54,14 @@ void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMont
         }
     }
 }
+
+void AElvenRingCharacter::OnDeath()
+{
+    Super::OnDeath();
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    AnimInstance->Montage_Play(DieMontage);
+}
+
 void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -64,6 +72,8 @@ void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
 {
+    if (Invincibility) return 0;
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
@@ -73,7 +83,15 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnLocation,           // 스폰 위치
             SpawnRotation            // 스폰 회전 값
         );
-    
+    if (bIsAttacking) bCanMove = false;
+    AnimInstance->Montage_Play(HitMontage);
+
+    ResetCombo();
+    CurrentWeapon->DisableCollision();
+    if (CurHealth <= 0)
+    {
+        OnDeath();
+    }
     return ActualDamage;
 }
 
@@ -494,6 +512,8 @@ void AElvenRingCharacter::MoveEnd(const FInputActionValue& value)
 
 void AElvenRingCharacter::StartJump(const FInputActionValue& value)
 {
+    if (bIsDodging) return;
+    if (bDefence) return;
     if (bJump) return;
     if (bIsAttacking) return;
     if (value.Get<bool>())
@@ -684,11 +704,13 @@ void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
     AttachDelegateToWidget(ECharacterType::Player);
+
     if (HasAuthority())
     {
         CurHealth = MaxHealth;
     }
     GetCharacterMovement()->RotationRate = FRotator(0.f, 780.f, 0.f);
+
     Tags.Add("Friendly");
     SprintSpeed = MoveSpeed * SprintSpeedMultiplier;
 }
