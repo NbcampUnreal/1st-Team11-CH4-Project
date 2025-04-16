@@ -15,11 +15,11 @@
 
 void ARampageMonster::BeginPlay()
 {
-	AUnitBase::BeginPlay();
-	CurHealth = MaxHealth;
-	SetReplicates(true);
-	//AttachDelegateToWidget(ECharacterType::RampageMonster);
-	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ARampageMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
+	Super::BeginPlay();
+	// CurHealth = MaxHealth;
+	// SetReplicates(true);
+	// //AttachDelegateToWidget(ECharacterType::RampageMonster);
+	// GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ARampageMonster::UpdateHPBar, 0.1f, true);
 }
 
 ARampageMonster::ARampageMonster()
@@ -48,6 +48,7 @@ void ARampageMonster::MulticastIsAttack(bool value)
 	if (AnimInstance)
 	{
 		AnimInstance->UpdateAttack(value);
+		UE_LOG(LogTemp, Warning, TEXT("Rampage Attack Multicast 호출"));
 	}
 }
 
