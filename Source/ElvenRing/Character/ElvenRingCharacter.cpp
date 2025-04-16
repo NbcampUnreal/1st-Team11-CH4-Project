@@ -76,7 +76,8 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
 {
     if (Invincibility) return 0;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    float ActualDamage;
+    // 피 튀기기
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
     UNiagaraFunctionLibrary::SpawnSystemAtLocation(
@@ -85,15 +86,26 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnLocation,           // 스폰 위치
             SpawnRotation            // 스폰 회전 값
         );
+    
     if (bIsAttacking) bCanMove = false;
     AnimInstance->Montage_Play(HitMontage);
-
+    if (bDefence)
+        {   
+        ActualDamage = Super::TakeDamage(DamageAmount/2, DamageEvent, EventInstigator, DamageCauser);
+        bDefence = false;
+        }
+    else
+        {
+        ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+        }
     ResetCombo();
     CurrentWeapon->DisableCollision();
     if (CurHealth <= 0)
     {
         OnDeath();
     }
+    CurrentWeapon->ResetDamagedActors();
+    UE_LOG(LogTemp, Display, TEXT("ActualDamage = %f"), ActualDamage);
     return ActualDamage;
 }
 

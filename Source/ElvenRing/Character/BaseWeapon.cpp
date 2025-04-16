@@ -61,9 +61,9 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		AUnitBase* OwnerCharacter = Cast<AUnitBase>(RawOwner);
 		if (OwnerCharacter)
-		{
-			AttackPower = OwnerCharacter->GetAttackPower();
-		}
+         		{
+         			AttackPower = OwnerCharacter->GetAttackPower();
+         		}
 	}
 	// 해당 웨폰을 끼고 있는 캐릭터임
 	if (OtherActor && OtherActor->IsOwnedBy(GetOwner()))
