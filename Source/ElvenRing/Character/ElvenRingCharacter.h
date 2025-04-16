@@ -108,6 +108,8 @@ protected:
 	bool bIsDodging = false;
 	FVector DodgeVelocity;
 	float OriginalMaxSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
+	float DodgeSpeed;
 	//방어 관련함수
 	float DefenceSpeed = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Defence")
