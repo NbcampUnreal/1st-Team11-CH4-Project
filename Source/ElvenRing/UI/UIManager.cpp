@@ -19,7 +19,7 @@
 #include "ScreenEffectWidget.h"
 #include "ElvenRing/Character/UnitBase.h"
 #include "Components/EditableTextBox.h"
-
+#include "ElvenRing/Core/ElvenRingPlayerState.h"
 
 
 UUIManager::UUIManager()
@@ -248,6 +248,16 @@ void UUIManager::ShowScorePageWidget(UWorld* World)
         FInputModeUIOnly InputMode;
         InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
         PC->SetInputMode(InputMode);
+
+        if (AElvenRingPlayerState* PlayerState = PC->GetPlayerState<AElvenRingPlayerState>())
+        {
+            ScorePageWidget->SetResultStat(0, EResultStat::DamageDealt, PlayerState->GetDamageDealt());
+            ScorePageWidget->SetResultStat(0, EResultStat::DamageTaken, PlayerState->GetDamageTaken());
+            ScorePageWidget->SetResultStat(0, EResultStat::RollCount, PlayerState->GetDodgeCount());
+            ScorePageWidget->SetResultStat(0, EResultStat::RespawnCount, PlayerState->GetRespawnCount());
+        }
+
+        ScorePageWidget->CalculateResultStat();
     } 
 }
 

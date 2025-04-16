@@ -37,6 +37,7 @@ void UScorePageWidget::OnClickOkBtn()
 
 void UScorePageWidget::NativeConstruct()
 {
+	AllResultStats.AddZeroed(2);
 	OkButton->OnClicked.AddDynamic(this, &UScorePageWidget::OnClickOkBtn);
 }
 
@@ -46,7 +47,6 @@ void UScorePageWidget::NativeDestruct()
 
 void UScorePageWidget::CalculateResultStat()
 {
-	/*
 	TextAttackValue1->SetText(FText::AsNumber( AllResultStats[0].DamageDealt));
 	TextDamageValue1->SetText(FText::AsNumber(AllResultStats[0].DamageTaken));
 	TextReSpwanCount1->SetText(FText::AsNumber(AllResultStats[0].RespawnCount));
@@ -56,6 +56,4 @@ void UScorePageWidget::CalculateResultStat()
 	TextDamageValue2->SetText(FText::AsNumber(AllResultStats[1].DamageTaken));
 	TextReSpwanCount2->SetText(FText::AsNumber(AllResultStats[1].RespawnCount));
 	TextRollCount2->SetText(FText::AsNumber(AllResultStats[1].RollCount));
-	*/
-
 }
