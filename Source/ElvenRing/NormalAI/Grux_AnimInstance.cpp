@@ -1,4 +1,3 @@
-
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
 #include "ElvenRing/NormalAI/NormalMonster.h"
 
@@ -32,27 +31,38 @@ void UGrux_AnimInstance::UpdateDeath(bool value)
 
 void UGrux_AnimInstance::AnimNotify_EndHit()
 {
-	IsHit=false;
-	AActor* OwnerActor = GetOwningActor();
-	if (OwnerActor)
-	{
-		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
-		if (Monster)
-		{	
-			Monster->RPCIsHit(IsHit,OwnerActor);
-		}
-	}
-}
-
-void UGrux_AnimInstance::AnimNotify_EndAttack()
-{
-	IsAttacking=false;
+	IsHit = false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
 	{
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
 		{
+			Monster->RPCIsHit(IsHit, OwnerActor);
+		}
+	}
+}
+
+void UGrux_AnimInstance::AnimNotify_EndAttack()
+{
+	IsAttacking = false;
+	AActor* OwnerActor = GetOwningActor();
+	if (OwnerActor)
+	{
+		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
+		if (Monster)
+		{
+		
+			AActor* Target = Monster->TargetCharacterActor;
+			if (Target)
+			{
+				Monster->RealAttack(Target);
+			UE_LOG(LogTemp, Warning, TEXT("Target 감지 성공"));
+			}
+			else
+			{
+				UE_LOG(LogTemp,Warning,TEXT("감지 실패"));
+			}
 			Monster->MulticastIsAttack(IsAttacking);
 		}
 	}

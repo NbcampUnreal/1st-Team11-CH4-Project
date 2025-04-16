@@ -224,22 +224,27 @@ void ANormalMonster::Attack(AActor* Target)
 {
 	if (Target)
 	{
+		TargetCharacterActor=Target;
 		InstanceIsAttack = true;
 		RPCIsAttack(InstanceIsAttack);
 		PlayRandomSound(ENormalMonsterSoundCategory::AttackSound);
-		FVector MonsterLocation = GetActorLocation();
-		FVector TargetLocation = Target->GetActorLocation();
-		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
+	}
+}
 
-		FVector MonsterForward = GetActorForwardVector();
-		float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
-		float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
-		float Distance = FVector::Dist(MonsterLocation, TargetLocation);
+void ANormalMonster::RealAttack(AActor* Target)
+{
+	FVector MonsterLocation = GetActorLocation();
+	FVector TargetLocation = Target->GetActorLocation();
+	FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
 
-		if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
-		{
-			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
-		}
+	FVector MonsterForward = GetActorForwardVector();
+	float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
+	float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
+	float Distance = FVector::Dist(MonsterLocation, TargetLocation);
+
+	if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
+	{
+		UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
 	}
 }
 
