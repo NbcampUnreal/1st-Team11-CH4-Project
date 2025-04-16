@@ -146,7 +146,7 @@ void UMonsterWidget::RealTimeInGameWidgetScale()
 
 			float ScalePer = FMath::Clamp( SafeThis->HpBarSizeCalculMeasureDistLimit / Distance, SafeThis->HpBarSizeScreenMin, Scale.X);
 
-			//UE_LOG(LogTemp, Warning, TEXT("Distance : %f / ScalePer :  %f "), Distance, ScalePer);
+			UE_LOG(LogTemp, Warning, TEXT("Distance : %f / ScalePer :  %f "), Distance, ScalePer);
 
 			if (KINDA_SMALL_NUMBER >= FElement.MyProgressBar->GetPercent())
 			{
@@ -166,7 +166,7 @@ void UMonsterWidget::RealTimeInGameWidgetScale()
 					FVector2D FixHeightPos = Pos * FixHeightPosPercent;
 					CanvasAsWidget->SetRenderTranslation(FixHeightPos);
 
-					float OpacityPercent = FMath::Clamp(FixHeightPosPercent*1.5f, 0.f, 1.f);
+					float OpacityPercent = FMath::Clamp(FixHeightPosPercent*1.75f, 0.f, 1.f);
 					CanvasAsWidget->SetRenderOpacity(OpacityPercent);
 				}
 				else
@@ -202,10 +202,10 @@ void UMonsterWidget::NativeDestruct()
 	}
 }
 
-void UMonsterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-
-}
+//void UMonsterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+//{
+//
+//}
 
 void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 {

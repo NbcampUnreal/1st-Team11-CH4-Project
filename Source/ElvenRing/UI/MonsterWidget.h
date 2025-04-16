@@ -84,7 +84,7 @@ protected:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeDestruct() override;
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	//virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 private:
 	FTimerHandle HpTimerHandle;
 	FTimerHandle HpTimerDelayHandle;

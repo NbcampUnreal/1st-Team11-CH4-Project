@@ -147,6 +147,10 @@ void UBossWidget::SetActiveWidget(bool bShow)
 	else
 		SetVisibility(ESlateVisibility::Collapsed);
 }
+void UBossWidget::NativeConstruct()
+{
+	SetUiSize(UIScale, UIPos);
+}
 void UBossWidget::NativeDestruct()
 {
 	Super::NativeDestruct();

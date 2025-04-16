@@ -47,6 +47,11 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	UImage* HpFrameImg3;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
+	FVector2D UIScale = FVector2D(1.0f, 1.0f);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Transform")
+	FVector2D	UIPos = FVector2D::ZeroVector;
+
 	void BindToBoss(AUnitBase* Boss);
 
 	UFUNCTION(BlueprintCallable, Category = "Ui")
@@ -55,7 +60,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ui")
 	void SetActiveWidget(bool bShow);
 protected:
-
+	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
 
 private:
