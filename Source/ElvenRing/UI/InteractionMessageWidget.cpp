@@ -8,7 +8,7 @@
 
 void UInteractionMessageWidget::ShowMessageText_Implementation(const FString& Message)
 {
-	if (GetVisibility() == ESlateVisibility::Collapsed)
+	if (bIsActive && GetVisibility() == ESlateVisibility::Collapsed)
 		SetVisibility(ESlateVisibility::Visible);
 	
 	TextMessage->SetText(FText::FromString(Message));
@@ -33,6 +33,24 @@ void UInteractionMessageWidget::BindToPlayer(AUnitBase* Unit)
 		{
 			UE_LOG(LogTemp,Display, TEXT("InteractionComponent is not found"));
 		}
+	}
+}
+
+void UInteractionMessageWidget::SetActiveWidget(bool bActive)
+{
+	bIsActive = bActive;
+	if (bActive)
+	{
+		if (bIsForwarded)
+		{
+			SetVisibility(ESlateVisibility::Visible);
+			PlayFadeInAnimation();
+		}
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::Collapsed);
+		StopAnimation(FadeAnim);
 	}
 }
 
