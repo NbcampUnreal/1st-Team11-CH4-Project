@@ -26,7 +26,7 @@ ARampageMonster::ARampageMonster()
 {
 }
 
-void ARampageMonster::MulticastIsHit(bool value, FVector HitLocation, FRotator HitRotation)
+void ARampageMonster::MulticastIsHit_Implementation(bool value, FVector HitLocation, FRotator HitRotation)
 {
 	URampage_AnimInstance* AnimInstance = Cast<URampage_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -42,17 +42,18 @@ void ARampageMonster::MulticastIsHit(bool value, FVector HitLocation, FRotator H
 	}
 }
 
-void ARampageMonster::MulticastIsAttack(bool value)
+void ARampageMonster::MulticastIsAttack_Implementation(bool value)
 {
+	//Super::MulticastIsAttack_Implementation(value);
+	// OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
 	URampage_AnimInstance* AnimInstance = Cast<URampage_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
 	{
 		AnimInstance->UpdateAttack(value);
-		UE_LOG(LogTemp, Warning, TEXT("Rampage Attack Multicast 호출"));
 	}
 }
 
-void ARampageMonster::MulticastIsDeath(bool value)
+void ARampageMonster::MulticastIsDeath_Implementation(bool value)
 {
 	URampage_AnimInstance* AnimInstance = Cast<URampage_AnimInstance>(GetMesh()->GetAnimInstance());
 	if (AnimInstance)
@@ -84,8 +85,6 @@ void ARampageMonster::MulticastIsDeath(bool value)
 		HPWidgetComponent->DestroyComponent();
 	}
 }
-
-
 
 void ARampageMonster::OnRep_HealthChanged()
 {
