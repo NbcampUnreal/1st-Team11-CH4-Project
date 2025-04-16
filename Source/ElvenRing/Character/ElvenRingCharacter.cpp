@@ -39,6 +39,8 @@ AElvenRingCharacter::AElvenRingCharacter()
     bUseControllerRotationYaw   = false;
     bUseControllerRotationRoll  = false;
     GetCharacterMovement()->bOrientRotationToMovement = true;
+
+    DodgeSpeed = 800.0f;
 }
 
 
@@ -146,10 +148,7 @@ void AElvenRingCharacter::OnAttackInput()
     if (bdodge) return;
     if (!bIsAttacking)
     {
-        if (CurrentWeapon)
-        {
-            CurrentWeapon->EnableCollision();
-        }
+
         bCanMove = false;
         bIsAttacking = true;
         AttackIndex = 1;
@@ -255,7 +254,6 @@ void AElvenRingCharacter::Server_OnDodgeInput_Implementation(const FInputActionV
 
 void AElvenRingCharacter::OnAttackAnimationEnd()
 {
-    bCanMove = true;
     bCanCombo = true;
     GetWorldTimerManager().SetTimer(ComboTimerHandle, this, &AElvenRingCharacter::ComboEnd, 0.3f, false);
 }
@@ -264,11 +262,8 @@ void AElvenRingCharacter::ComboEnd()
 {
     if (bCanCombo)
     {
+        bCanMove = true;
         ResetCombo();
-        if (CurrentWeapon)
-        {
-            CurrentWeapon->DisableCollision();
-        }
     }
 }
 
@@ -619,7 +614,7 @@ void AElvenRingCharacter::StartDodge(const FInputActionValue& Value)
     DodgeTime = 0.f;
     
     OriginalMaxSpeed = GetCharacterMovement()->MaxWalkSpeed;
-    GetCharacterMovement()->MaxWalkSpeed = DodgeSpeed; 
+    GetCharacterMovement()->MaxWalkSpeed = 800.0f; 
     if (HasAuthority())
     {
         Multicast_PlayDodgeAnimation(DodgeDuration);
@@ -703,6 +698,9 @@ void AElvenRingCharacter::Tick(float DeltaTime)
 void AElvenRingCharacter::BeginPlay()
 {
     Super::BeginPlay();
+
+    DodgeSpeed = 800.0f;
+    
     AttachDelegateToWidget(ECharacterType::Player);
 
     if (HasAuthority())
