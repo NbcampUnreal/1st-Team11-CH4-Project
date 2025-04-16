@@ -17,13 +17,16 @@ class ELVENRING_API UInteractionMessageWidget : public UMessageWidgetBase
 	
 public:
 	virtual void ShowMessageText_Implementation(const FString& Message) override;
+	virtual void SetActiveWidget(bool bActive) override;
 	UFUNCTION()
 	void HideMessageText();
 	void BindToPlayer(AUnitBase* Unit);
 
 protected:
+	
 	// Forward : Fade In, Reverse : Fade Out
-	bool bIsForwarded;
+	bool bIsForwarded = false;
+	bool bIsActive = true;
 	UFUNCTION()
 	void OnFadeAnimationEnd();
 	void PlayFadeInAnimation();
