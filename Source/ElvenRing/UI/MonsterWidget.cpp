@@ -10,6 +10,7 @@
 #include "ElvenRing/Character/UnitBase.h"
 #include "ElvenRing/NormalAI/NormalMonster.h"
 #include "Components/WidgetComponent.h" //ksw
+#include <Kismet/GameplayStatics.h>
 
 void UMonsterWidget::SetUiSize(FVector2D  Scale, FVector2D Pos)
 {
@@ -112,9 +113,80 @@ void UMonsterWidget::SetActiveWidget(bool bShow)
 		SetVisibility(ESlateVisibility::Collapsed);
 }
 
+void UMonsterWidget::RealTimeInGameWidgetScale()
+{
+	
+	FMRamdaElement FElement;
+	TWeakObjectPtr<UMonsterWidget> SafeThis = this;
+	FElement.MyProgressBar = HpProgressBar;
+	FElement.MyProgressYellowBar = HpProgressYellowBar;
+	FElement.HpTimerHandle = &HpScaleTimerHandle;
+	UWidget* CanvasAsWidget = Cast<UWidget>(CanvasPanelSlot);
+	if (!CanvasAsWidget)return;
+
+	FVector2D Scale = UIScale;
+	FVector2D Pos = UIPos;
+	GetWorld()->GetTimerManager().SetTimer
+	(
+		*FElement.HpTimerHandle,
+		FTimerDelegate::CreateLambda([SafeThis, Scale, Pos, CanvasAsWidget, FElement]() mutable
+		{
+			if (!SafeThis.IsValid())
+				return;
+			UWorld* World = SafeThis->GetWorld();
+			if (!World)return;
+
+			APlayerController* PC = UGameplayStatics::GetPlayerController(SafeThis.Get(), 0);
+			if (!PC) return;
+
+			APawn* PlayerPawn = PC->GetPawn();
+			if (!PlayerPawn) return;
+
+			float Distance = FVector::Dist(PlayerPawn->GetActorLocation(), SafeThis->TempMonster->GetActorLocation());
+
+			float ScalePer = FMath::Clamp( SafeThis->HpBarSizeCalculMeasureDistLimit / Distance, SafeThis->HpBarSizeScreenMin, Scale.X);
+
+			UE_LOG(LogTemp, Warning, TEXT("Distance : %f / ScalePer :  %f "), Distance, ScalePer);
+
+			if (KINDA_SMALL_NUMBER >= FElement.MyProgressBar->GetPercent())
+			{
+				if (World)
+				{
+					FElement.ClearPointer();
+					World->GetTimerManager().ClearTimer(*FElement.HpTimerHandle);
+					return;
+				}
+			}
+			else
+			{
+				if (CanvasAsWidget)
+				{
+					CanvasAsWidget->SetRenderScale(FVector2D(ScalePer, ScalePer));
+					float FixHeightPosPercent = ScalePer / Scale.X;
+					FVector2D FixHeightPos = Pos * FixHeightPosPercent;
+					CanvasAsWidget->SetRenderTranslation(FixHeightPos);
+
+					float OpacityPercent = FMath::Clamp(FixHeightPosPercent*1.75f, 0.f, 1.f);
+					CanvasAsWidget->SetRenderOpacity(OpacityPercent);
+				}
+				else
+				{
+					if (World)
+					{
+						FElement.ClearPointer();
+						World->GetTimerManager().ClearTimer(*FElement.HpTimerHandle);
+						return;
+					}
+				}
+			}
+		}), 0.05f, true
+	);
+}
+
 void UMonsterWidget::NativeConstruct()
 {
 	SetUiSize(UIScale,UIPos);
+	RealTimeInGameWidgetScale();
 }
 void UMonsterWidget::NativeDestruct()
 {
@@ -126,8 +198,14 @@ void UMonsterWidget::NativeDestruct()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(HpTimerHandle);
 		GetWorld()->GetTimerManager().ClearTimer(HpTimerDelayHandle);
+		GetWorld()->GetTimerManager().ClearTimer(HpScaleTimerHandle);
 	}
 }
+
+//void UMonsterWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+//{
+//
+//}
 
 void UMonsterWidget::UpdateProgressBar(FMRamdaElement& FElement)
 {

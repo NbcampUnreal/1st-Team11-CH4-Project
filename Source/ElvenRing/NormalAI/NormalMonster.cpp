@@ -1,10 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ElvenRing/NormalAI/NormalMonster.h"
 #include "ElvenRing/NormalAI/NormalAIController.h"
-#include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
+#include "ElvenRing//Character/ElvenRingCharacter.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
 
@@ -16,7 +13,6 @@
 #include "GameFramework/DamageType.h"
 #include "Engine/EngineTypes.h"
 #include "kismet/GameplayStatics.h"
-
 
 ANormalMonster::ANormalMonster()
 {
@@ -46,7 +42,7 @@ ANormalMonster::ANormalMonster()
 	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
 	HPWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f)); //ksw
 	HPWidgetComponent->SetTwoSided(true); //ksw
-	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
+	// HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
 	HPWidgetComponent->SetPivot(FVector2D(0.5f, 0.5f)); //ksw
 
 	PrimaryActorTick.bCanEverTick = false; //ksw
@@ -228,22 +224,27 @@ void ANormalMonster::Attack(AActor* Target)
 {
 	if (Target)
 	{
+		TargetCharacterActor=Target;
 		InstanceIsAttack = true;
 		RPCIsAttack(InstanceIsAttack);
 		PlayRandomSound(ENormalMonsterSoundCategory::AttackSound);
-		FVector MonsterLocation = GetActorLocation();
-		FVector TargetLocation = Target->GetActorLocation();
-		FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
+	}
+}
 
-		FVector MonsterForward = GetActorForwardVector();
-		float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
-		float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
-		float Distance = FVector::Dist(MonsterLocation, TargetLocation);
+void ANormalMonster::RealAttack(AActor* Target)
+{
+	FVector MonsterLocation = GetActorLocation();
+	FVector TargetLocation = Target->GetActorLocation();
+	FVector DirectionToTarget = (TargetLocation - MonsterLocation).GetSafeNormal();
 
-		if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
-		{
-			UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
-		}
+	FVector MonsterForward = GetActorForwardVector();
+	float DotProduct = FVector::DotProduct(MonsterForward, DirectionToTarget);
+	float AngleDegrees = FMath::Acos(DotProduct) * (180.0f / PI);
+	float Distance = FVector::Dist(MonsterLocation, TargetLocation);
+
+	if (Distance <= AttackDistance && AngleDegrees <= AttackAngle) // 120도 범위 (60도 좌우)
+	{
+		UGameplayStatics::ApplyDamage(Target, AttackPower, GetController(), this, UDamageType::StaticClass());
 	}
 }
 

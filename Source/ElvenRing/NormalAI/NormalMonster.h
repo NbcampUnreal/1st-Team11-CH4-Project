@@ -56,6 +56,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="AI")
 	virtual void Attack(AActor* Target) override;
 
+	virtual void RealAttack(AActor* Target);
+	
 	UFUNCTION(BlueprintCallable, Category="AI")
 	void PlayerDetected(UObject* TargetObject);
 
@@ -114,6 +116,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SelectMonster")
 	bool MonsterSelect;
+
+	AActor* TargetCharacterActor;
 	
 	FTimerHandle UpdateHPBarTimer;
 	FTimerHandle StayTimer;

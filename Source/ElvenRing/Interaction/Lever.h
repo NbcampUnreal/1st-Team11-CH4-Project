@@ -51,4 +51,14 @@ protected:
 	bool bCanLeverOff;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bIsLocked;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString LeverOnText;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString LeverOffText;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString LockedText;
+	const FString DefaultLeverOnText = TEXT("E: 레버 올리기");
+	const FString DefaultLeverOffText = TEXT("E: 레버 내리기");
+	const FString DefaultLockedText = TEXT("잠겨 있습니다");
 };

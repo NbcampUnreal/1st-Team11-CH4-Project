@@ -12,6 +12,8 @@
 void UPlayerMainUi::NativeConstruct()
 {
 	Super::NativeConstruct();
+	UpdateFrameSize(MpProgressBar, MpProgressYellowBar, MpFrameImg2, MpFrameImg3, 0.6f);
+	UpdateFrameSize(StProgressBar, StProgressYellowBar, StFrameImg2, StFrameImg3, 0.9f);
 	//UElvenringGameInstance* ElvenringGameInstance = Cast< UElvenringGameInstance>(GetGameInstance());
 	//ElvenringGameInstance->GetUIManager()->GetScreenEffectWidget()->FadeOutIn();
 }

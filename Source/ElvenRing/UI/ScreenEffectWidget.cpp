@@ -25,31 +25,37 @@ void UScreenEffectWidget:: FadeIn(float Time, bool bAutoHideWhenFinished )
 	RamdaElement.EndValue = 0.f;
 	RamdaElement.TimerHandle = &TimerHandle;
 
+	TWeakObjectPtr<UScreenEffectWidget> SafeThis = this;
+
 	RamdaElement.PrevTime = GetWorld()->GetTimeSeconds();
 	GetWorld()->GetTimerManager().SetTimer
 	(
 		*RamdaElement.TimerHandle,
-		FTimerDelegate::CreateLambda([this,RamdaElement, bAutoHideWhenFinished]() mutable
+		FTimerDelegate::CreateLambda([SafeThis,RamdaElement, bAutoHideWhenFinished]() mutable
 		{
-			if (!this)
+			if (!SafeThis.IsValid())
 				return;
-			RamdaElement.ElapsedTime += GetWorld()->GetTimeSeconds() - RamdaElement.PrevTime;
+			UWorld* World = SafeThis->GetWorld();
+			if (!World)return;
+
+			RamdaElement.ElapsedTime += World->GetTimeSeconds() - RamdaElement.PrevTime;
 			float Alpha = FMath::Clamp(RamdaElement.ElapsedTime / RamdaElement.Duration, 0.f, 1.f);
 			float CurValue = FMath::Lerp(RamdaElement.StartValue, RamdaElement.EndValue, Alpha);
 			//UE_LOG(LogTemp, Warning, TEXT("Alpha %f"), Alpha * RamdaElement.Duration);
 			RamdaElement.Color.A = CurValue;
-			ImageScreen->SetColorAndOpacity(RamdaElement.Color);
+			SafeThis->ImageScreen->SetColorAndOpacity(RamdaElement.Color);
 			if (1.f <= Alpha)
 			{
 				RamdaElement.Color.A = 0.f;
-				ImageScreen->SetColorAndOpacity(RamdaElement.Color);
-				bPlay = false;
+				SafeThis->ImageScreen->SetColorAndOpacity(RamdaElement.Color);
+				SafeThis->bPlay = false;
 				if(bAutoHideWhenFinished)
-					SetVisibility(ESlateVisibility::Collapsed);
+					SafeThis->SetVisibility(ESlateVisibility::Collapsed);
 				//UE_LOG(LogTemp, Warning, TEXT("End FadeIn"));
-				GetWorld()->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
+				World->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
 			}
-			RamdaElement.PrevTime = GetWorld()->GetTimeSeconds();
+			else
+				RamdaElement.PrevTime = World->GetTimeSeconds();
 		}), 0.05f, true
 	);
 }
@@ -74,28 +80,34 @@ void UScreenEffectWidget:: FadeOut(float Time )
 	RamdaElement.EndValue = 1.f;
 	RamdaElement.TimerHandle = &TimerHandle;
 	RamdaElement.PrevTime = GetWorld()->GetTimeSeconds();
+
+	TWeakObjectPtr<UScreenEffectWidget> SafeThis = this;
 	GetWorld()->GetTimerManager().SetTimer
 	(
 		*RamdaElement.TimerHandle,
-		FTimerDelegate::CreateLambda([this, RamdaElement]() mutable
+		FTimerDelegate::CreateLambda([SafeThis, RamdaElement]() mutable
 			{
-				if (!this)
+				if (!SafeThis.IsValid())
 					return;
-				RamdaElement.ElapsedTime += GetWorld()->GetTimeSeconds() - RamdaElement.PrevTime;
+				UWorld* World = SafeThis->GetWorld();
+				if (!World)return;
+
+				RamdaElement.ElapsedTime += World->GetTimeSeconds() - RamdaElement.PrevTime;
 				float Alpha = FMath::Clamp(RamdaElement.ElapsedTime / RamdaElement.Duration, 0.f, 1.f);
 				float CurValue = FMath::Lerp(RamdaElement.StartValue, RamdaElement.EndValue, Alpha);
 				//UE_LOG(LogTemp, Warning, TEXT("Alpha %f"), Alpha* RamdaElement.Duration);
 				RamdaElement.Color.A = CurValue;
-				ImageScreen->SetColorAndOpacity(RamdaElement.Color);
+				SafeThis->ImageScreen->SetColorAndOpacity(RamdaElement.Color);
 				if (1.f <= Alpha)
 				{
 					RamdaElement.Color.A = 1.f;
-					ImageScreen->SetColorAndOpacity(RamdaElement.Color);
-					bPlay = false;
-					GetWorld()->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
+					SafeThis->ImageScreen->SetColorAndOpacity(RamdaElement.Color);
+					SafeThis->bPlay = false;
+					World->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
 					//UE_LOG(LogTemp, Warning, TEXT("TimerHandle"));
 				}
-				RamdaElement.PrevTime = GetWorld()->GetTimeSeconds();
+				else
+					RamdaElement.PrevTime = World->GetTimeSeconds();
 			}), 0.05f, true
 	);
 }
@@ -113,15 +125,23 @@ void UScreenEffectWidget::FadeOutIn(float FadeOutTime , float DelayTime , float 
 	FRamdaScreenEffect RamdaElement;
 	RamdaElement.TimerHandle = &TimerHandle2;
 	RamdaElement.DelayTime = FadeOutTime+ DelayTime;
+
+	TWeakObjectPtr<UScreenEffectWidget> SafeThis = this;
 	GetWorld()->GetTimerManager().SetTimer
 	(
 		*RamdaElement.TimerHandle,
-		FTimerDelegate::CreateLambda([this, RamdaElement, FadeInTime, bAutoHideWhenFinished]() mutable
+		FTimerDelegate::CreateLambda([SafeThis, RamdaElement, FadeInTime, bAutoHideWhenFinished]() mutable
 		{
-			bPlay = false;
+			if (!SafeThis.IsValid())
+				return;
+			UWorld* World = SafeThis->GetWorld();
+			if (!World)return;
+
+			SafeThis->bPlay = false;
 			//UE_LOG(LogTemp, Warning, TEXT("BlackTime"));
-			FadeIn(FadeInTime, bAutoHideWhenFinished);
-			GetWorld()->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
+			SafeThis->bPlay = false;
+			SafeThis->FadeIn(FadeInTime, bAutoHideWhenFinished);
+			World->GetTimerManager().ClearTimer(*RamdaElement.TimerHandle);
 
 		}), RamdaElement.DelayTime, false
 	);

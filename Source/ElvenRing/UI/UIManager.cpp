@@ -12,13 +12,14 @@
 #include "PlayerMainUi.h"
 #include "BattleMessageWidget.h"
 #include "BossWidget.h"
+#include "InteractionMessageWidget.h"
 #include "MonsterWidget.h"
 #include "MessageWidgetBase.h"
 #include "ScorePageWidget.h"
 #include "ScreenEffectWidget.h"
 #include "ElvenRing/Character/UnitBase.h"
 #include "Components/EditableTextBox.h"
-
+#include "ElvenRing/Core/ElvenRingPlayerState.h"
 
 
 UUIManager::UUIManager()
@@ -55,6 +56,12 @@ UUIManager::UUIManager()
     else
         UE_LOG(LogTemp, Warning, TEXT("BattleMessageWidgetClass: %s"), *GetNameSafe(BattleMessageWidgetClass));
 
+    static ConstructorHelpers::FClassFinder<UInteractionMessageWidget> WBP_InteractionMessageWidget(TEXT("/Game/ElvenRing/Blueprints/UI/WBP_InteractionMessage"));
+    if (WBP_InteractionMessageWidget.Succeeded())
+        InteractionMessageWidgetClass = WBP_InteractionMessageWidget.Class;
+    else
+        UE_LOG(LogTemp, Warning, TEXT("InteractionMessageWidgetClass: %s"), *GetNameSafe(InteractionMessageWidgetClass));
+    
     static ConstructorHelpers::FClassFinder<UPlayerMainUi> WBP_PlayerMainUiWedget(TEXT("/Game/ElvenRing/Blueprints/UI/WBP_PlayerMainUi"));
     if (WBP_PlayerMainUiWedget.Succeeded())
         PlayerMainUiClass = WBP_PlayerMainUiWedget.Class;
@@ -98,6 +105,9 @@ void UUIManager::InitUi(UWorld* World)
     if (BattleMessageWidgetClass)
         BattleMessageWidget = CreateWidget<UBattleMessageWidget>(World, BattleMessageWidgetClass);
 
+    if (InteractionMessageWidgetClass)
+        InteractionMessageWidget = CreateWidget<UInteractionMessageWidget>(World, InteractionMessageWidgetClass);
+    
     if (PlayerMainUiClass)
         PlayerMainUiWedget = CreateWidget<UPlayerMainUi>(World, PlayerMainUiClass);
 
@@ -164,7 +174,10 @@ void UUIManager::SetActiveCharactersUI(bool bActive)
 
     if (BossWidget)
         BossWidget->SetActiveWidget(bActive);
-   
+
+    if (InteractionMessageWidget)
+        InteractionMessageWidget->SetActiveWidget(bActive);
+    
     for (const TPair<AActor*, UMonsterWidget*>& Pair : MonsterHpWidgets)
         if (UMonsterWidget* Widget = Pair.Value)
             Widget->SetActiveWidget(bActive);
@@ -200,6 +213,16 @@ void UUIManager::ShowPlayerMainUi(UWorld* World)
     }
 
 }
+
+void UUIManager::ShowInteractionMessage(UWorld* World)
+{
+    if (!InteractionMessageWidget && InteractionMessageWidgetClass && World)
+        InteractionMessageWidget = CreateWidget<UInteractionMessageWidget>(World, InteractionMessageWidgetClass);
+
+    if (InteractionMessageWidget && !InteractionMessageWidget->IsInViewport())
+        InteractionMessageWidget->AddToViewport();
+}
+
 void UUIManager::ShowMessage(const FString& Message, EMessageType MsgType)
 {
    UMessageWidgetBase* Widget = GetMessageWidgetSafe(MsgType);
@@ -218,6 +241,24 @@ void UUIManager::ShowScorePageWidget(UWorld* World)
 
     if (ScorePageWidget && !ScorePageWidget->IsInViewport())
         ScorePageWidget->AddToViewport();
+
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 0))
+    {
+        PC->bShowMouseCursor = true;
+        FInputModeUIOnly InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        PC->SetInputMode(InputMode);
+
+        if (AElvenRingPlayerState* PlayerState = PC->GetPlayerState<AElvenRingPlayerState>())
+        {
+            ScorePageWidget->SetResultStat(0, EResultStat::DamageDealt, PlayerState->GetDamageDealt());
+            ScorePageWidget->SetResultStat(0, EResultStat::DamageTaken, PlayerState->GetDamageTaken());
+            ScorePageWidget->SetResultStat(0, EResultStat::RollCount, PlayerState->GetDodgeCount());
+            ScorePageWidget->SetResultStat(0, EResultStat::RespawnCount, PlayerState->GetRespawnCount());
+        }
+
+        ScorePageWidget->CalculateResultStat();
+    } 
 }
 
 void UUIManager::ShowBossWidget(UWorld* World)
@@ -231,7 +272,7 @@ void UUIManager::ShowBossWidget(UWorld* World)
 
 void UUIManager::ClearAllWidgets()
 {
-    TArray<UUserWidget*> Widgets = { TitleWidget, WaitingRoomWidget, InGameWidget, SystemMessageWidget, BattleMessageWidget, BossWidget };
+    TArray<UUserWidget*> Widgets = { TitleWidget, WaitingRoomWidget, InGameWidget, SystemMessageWidget, BattleMessageWidget, InteractionMessageWidget, BossWidget };
 
     for (UUserWidget* Widget : Widgets)
     {
@@ -246,6 +287,7 @@ void UUIManager::ClearAllWidgets()
     InGameWidget = nullptr;
     SystemMessageWidget = nullptr;
     BattleMessageWidget = nullptr;
+    InteractionMessageWidget = nullptr;
     PlayerMainUiWedget = nullptr;
     MonsterWidget = nullptr;
     BossWidget = nullptr;
@@ -287,6 +329,10 @@ void UUIManager::BindPlayerMainUi(UWorld* World, AUnitBase* Unit)
          GetPlayerMainUi()->BindToPlayer(Unit);
     else
         UE_LOG(LogTemp, Warning, TEXT("Error!! BindPlayerMainUi"));
+    
+    ShowInteractionMessage(World);
+    if (InteractionMessageWidget)
+        InteractionMessageWidget->BindToPlayer(Unit);
 }
 
 void UUIManager::BindBossWidgetUi(UWorld* World, AUnitBase* Unit)

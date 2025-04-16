@@ -75,6 +75,16 @@ protected:
 	UPROPERTY(EditAnywhere)
 	bool bCanClose;
 
+	UPROPERTY(EditAnywhere)
+	FString LockInteractText;
+	UPROPERTY(EditAnywhere)
+	FString OpenInteractText;
+	UPROPERTY(EditAnywhere)
+	FString CloseInteractText;
+	const FString DefaultLockInteractText;
+	const FString DefaultOpenInteractText;
+	const FString DefaultCloseInteractText;
+	
 	UFUNCTION()
 	void OnRep_IsOpen();
 public:

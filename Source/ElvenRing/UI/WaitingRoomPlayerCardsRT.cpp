@@ -68,14 +68,14 @@ void AWaitingRoomPlayerCardsRT::TempCreatePlayerCard()
 		FTimerDelegate::CreateLambda([this, Index, ElapsedTime, PrveTime]() mutable
 			{
 				ElapsedTime += GetWorld()->GetTimeSeconds() - PrveTime;
-				if (ElapsedTime > 0.5f)
+				if (ElapsedTime > 0.8f)
 				{
 					ElapsedTime = 0.f;
 					FActorSpawnParameters SpawnParams;
 					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 					//for (int32 i = 0; i < 3; ++i)
 					//{
-					FVector SpawnLocation = FVector(-1100.f + 1100.f * Index, -1500.f, 50.f);
+					FVector SpawnLocation = FVector(-1025.f + 1025.f * Index, -1500.f, 50.f);
 					FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
 					APlayerCard* CreatePlayerCard = GetWorld()->SpawnActor<APlayerCard>(
 						PlayerCardClass, SpawnLocation, SpawnRotation, SpawnParams

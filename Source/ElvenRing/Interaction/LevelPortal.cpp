@@ -20,7 +20,7 @@ ALevelPortal::ALevelPortal()
 
 FString ALevelPortal::GetInteractText()
 {
-	return "Teleport";
+	return InteractionText;
 }
 
 void ALevelPortal::Interact(APlayerController* Player)
