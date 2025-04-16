@@ -24,7 +24,7 @@ public:
 	
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void SetActiveWidget(bool bActive);
+	virtual void SetActiveWidget(bool bActive);
 	
 protected:
 	bool bCollapsed;
