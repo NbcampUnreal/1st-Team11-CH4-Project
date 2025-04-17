@@ -31,7 +31,9 @@ public:
 	void ToggleInput(bool bInput);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
 	bool bInput;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sound")
+	USoundBase* DieSound;
 	virtual void OnDeath() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

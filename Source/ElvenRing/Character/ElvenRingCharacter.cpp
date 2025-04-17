@@ -7,11 +7,14 @@
 #include "ElvenRingController.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
+#include "../Core/ElvenringGameInstance.h"
 #include "ElvenRing/Interaction/InteractionComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "ElvenRing/UI/UIManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 #include "UniversalObjectLocators/AnimInstanceLocatorFragment.h"
 
 AElvenRingCharacter::AElvenRingCharacter()
@@ -65,6 +68,10 @@ void AElvenRingCharacter::OnDeath()
     if (HasAuthority())
     {
         Multicast_Death(DieMontage);
+        
+        UGameplayStatics::PlaySoundAtLocation(this, DieSound, GetActorLocation());
+        UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+        Instance->GetUIManager()->ShowMessage("YOU DIE", EMessageType::SystemMessage);
     }
 }
 
@@ -79,10 +86,22 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
     AActor* DamageCauser)
 {
     if (bIsDie) return 0;
-    if (bDefence) return 0;
     if (Invincibility) return 0;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    float ActualDamage = 0.0f;
+    if (bDefence)
+    {
+         ActualDamage = Super::TakeDamage(DamageAmount/2, DamageEvent, EventInstigator, DamageCauser);
+    }
+    else
+    {
+        ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    }
+    
+    if (HasAuthority())
+    {
+        if (!bDefence) Multicast_Hit(HitMontage);
+    }
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
     
@@ -94,19 +113,17 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnRotation            // 스폰 회전 값
             );
     if (bIsAttacking) bCanMove = false;
-    AnimInstance->Montage_Play(HitMontage);
-    if (HasAuthority())
-    {
-        Multicast_Hit(HitMontage);
-    }
     bIsAttacking = false;
     bCanCombo = false;
+    CurrentWeapon->ResetDamagedActors();
     CurrentWeapon->DisableCollision();
     if (CurHealth <= 0)
     {
         OnDeath();
         bCanMove = false;
+        
     }
+    
     return ActualDamage;
 }
 
@@ -123,10 +140,9 @@ void AElvenRingCharacter::HandleDeath()
         return;
     }
     
-    DetachFromControllerPendingDestroy();
     if (UWorld* World = GetWorld())
     {
-        if (AElvenRingGameMode* GM = World->GetAuthGameMode<AElvenRingGameMode>())
+        if (AElvenRingGameMode* GM  = World->GetAuthGameMode<AElvenRingGameMode>())
         {
             GM->HandlePlayerDeath(PC);
         }
