@@ -17,11 +17,11 @@ void URampage_AnimInstance::UpdateAttack(bool value)
 void URampage_AnimInstance::UpdateHit(bool value)
 {
 	IsHit = value;
-	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-	// {
-	// 	IsHit = false;
-	// 	AActor* OwnerActor = GetOwningActor();
-	// }, 0.1f, false);
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
+	{
+		IsHit = false;
+		AActor* OwnerActor = GetOwningActor();
+	}, 0.5f, false);
 }
 
 void URampage_AnimInstance::UpdateDeath(bool value)

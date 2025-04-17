@@ -17,11 +17,11 @@ void UGrux_AnimInstance::UpdateAttack(bool value)
 void UGrux_AnimInstance::UpdateHit(bool value)
 {
 	IsHit = value;
-	// GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
-	// 	{
-	// 		IsHit = false;
-	// 		AActor* OwnerActor = GetOwningActor();
-	// 	}, 0.8f, false);	
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]() 
+		{
+			IsHit = false;
+			AActor* OwnerActor = GetOwningActor();
+		}, 0.7f, false);	
 }
 
 void UGrux_AnimInstance::UpdateDeath(bool value)
