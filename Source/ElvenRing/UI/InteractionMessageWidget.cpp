@@ -26,6 +26,7 @@ void UInteractionMessageWidget::BindToPlayer(AUnitBase* Unit)
 	{
 		if (UInteractionComponent* InteractionComponent = Player->FindComponentByClass<UInteractionComponent>())
 		{
+			bIsForwarded = false;
 			InteractionComponent->OnInteractableFound.AddDynamic(this, &UInteractionMessageWidget::ShowMessageText);
 			InteractionComponent->OnInteractableLost.AddDynamic(this, &UInteractionMessageWidget::HideMessageText);
 		}
@@ -64,9 +65,9 @@ void UInteractionMessageWidget::OnFadeAnimationEnd()
 
 void UInteractionMessageWidget::PlayFadeInAnimation()
 {
+	bIsForwarded = true;
 	if (FadeAnim)
 	{
-		bIsForwarded = true;
 		OnFadeFinishedDelegate.Unbind();
 		OnFadeFinishedDelegate.BindDynamic(this, &UInteractionMessageWidget::OnFadeAnimationEnd);
 		
@@ -79,9 +80,9 @@ void UInteractionMessageWidget::PlayFadeInAnimation()
 
 void UInteractionMessageWidget::PlayFadeOutAnimation()
 {
+	bIsForwarded = false;
 	if (FadeAnim)
 	{
-		bIsForwarded = false;
 		OnFadeFinishedDelegate.Unbind();
 		OnFadeFinishedDelegate.BindDynamic(this, &UInteractionMessageWidget::OnFadeAnimationEnd);
 		
