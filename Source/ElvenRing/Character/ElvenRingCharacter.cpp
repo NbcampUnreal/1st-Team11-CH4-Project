@@ -183,9 +183,9 @@ void AElvenRingCharacter::Multicast_Death_Implementation(UAnimMontage* Montage)
     }
 
     bCanMove = false;
-    UGameplayStatics::PlaySoundAtLocation(this, DieSound, GetActorLocation());
     if (IsLocallyControlled())
     {
+        UGameplayStatics::PlaySoundAtLocation(this, DieSound, GetActorLocation());
         UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
         Instance->GetUIManager()->ShowMessage("YOU DIE", EMessageType::SystemMessage);
     }
