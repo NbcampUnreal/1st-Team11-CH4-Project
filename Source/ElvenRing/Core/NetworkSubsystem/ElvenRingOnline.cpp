@@ -5,6 +5,7 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSubsystemUtils.h"
 #include "OnlineSessionSettings.h"
+#include "Online/OnlineSessionNames.h"
 #include "Interfaces/OnlineSessionInterface.h"
 
 void UElvenRingOnline::Initialize(FSubsystemCollectionBase& Collection)
@@ -92,6 +93,8 @@ void UElvenRingOnline::FindSession(const FOnElvenRingFindSessionComplete& InCall
 				UE_LOG(LogTemp, Display, TEXT("Search Steam Online Subsystem"));
 				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Search Steam Online Subsystem"));
 				SearchObject->bIsLanQuery = false;
+				SearchObject->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+				SearchObject->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
 			}
 			else
 			{
@@ -174,7 +177,11 @@ void UElvenRingOnline::JoinSession(const FOnlineSessionSearchResult& SearchResul
 			FUniqueNetIdPtr UserId = GetGameInstance()->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 			if (UserId.IsValid())
 			{
-				Session->JoinSession(*UserId, NAME_GameSession, SearchResult);
+				// https://forums.unrealengine.com/t/ue-5-5-online-subsystem-join-session-always-results-in-on-failure/2125579/14
+				FOnlineSessionSearchResult ModSearchResult = SearchResult;
+				ModSearchResult.Session.SessionSettings.bUsesPresence = true;
+				ModSearchResult.Session.SessionSettings.bUseLobbiesIfAvailable = true;
+				Session->JoinSession(*UserId, NAME_GameSession, ModSearchResult);
 			}
 		}
 	}
