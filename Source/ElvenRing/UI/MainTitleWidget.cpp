@@ -170,7 +170,10 @@ void UMainTitleWidget::CloseConnectMaseege(FRamdaConnect& FRConnect)
                 ConnecState = EConnectState::Ready;
                 GetWorld()->GetTimerManager().ClearTimer(*FRConnect.TimerHandle);
             }
-            FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
+            else
+            {
+				FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
+            }
         }), 0.05f, true
     );
 }
