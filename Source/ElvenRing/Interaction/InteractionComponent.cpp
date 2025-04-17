@@ -236,6 +236,8 @@ void UInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
+	OnInteractableLost.Broadcast();
+	
 	if (bStartSearchOnBeginPlay)
 	{
 		StartSearch();
