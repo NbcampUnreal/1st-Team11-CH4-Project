@@ -256,9 +256,20 @@ void UUIManager::ShowScorePageWidget(UWorld* World)
             ScorePageWidget->SetResultStat(0, EResultStat::RollCount, PlayerState->GetDodgeCount());
             ScorePageWidget->SetResultStat(0, EResultStat::RespawnCount, PlayerState->GetRespawnCount());
         }
+    }
+    
+    if (APlayerController* PC = UGameplayStatics::GetPlayerController(World, 1))
+    {
+        if (AElvenRingPlayerState* PlayerState = PC->GetPlayerState<AElvenRingPlayerState>())
+        {
+            ScorePageWidget->SetResultStat(1, EResultStat::DamageDealt, PlayerState->GetDamageDealt());
+            ScorePageWidget->SetResultStat(1, EResultStat::DamageTaken, PlayerState->GetDamageTaken());
+            ScorePageWidget->SetResultStat(1, EResultStat::RollCount, PlayerState->GetDodgeCount());
+            ScorePageWidget->SetResultStat(1, EResultStat::RespawnCount, PlayerState->GetRespawnCount());
+        }
+    }
 
-        ScorePageWidget->CalculateResultStat();
-    } 
+    ScorePageWidget->CalculateResultStat();
 }
 
 void UUIManager::ShowBossWidget(UWorld* World)
