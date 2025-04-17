@@ -3,6 +3,7 @@
 
 #include "ElvenRingCharacter.h"
 
+#include "../Core/ElvenRingGameMode.h"
 #include "ElvenRingController.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
@@ -78,6 +79,7 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
     AActor* DamageCauser)
 {
     if (bIsDie) return 0;
+    if (bDefence) return 0;
     if (Invincibility) return 0;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -108,6 +110,29 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
     return ActualDamage;
 }
 
+void AElvenRingCharacter::HandleDeath()
+{
+    if (!HasAuthority())
+    {
+        return; 
+    }
+
+    AController* PC = GetController();
+    if (!PC)
+    {
+        return;
+    }
+    
+    DetachFromControllerPendingDestroy();
+    if (UWorld* World = GetWorld())
+    {
+        if (AElvenRingGameMode* GM = World->GetAuthGameMode<AElvenRingGameMode>())
+        {
+            GM->HandlePlayerDeath(PC);
+        }
+    }
+}
+
 void AElvenRingCharacter::Multicast_Heal_Implementation(UAnimMontage* Montage)
 {
     if (UAnimInstance* Anim = GetMesh()->GetAnimInstance())
@@ -136,7 +161,6 @@ void AElvenRingCharacter::Multicast_Death_Implementation(UAnimMontage* Montage)
         if (AnimInstance)
         {
             AnimInstance->Montage_Play(Montage);
-            AnimInstance->Montage_Pause();
         }
     }
 }
@@ -484,10 +508,12 @@ void AElvenRingCharacter::Heal(const FInputActionValue& value)
     }
     bCanMove = false;
     CurHealth += 20;
+    
     if (CurHealth > MaxHealth)
     {
         CurHealth = MaxHealth;
     }
+    OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
     if (UAnimInstance* Anim = GetMesh()->GetAnimInstance())
     {
         Anim->Montage_Play(HealMontage);

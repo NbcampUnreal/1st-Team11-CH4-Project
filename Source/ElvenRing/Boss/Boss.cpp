@@ -128,6 +128,7 @@ void ABoss::ChangeToAttackStateIfConditionSatisfied()
 void ABoss::OnSpawnSequenceEnded()
 {
 	AttachDelegateToWidget(ECharacterType::Boss);//ksw
+	OnRep_HealthChanged();
 	LOG(TEXT("Begin"));
 }
 
