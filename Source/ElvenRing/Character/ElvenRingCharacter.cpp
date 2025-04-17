@@ -66,6 +66,7 @@ void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMont
 void AElvenRingCharacter::OnDeath()
 {
     Super::OnDeath();
+    bCanMove = false;
     if (HasAuthority())
     {
         Multicast_Death(DieMontage);
@@ -114,10 +115,6 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
     bCanCombo = false;
     CurrentWeapon->ResetDamagedActors();
     CurrentWeapon->DisableCollision();
-    if (CurHealth <= 0)
-    {
-        bCanMove = false;
-    }
     
     return ActualDamage;
 }
