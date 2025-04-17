@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "../Core/ElvenringGameInstance.h"
 #include "ElvenRing/Interaction/InteractionComponent.h"
+#include "array"
 #include "GameFramework/SpringArmComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "ElvenRing/UI/UIManager.h"
@@ -145,6 +146,13 @@ void AElvenRingCharacter::HandleDeath()
         if (AElvenRingGameMode* GM  = World->GetAuthGameMode<AElvenRingGameMode>())
         {
             GM->HandlePlayerDeath(PC);
+            TArray<AActor*> Actors;
+            GetAttachedActors(Actors,true);
+            for (AActor* Actor : Actors)
+            {
+                Actor->Destroy();
+            }
+            Destroy();
         }
     }
 }
@@ -515,8 +523,9 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void AElvenRingCharacter::Heal(const FInputActionValue& value)
 {
+    if (bHealing) return;
+    bHealing = true;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    
     if (!HasAuthority())
     {
         Server_Heal();
@@ -811,6 +820,10 @@ void AElvenRingCharacter::BeginPlay()
     if (HasAuthority())
     {
         CurHealth = MaxHealth;
+    }
+    if (IsLocallyControlled())
+    {
+        OnHpChanged.Broadcast(CurHealth,MaxHealth,0);
     }
     GetCharacterMovement()->RotationRate = FRotator(0.f, 780.f, 0.f);
 
