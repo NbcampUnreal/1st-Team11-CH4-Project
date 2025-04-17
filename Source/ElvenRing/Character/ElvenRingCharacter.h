@@ -36,7 +36,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
+	UFUNCTION(blueprintcallable)
+	void HandleDeath();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UNiagaraSystem* HitNiagara;
