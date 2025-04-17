@@ -1,12 +1,16 @@
 #include "BossSpecialAttackState.h"
 #include "ElvenRing/Boss/Boss.h"
 #include "ElvenRing/Boss/BossPattern/BossSpecialPatternComponent.h"
+#include "ElvenRing/Character/ElvenRingCharacter.h"
 
 void UBossSpecialAttackState::OnStateEnter(ABoss* Boss)
 {
 	CurrentBoss = Boss;
 	CurrentBoss->BossState = EBossState::Attacking;
-	Boss->SpecialPattern->ExecuteAttackPattern();
+	if (IsValid(Boss->TargetPlayer))
+	{
+		Boss->SpecialPattern->ExecuteAttackPattern();
+	}
 }
 
 void UBossSpecialAttackState::OnStateUpdate()

@@ -12,7 +12,7 @@
 void UWaitingRoomWidget::OnStartButtonClicked()
 {
     // UGameplayStatics::OpenLevel(this, FName("ElvenRuins_fix"));
-    GetWorld()->ServerTravel(TEXT("ElvenRuins_fix"));
+    GetWorld()->ServerTravel(TEXT("/Game/SoulCave/SoulCave/LV_Soul_Cave"));
    // UE_LOG(LogTemp, Warning, TEXT("OpenLevel(this, TEXT(BattleMap))"));
 }
 
