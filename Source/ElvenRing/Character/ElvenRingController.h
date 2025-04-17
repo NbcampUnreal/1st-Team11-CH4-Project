@@ -47,6 +47,7 @@ public:
 	UInputAction* HealAction;
 
 	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 	UFUNCTION(Server, Reliable)
 	void ServerRequestLevelChange(const FString& LevelPath);

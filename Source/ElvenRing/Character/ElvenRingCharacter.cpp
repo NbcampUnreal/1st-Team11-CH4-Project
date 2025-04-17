@@ -815,14 +815,13 @@ void AElvenRingCharacter::BeginPlay()
 
     DodgeSpeed = 800.0f;
     
-    AttachDelegateToWidget(ECharacterType::Player);
-
     if (HasAuthority())
     {
         CurHealth = MaxHealth;
     }
     if (IsLocallyControlled())
     {
+        AttachDelegateToWidget(ECharacterType::Player);
         OnHpChanged.Broadcast(CurHealth,MaxHealth,0);
     }
     GetCharacterMovement()->RotationRate = FRotator(0.f, 780.f, 0.f);
