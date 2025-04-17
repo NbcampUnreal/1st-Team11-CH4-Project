@@ -69,10 +69,6 @@ void AElvenRingCharacter::OnDeath()
     if (HasAuthority())
     {
         Multicast_Death(DieMontage);
-        
-        UGameplayStatics::PlaySoundAtLocation(this, DieSound, GetActorLocation());
-        UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
-        Instance->GetUIManager()->ShowMessage("YOU DIE", EMessageType::SystemMessage);
     }
 }
 
@@ -99,7 +95,7 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
         ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
     }
     
-    if (HasAuthority())
+    if (HasAuthority() && CurHealth > 0)
     {
         if (!bDefence) Multicast_Hit(HitMontage);
     }
@@ -120,9 +116,7 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
     CurrentWeapon->DisableCollision();
     if (CurHealth <= 0)
     {
-        OnDeath();
         bCanMove = false;
-        
     }
     
     return ActualDamage;
@@ -186,6 +180,14 @@ void AElvenRingCharacter::Multicast_Death_Implementation(UAnimMontage* Montage)
         {
             AnimInstance->Montage_Play(Montage);
         }
+    }
+
+    bCanMove = false;
+    UGameplayStatics::PlaySoundAtLocation(this, DieSound, GetActorLocation());
+    if (IsLocallyControlled())
+    {
+        UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+        Instance->GetUIManager()->ShowMessage("YOU DIE", EMessageType::SystemMessage);
     }
 }
 
