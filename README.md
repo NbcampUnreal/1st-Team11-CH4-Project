@@ -1,4 +1,5 @@
 # ElvenRing - 소울라이크 액션 RPG 게임
+![ChatGPT Image 2025년 4월 17일 오후 02_40_14](https://github.com/user-attachments/assets/04a4fad2-ae0d-4c69-b8d5-9335a7df6b1e)
 
 ## 🎮 프로젝트 개요
 ElvenRing은 언리얼 엔진을 사용하여 개발된 엘든 링에서 영감을 받은 소울라이크 액션 RPG 게임입니다. 이 프로젝트는 FromSoftware 게임의 특징인 도전적인 전투 메커니즘, 분위기 있는 월드 디자인, 그리고 보스 전투 경험을 재현하는 것을 목표로 합니다.
@@ -6,12 +7,16 @@ Actor Replicatoin, RPC를 통한 기본적인 동기화를 이용해서 네트�
 - 개발 기간 : 3/31 ~ 4/18(3주)
 - 개발 언어 및 도구 : C++, Unreal Engine, Git
 
+<br>
+
 ## 팀원
 - 김경수 : 팀장, Game Framework
 - 조선욱 : 캐릭터
 - 김대영 : 보스 몬스터 AI
 - 백의현 : 일반 몬스터 AI
 - 김세원 : UI
+
+<br>
 
 ## ✨ 주요 기능
 
@@ -38,6 +43,8 @@ Actor Replicatoin, RPC를 통한 기본적인 동기화를 이용해서 네트�
 * 네트워크 멀티플레이어 지원
 * 애니메이션 시스템과 연동된 전투 메커니즘
 
+<br>
+
 ## 🏆 보스 구현
 
 ### Artorias
@@ -52,6 +59,8 @@ Actor Replicatoin, RPC를 통한 기본적인 동기화를 이용해서 네트�
 ### Hanged Man
 * 전기 기반 원거리 공격과 페이즈 변화 시스템을 갖춘 보스
 * 특수 기술: 번개 공격, 전기 창, 천둥 공격
+
+<br>
 
 ## 🤖 인공지능 시스템 상세
 
@@ -78,6 +87,7 @@ ElvenRing의 AI 시스템은 언리얼 엔진의 비헤이비어 트리와 블�
 
 `RampageMonster`는 `NormalMonster`를 확장하여 더 공격적인 행동 패턴을 구현합니다:
 
+<br>
 
 ## 💻 기술적 구현
 
@@ -106,6 +116,8 @@ UWidgetComponent* HPWidgetComponent;
 ```
 
 이를 통해 플레이어는 현재 몬스터의 상태를 시각적으로 확인할 수 있습니다.
+
+<br>
 
 ## 📄 라이선스
 이 프로젝트는 개인 포트폴리오 용도로 제작되었으며, 상업적 사용을 목적으로 하지 않습니다.
