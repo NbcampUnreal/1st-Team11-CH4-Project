@@ -84,8 +84,14 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
     AActor* DamageCauser)
 {
     if (bIsDie) return 0;
-    if (Invincibility) return 0;
-    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (Invincibility)
+    {
+        if (AElvenRingGameMode* GameMode = GetWorld()->GetAuthGameMode<AElvenRingGameMode>())
+        {
+            GameMode->RecordInvincible(EventInstigator, this, DamageAmount);
+        }
+        return 0;
+    }
     float ActualDamage = 0.0f;
     if (bDefence)
     {
