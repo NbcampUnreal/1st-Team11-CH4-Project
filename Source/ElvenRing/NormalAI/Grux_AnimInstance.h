@@ -44,5 +44,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void AnimNotify_EndAttack();
 
+	UFUNCTION(BlueprintCallable)
+	void AnimNotify_AttackValue();
 	bool InsSelect;
 };

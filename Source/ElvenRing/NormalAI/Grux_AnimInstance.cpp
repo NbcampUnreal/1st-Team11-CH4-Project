@@ -45,6 +45,23 @@ void UGrux_AnimInstance::AnimNotify_EndHit()
 
 void UGrux_AnimInstance::AnimNotify_EndAttack()
 {
+	AActor* OwnerActor = GetOwningActor();
+	if (OwnerActor)
+	{
+		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
+		if (Monster)
+		{
+			AActor* Target = Monster->TargetCharacterActor;
+			if (Target)
+			{
+				Monster->RealAttack(Target);
+			}
+		}
+	}
+}
+
+void UGrux_AnimInstance::AnimNotify_AttackValue()
+{
 	IsAttacking = false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
@@ -52,17 +69,6 @@ void UGrux_AnimInstance::AnimNotify_EndAttack()
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
 		{
-		
-			AActor* Target = Monster->TargetCharacterActor;
-			if (Target)
-			{
-				Monster->RealAttack(Target);
-			UE_LOG(LogTemp, Warning, TEXT("Target 감지 성공"));
-			}
-			else
-			{
-				UE_LOG(LogTemp,Warning,TEXT("감지 실패"));
-			}
 			Monster->MulticastIsAttack(IsAttacking);
 		}
 	}

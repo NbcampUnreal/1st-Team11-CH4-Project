@@ -41,5 +41,8 @@ public:
 	void AnimNotify_EndHit();
 
 	UFUNCTION(BlueprintCallable)
-	void AnimNotify_EndAttack();	
+	void AnimNotify_EndAttack();
+
+	UFUNCTION(BlueprintCallable)
+	void AnimNotify_AttackValue();
 };

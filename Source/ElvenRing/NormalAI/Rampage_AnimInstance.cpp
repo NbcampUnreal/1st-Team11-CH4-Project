@@ -45,7 +45,6 @@ void URampage_AnimInstance::AnimNotify_EndHit()
 
 void URampage_AnimInstance::AnimNotify_EndAttack()
 {
-	IsAttacking = false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
 	{
@@ -57,12 +56,21 @@ void URampage_AnimInstance::AnimNotify_EndAttack()
 			if (Target)
 			{
 				Monster->RealAttack(Target);
-				UE_LOG(LogTemp, Warning, TEXT("Target 감지 성공"));
 			}
-			else
-			{
-				UE_LOG(LogTemp,Warning,TEXT("감지 실패"));
-			}
+		}
+	}
+}
+
+void URampage_AnimInstance::AnimNotify_AttackValue()
+{
+	IsAttacking = false;
+
+	AActor* OwnerActor = GetOwningActor();
+	if (OwnerActor)
+	{
+		ARampageMonster* Monster = Cast<ARampageMonster>(OwnerActor);
+		if (Monster)
+		{
 			Monster->MulticastIsAttack(IsAttacking);
 		}
 	}
