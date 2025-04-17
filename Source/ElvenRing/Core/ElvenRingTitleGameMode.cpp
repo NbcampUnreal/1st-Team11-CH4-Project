@@ -7,26 +7,33 @@
 AElvenRingTitleGameMode::AElvenRingTitleGameMode()
 {
 	DefaultPawnClass = nullptr;
-	static ConstructorHelpers::FClassFinder<ATitleMapParticle> BP_TitleMapParticle(TEXT("/Game/ElvenRing/Blueprints/UI/BP_TtitleParticle"));
-	if (BP_TitleMapParticle.Succeeded())
-		TitleMapParticleClass = BP_TitleMapParticle.Class;
+	
+	//static ConstructorHelpers::FClassFinder<ATitleMapParticle> BP_TitleMapParticle(TEXT("/Game/ElvenRing/Blueprints/UI/BP_TtitleParticle"));
+	//if (BP_TitleMapParticle.Succeeded())
+	//	TitleMapParticleClass = BP_TitleMapParticle.Class;
+}
+
+void AElvenRingTitleGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
 }
 
 void AElvenRingTitleGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	UElvenringGameInstance* EGameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
-	if (EGameInstance)
-	{
-		EGameInstance->GetUIManager()->ShowTitleScreen(GetWorld());
-	}
+	//UElvenringGameInstance* EGameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
+	//if (EGameInstance)
+	//{
+	//	EGameInstance->GetUIManager()->ShowTitleScreen(GetWorld());
+	//}
 
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	//FActorSpawnParameters SpawnParams;
+	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-	FVector Location(0, 0, 100);
-	FRotator Rotation = FRotator::ZeroRotator;
+	//FVector Location(0, 0, 100);
+	//FRotator Rotation = FRotator::ZeroRotator;
 
-	ATitleMapParticle* TitleParticle = GetWorld()->SpawnActor<ATitleMapParticle>(TitleMapParticleClass, Location, Rotation, SpawnParams);
-	int32 dsfsdf = 0;
+	//ATitleMapParticle* TitleParticle = GetWorld()->SpawnActor<ATitleMapParticle>(TitleMapParticleClass, Location, Rotation, SpawnParams);
+	//int32 dsfsdf = 0;
 }

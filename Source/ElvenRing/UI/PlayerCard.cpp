@@ -59,3 +59,8 @@ void APlayerCard::Tick(float DeltaTime)
 	}
 }
 
+void APlayerCard::PlayerCardEffect()
+{
+
+}
+

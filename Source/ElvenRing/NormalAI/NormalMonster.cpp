@@ -43,10 +43,9 @@ ANormalMonster::ANormalMonster()
 
 	HPWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget")); //ksw
 	HPWidgetComponent->SetupAttachment(RootComponent); //ksw
-	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
 	HPWidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 120.f)); //ksw
 	HPWidgetComponent->SetTwoSided(true); //ksw
-	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::World); //ksw
+	HPWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen); //ksw
 	HPWidgetComponent->SetPivot(FVector2D(0.5f, 0.5f)); //ksw
 
 	PrimaryActorTick.bCanEverTick = false; //ksw
@@ -60,7 +59,7 @@ void ANormalMonster::BeginPlay()
 	CurHealth = MaxHealth;
 	SetReplicates(true);
 	AttachDelegateToWidget(ECharacterType::NormalMonster); //ksw
-	GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
+	//GetWorldTimerManager().SetTimer(UpdateHPBarTimer, this, &ANormalMonster::UpdateHPBar, 0.1f, true); // 0.5초마다 실행
 }
 
 void ANormalMonster::UpdateHPBar()

@@ -70,6 +70,8 @@ protected:
     void PlayShockWave(int32 idx);
 
     void OpenNamePopup();
+
+    void PlayerCardEffect();
   
     void CloseShockWave(FSlateBrush& Brush, UMaterialInstanceDynamic* DynMat, int idx);
     TArray<bool> bDegCntArr = {false,false,false };

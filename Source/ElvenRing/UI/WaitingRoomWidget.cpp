@@ -33,6 +33,9 @@ void UWaitingRoomWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
+    OkNickNameButton->OnClicked.RemoveDynamic(this, &UWaitingRoomWidget::OnOkNickNameButtonClicked);
+    GameStartButton->OnClicked.RemoveDynamic(this, &UWaitingRoomWidget::OnStartButtonClicked);
+
     OkNickNameButton->OnClicked.AddDynamic(this, &UWaitingRoomWidget::OnOkNickNameButtonClicked);
     GameStartButton->OnClicked.AddDynamic(this, &UWaitingRoomWidget::OnStartButtonClicked);
     //Dir = 1.f;
@@ -44,8 +47,9 @@ void UWaitingRoomWidget::NativeConstruct()
     for (int32 i = 0; i < 3; ++i)
         ShockWaves[i]->SetVisibility(ESlateVisibility::Collapsed);
 
-    OpenNamePopup();
     ShockTimerHandles.AddDefaulted(3);
+    OpenNamePopup();
+    //PlayerCardEffect();
 }
 void UWaitingRoomWidget::GuestMode()
 {
@@ -99,6 +103,33 @@ void UWaitingRoomWidget::OpenNamePopup()
            // UE_LOG(LogTemp, Warning, TEXT("Clear!!!!!! TimerHandle/ Index : %d"), Index);
         }), 0.1f, false
     );//
+}
+void UWaitingRoomWidget::PlayerCardEffect()
+{
+    //if (!bDegCntArr[Index])
+    //    return;
+    //GetWorld()->GetTimerManager().SetTimer(
+    //    ShockTimerHandles[Index],
+    //    FTimerDelegate::CreateLambda([this, ElapsedTime, &Brush, Index, DynMat]() mutable
+    //        {
+    //            ElapsedTime += 0.01f;
+    //            DynMat->SetScalarParameterValue("ElapsedTime", ElapsedTime);
+
+    //            //UE_LOG(LogTemp, Warning, TEXT("ElapsedTime %f / idx %d"), ElapsedTime, Index);
+    //            if (ElapsedTime >= 2.f)
+    //            {
+    //                DynMat->SetScalarParameterValue("Speed", 0.0f);
+    //                ShockWaves[Index]->SetVisibility(ESlateVisibility::Collapsed);
+    //                FSlateBrush Empty;
+    //                ShockWaves[Index]->SetBrush(Empty);
+    //                bDegCntArr[Index] = false;
+
+    //                // UE_LOG(LogTemp, Warning, TEXT("Shockwave 종료 (Index %d)"), Index);
+    //                GetWorld()->GetTimerManager().ClearTimer(ShockTimerHandles[Index]);
+    //            }
+    //        }),
+    //    0.01f, true
+    //);
 }
 void UWaitingRoomWidget::CloseShockWave(FSlateBrush& Brush, UMaterialInstanceDynamic* DynMat,int Index)
 {

@@ -5,18 +5,70 @@
 #include "ElvenringGameInstance.h"
 #include "ElvenRing/UI/UIManager.h"
 #include "ElvenRing/UI/WaitingRoomPlayerCardsRT.h"
+#include "GameFramework/PlayerController.h"
+#include "GameFramework/PlayerState.h"
+#include "GameFramework/GameState.h"
+#include "ElvenRing/UI/WaitingRoomPlayerController.h"
+#include "ElvenRing/UI/WaitingRoomGameState.h"
 
 AEvenRingWaitingRoomGameMode::AEvenRingWaitingRoomGameMode()
 {
 	DefaultPawnClass = nullptr;
-	static ConstructorHelpers::FClassFinder<AWaitingRoomPlayerCardsRT> BP_WaitingRoomPlayerCardsRT(TEXT("/Game/ElvenRing/Blueprints/UI/BP_WaitingRoomPlayerCardsRT"));
-	if (BP_WaitingRoomPlayerCardsRT.Succeeded())
-		WaitingRoomPlayerCardsRTClass = BP_WaitingRoomPlayerCardsRT.Class;
+	//static ConstructorHelpers::FClassFinder<AWaitingRoomPlayerCardsRT> BP_WaitingRoomPlayerCardsRT(TEXT("/Game/ElvenRing/Blueprints/UI/BP_WaitingRoomPlayerCardsRT"));
+	//if (BP_WaitingRoomPlayerCardsRT.Succeeded())
+	//	WaitingRoomPlayerCardsRTClass = BP_WaitingRoomPlayerCardsRT.Class;
+}
+
+void AEvenRingWaitingRoomGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options,ErrorMessage);
+
+	//FActorSpawnParameters SpawnParams;
+	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	//FVector Location(0, 0, 100); // 카메라가 보기에 적당한 위치
+	//FRotator Rotation = FRotator::ZeroRotator;
+
+	//WaitingRoomPlayerCardsRT = GetWorld()->SpawnActor<AWaitingRoomPlayerCardsRT>(WaitingRoomPlayerCardsRTClass, Location, Rotation, SpawnParams);
+
+	//UElvenringGameInstance* EGameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
+	//if (EGameInstance)
+	//	EGameInstance->GetUIManager()->ShowWaitingRoom(GetWorld(), WaitingRoomPlayerCardsRT);
+}
+
+void AEvenRingWaitingRoomGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	//if (!NewPlayer->IsLocalController())
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("Not LocalController / AEvenRingWaitingRoomGameMode"));
+	//	return;
+	//}
+
+	ConnectedPlayers.Add(NewPlayer);
+
+	FString PlayerName = TEXT("Guest");
+	if (ConnectedPlayers.Num() == 1) //처음접속
+		PlayerName = TEXT("Host");
+	AWaitingRoomPlayerController* WaitingRoomPlayerController = Cast<AWaitingRoomPlayerController>(NewPlayer);
+	WaitingRoomPlayerController->SetIndex(ConnectedPlayerCount);
+	ConnectedPlayerCount++;
+
+	int TempConnectedPlayerCount = ConnectedPlayerCount;
+
+	FTimerHandle DelayHandle;
+	GetWorld()->GetTimerManager().SetTimer(DelayHandle, FTimerDelegate::CreateLambda([this, TempConnectedPlayerCount, NewPlayer]()
+	{
+		AWaitingRoomGameState* WaitingRoomGameState = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
+		WaitingRoomGameState->AppeareWaitingRoomPlayerCard(TempConnectedPlayerCount);
+		UE_LOG(LogTemp, Warning, TEXT("PostLogin ConnectedPlayerCount %d"), TempConnectedPlayerCount);
+	}), 0.2f, false); 
 }
 void AEvenRingWaitingRoomGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	/*
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
@@ -24,15 +76,9 @@ void AEvenRingWaitingRoomGameMode::BeginPlay()
 	FRotator Rotation = FRotator::ZeroRotator;
 
 	WaitingRoomPlayerCardsRT = GetWorld()->SpawnActor<AWaitingRoomPlayerCardsRT>(WaitingRoomPlayerCardsRTClass, Location, Rotation, SpawnParams);
-	
+
 	UElvenringGameInstance* EGameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
 	if (EGameInstance)
-	{
 		EGameInstance->GetUIManager()->ShowWaitingRoom(GetWorld(), WaitingRoomPlayerCardsRT);
-	}
-
-	int32 dsfsdf = 0;
-
-
-
+		*/
 }

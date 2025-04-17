@@ -23,6 +23,8 @@ public:
 
 	UFUNCTION(BlueprintCallable,Category = "PlayerCard")
 	void SetName(FText Name, int32 Idx);
+
+	void ConnectOpenPlayerCard(int Index, bool bMyOrder = false);
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerCard")
@@ -30,6 +32,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	void TempCreatePlayerCard(); //임시 Test 생성용 곧 지울것!!2250414
+
+	
 
 private:	
 	FTimerHandle TimerHandle;

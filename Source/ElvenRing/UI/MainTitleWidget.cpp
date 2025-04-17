@@ -14,6 +14,9 @@ void UMainTitleWidget::NativeConstruct()
 
 	if (SinglePlayButton && MultiPlayButton)
 	{
+		SinglePlayButton->OnClicked.RemoveDynamic(this, &UMainTitleWidget::OnSingleButtonClicked);
+		MultiPlayButton->OnClicked.RemoveDynamic(this, &UMainTitleWidget::OnMultiButtonClicked);
+
 		SinglePlayButton->OnClicked.AddDynamic(this, &UMainTitleWidget::OnSingleButtonClicked);
         MultiPlayButton->OnClicked.AddDynamic(this, &UMainTitleWidget::OnMultiButtonClicked);
         Dir = 1.f;

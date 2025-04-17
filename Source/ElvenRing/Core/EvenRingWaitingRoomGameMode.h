@@ -7,7 +7,7 @@
 #include "EvenRingWaitingRoomGameMode.generated.h"
 
 class AWaitingRoomPlayerCardsRT;
-
+class APlayerController;
 UCLASS()
 class ELVENRING_API AEvenRingWaitingRoomGameMode : public AGameMode
 {
@@ -15,9 +15,15 @@ class ELVENRING_API AEvenRingWaitingRoomGameMode : public AGameMode
 public:
 	AEvenRingWaitingRoomGameMode();
 protected:
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly, Category = "UI")
-	TSubclassOf<AWaitingRoomPlayerCardsRT> WaitingRoomPlayerCardsRTClass;
-	AWaitingRoomPlayerCardsRT* WaitingRoomPlayerCardsRT;
+	//UPROPERTY(EditDefaultsOnly, Category = "UI")
+	//TSubclassOf<AWaitingRoomPlayerCardsRT> WaitingRoomPlayerCardsRTClass;
+	//AWaitingRoomPlayerCardsRT* WaitingRoomPlayerCardsRT;
+	int32 ConnectedPlayerCount = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<APlayerController*> ConnectedPlayers;
 };

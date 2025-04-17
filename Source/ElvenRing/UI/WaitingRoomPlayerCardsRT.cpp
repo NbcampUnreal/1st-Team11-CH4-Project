@@ -6,6 +6,9 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "ElvenRing/UI/PlayerCard.h"
+#include "ElvenRing/UI/WaitingRoomGameState.h"
+#include "ElvenRing/UI/WaitingRoomPlayerState.h"
+#include "ElvenRing/UI/WaitingRoomPlayerController.h"
 
 AWaitingRoomPlayerCardsRT::AWaitingRoomPlayerCardsRT()
 {
@@ -19,12 +22,11 @@ AWaitingRoomPlayerCardsRT::AWaitingRoomPlayerCardsRT()
 
 	static ConstructorHelpers::FClassFinder<APlayerCard> BP_PlayerCard(TEXT("/Game/ElvenRing/Blueprints/UI/BP_PlayerCard"));//.BP_PlayerCard_C
 	if (BP_PlayerCard.Succeeded())
+	{
 		PlayerCardClass = BP_PlayerCard.Class;
 		UE_LOG(LogTemp, Warning, TEXT("PlayerCardClass: %s"), *GetNameSafe(PlayerCardClass));
-
-	
+	}
 }
-
 void AWaitingRoomPlayerCardsRT::SetName(FText Name,int32 Idx)
 {
 	PlayerCards[Idx]->SetName(Name);
@@ -55,7 +57,7 @@ void AWaitingRoomPlayerCardsRT::BeginPlay()
 	//		CreatePlayerCard->SetName(FText::FromString(TEXT("Guest")));
 	//	PlayerCards.Add(CreatePlayerCard);
 	//}
-	TempCreatePlayerCard();
+	//TempCreatePlayerCard();
 }
 void AWaitingRoomPlayerCardsRT::TempCreatePlayerCard()
 {
@@ -101,4 +103,60 @@ void AWaitingRoomPlayerCardsRT::TempCreatePlayerCard()
 			}), 0.1f, true
 	);
 }
+
+//네트워크 연결시 플레이어 카드 생성 예비 코드
+void AWaitingRoomPlayerCardsRT::ConnectOpenPlayerCard(int Index,bool bMyOrder)
+{
+	//if (true)
+	//	return;
+
+	UE_LOG(LogTemp, Warning, TEXT("ConnectPlayerCard / Index %d"), Index);
+	if (PlayerCards.Num() > 0)
+		return;
+	int StartIdx =  PlayerCards.Num();
+
+	AWaitingRoomGameState* GameState = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
+	if (!GameState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Error!!GameState") );
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("StartIdx %d  / Index %d"), StartIdx, Index);
+	for (int32 i = StartIdx; i < Index;++i)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		FVector SpawnLocation = FVector(-1025.f + 1025.f * i, -1500.f, 50.f);
+		FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
+		
+		APlayerCard* CreatePlayerCard = GetWorld()->SpawnActor<APlayerCard>(
+			PlayerCardClass, SpawnLocation, SpawnRotation, SpawnParams );
+		if (CreatePlayerCard)
+		{
+			CreatePlayerCard->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+			CreatePlayerCard->SetIndex(i);
+
+			if (i < GameState->PlayerArray.Num())
+			{
+				AWaitingRoomPlayerState* PlayerState = Cast<AWaitingRoomPlayerState>(GameState->PlayerArray[i]);
+				if (PlayerState)
+				{
+					FString PlayerName = PlayerState->PlayerName;
+					CreatePlayerCard->SetName(FText::FromString(PlayerName));
+				}
+				else
+				{
+					if(i == 0)
+						CreatePlayerCard->SetName(FText::FromString(TEXT("Host")));
+					else
+						CreatePlayerCard->SetName(FText::FromString(TEXT("Guest")));
+				}
+				PlayerCards.Add(CreatePlayerCard);
+			}
+		}
+	}
+}
+
 

@@ -14,6 +14,7 @@ class ELVENRING_API AElvenRingTitleGameMode : public AGameMode
 public:
 	AElvenRingTitleGameMode();
 protected:
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly, Category = "UI")
