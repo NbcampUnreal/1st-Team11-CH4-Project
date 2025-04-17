@@ -49,6 +49,7 @@ void UElvenRingOnline::CreateSession(int32 MaxPlayers, const FOnElvenRingCreateS
 				SessionSettings.bUseLobbiesIfAvailable = true;
 				SessionSettings.bUsesPresence = true;
 				SessionSettings.bIsLANMatch = false;
+				SessionSettings.Set(FName("CustomMatchKey"), FString("ElvenRing"), EOnlineDataAdvertisementType::ViaOnlineService);
 			}
 			else
 			{
@@ -59,6 +60,7 @@ void UElvenRingOnline::CreateSession(int32 MaxPlayers, const FOnElvenRingCreateS
 				SessionSettings.bIsLANMatch = true;
 			}
 
+			
 			OnCreateSessionCompleteDelegate = InCallback;
 			Session->ClearOnCreateSessionCompleteDelegates(this);
 			Session->OnCreateSessionCompleteDelegates.AddUObject(this, &UElvenRingOnline::OnCreateSessionComplete);
@@ -95,6 +97,7 @@ void UElvenRingOnline::FindSession(const FOnElvenRingFindSessionComplete& InCall
 				SearchObject->bIsLanQuery = false;
 				SearchObject->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 				SearchObject->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
+				SearchObject->QuerySettings.Set(FName("CustomMatchKey"), FString("ElvenRing"), EOnlineComparisonOp::Equals);
 			}
 			else
 			{
