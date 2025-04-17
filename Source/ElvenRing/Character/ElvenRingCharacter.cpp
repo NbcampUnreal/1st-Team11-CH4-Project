@@ -11,6 +11,7 @@
 #include "NiagaraFunctionLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "UniversalObjectLocators/AnimInstanceLocatorFragment.h"
 
 AElvenRingCharacter::AElvenRingCharacter()
 {
@@ -60,8 +61,10 @@ void AElvenRingCharacter::Multicast_PlayAttackAnimation_Implementation(UAnimMont
 void AElvenRingCharacter::OnDeath()
 {
     Super::OnDeath();
-    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    AnimInstance->Montage_Play(DieMontage);
+    if (HasAuthority())
+    {
+        Multicast_Death(DieMontage);
+    }
 }
 
 void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -74,28 +77,70 @@ void AElvenRingCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator,
     AActor* DamageCauser)
 {
+    if (bIsDie) return 0;
     if (Invincibility) return 0;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
-    UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+    
+    UNiagaraFunctionLibrary::SpawnSystemAtLocation
+            (
             GetWorld(),              // 현재 월드 컨텍스트
             HitNiagara,    // 할당된 Niagara 이펙트 자산
             SpawnLocation,           // 스폰 위치
             SpawnRotation            // 스폰 회전 값
-        );
+            );
     if (bIsAttacking) bCanMove = false;
     AnimInstance->Montage_Play(HitMontage);
-
-    ResetCombo();
+    if (HasAuthority())
+    {
+        Multicast_Hit(HitMontage);
+    }
+    bIsAttacking = false;
+    bCanCombo = false;
     CurrentWeapon->DisableCollision();
     if (CurHealth <= 0)
     {
         OnDeath();
+        bCanMove = false;
     }
     return ActualDamage;
 }
+
+void AElvenRingCharacter::Multicast_Heal_Implementation(UAnimMontage* Montage)
+{
+    if (UAnimInstance* Anim = GetMesh()->GetAnimInstance())
+    {
+        Anim->Montage_Play(Montage);
+    }
+}
+
+void AElvenRingCharacter::Multicast_Hit_Implementation(UAnimMontage* Montage)
+{
+    if (Montage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            AnimInstance->Montage_Play(Montage);
+        }
+    }
+}
+
+void AElvenRingCharacter::Multicast_Death_Implementation(UAnimMontage* Montage)
+{
+    if (Montage)
+    {
+        UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+        if (AnimInstance)
+        {
+            AnimInstance->Montage_Play(Montage);
+            AnimInstance->Montage_Pause();
+        }
+    }
+}
+
 
 void AElvenRingCharacter::Multicast_PlayDodgeAnimation_Implementation(float _DodgeDuration)
 {
@@ -250,6 +295,11 @@ bool AElvenRingCharacter::ServerStopSprint_Validate()
 void AElvenRingCharacter::Server_OnDodgeInput_Implementation(const FInputActionValue& Value)
 {
     StartDodge(Value);
+}
+
+void AElvenRingCharacter::Server_Heal_Implementation()
+{
+    Heal(FInputActionValue());
 }
 
 void AElvenRingCharacter::OnAttackAnimationEnd()
@@ -425,11 +475,24 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void AElvenRingCharacter::Heal(const FInputActionValue& value)
 {
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    
+    if (!HasAuthority())
+    {
+        Server_Heal();
+        return;
+    }
+    bCanMove = false;
     CurHealth += 20;
     if (CurHealth > MaxHealth)
     {
         CurHealth = MaxHealth;
     }
+    if (UAnimInstance* Anim = GetMesh()->GetAnimInstance())
+    {
+        Anim->Montage_Play(HealMontage);
+    }
+    Multicast_Heal(HealMontage);
 }
 
 

@@ -43,6 +43,12 @@ protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayAttackAnimation(UAnimMontage* Montage);
 	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Death(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Hit(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Heal(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayDodgeAnimation(float _DodgeDuration);
 	//공격 함수 및 변수들
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)
@@ -64,6 +70,8 @@ protected:
 	void OnDodgeInput(const FInputActionValue& Value);
 	UFUNCTION(Server, Reliable)
 	void Server_OnDodgeInput(const FInputActionValue& Value);
+	UFUNCTION(Server, Reliable)
+	void Server_Heal();
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void OnAttackAnimationEnd();
 	void ComboEnd();
@@ -85,6 +93,8 @@ protected:
 	UAnimMontage* DieMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* HitMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* HealMontage;
 	//달리기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
