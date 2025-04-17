@@ -146,7 +146,7 @@ void UMonsterWidget::RealTimeInGameWidgetScale()
 
 			float ScalePer = FMath::Clamp( SafeThis->HpBarSizeCalculMeasureDistLimit / Distance, SafeThis->HpBarSizeScreenMin, Scale.X);
 
-			UE_LOG(LogTemp, Warning, TEXT("Distance : %f / ScalePer :  %f "), Distance, ScalePer);
+			//UE_LOG(LogTemp, Warning, TEXT("Distance : %f / ScalePer :  %f "), Distance, ScalePer);
 
 			if (KINDA_SMALL_NUMBER >= FElement.MyProgressBar->GetPercent())
 			{

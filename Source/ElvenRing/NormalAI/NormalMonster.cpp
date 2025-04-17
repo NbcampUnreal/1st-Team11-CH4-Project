@@ -128,13 +128,11 @@ void ANormalMonster::MulticastIsDeath_Implementation(bool value)
 	if (UCharacterMovementComponent* MovementComp = GetCharacterMovement())
 	{
 		MovementComp->GravityScale = 0.0f; // 중력 제거
-		UE_LOG(LogTemp, Warning, TEXT("중력 제거 완료"));
 	}
 
 	if (UCapsuleComponent* Capsul = GetCapsuleComponent())
 	{
 		Capsul->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		UE_LOG(LogTemp, Warning, TEXT("캡슐 제거성공"))
 	}
 
 	//HP바 타이머 정지, 위젯 제거
