@@ -94,17 +94,17 @@ void ABaseWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	//UGameplayStatics::ApplyDamage(OtherActor, AttackPower, InstigatorController, this, UDamageType::StaticClass()); 백의현: 이거대신에
 	ServerApplyDamage(OtherActor, AttackPower, InstigatorController, this); //이렇게 변경
 	DamagedActors.Add(OtherActor);
-	MulticastPlayAttackSound();
-	
+	MulticastPlayAttackSound(GetActorLocation());
 }
 
-void ABaseWeapon::MulticastPlayAttackSound_Implementation()
+void ABaseWeapon::MulticastPlayAttackSound_Implementation(FVector Location)
 {
 	if (AttackSoundCue)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, AttackSoundCue, GetActorLocation());
+		UGameplayStatics::PlaySoundAtLocation(this, AttackSoundCue, Location);
 	}
 }
+
 //by 백의현
 void ABaseWeapon::ServerApplyDamage_Implementation(AActor* Target, float DamageAmount,
                                                    AController* InstigatorController, AActor* DamageCauser)
