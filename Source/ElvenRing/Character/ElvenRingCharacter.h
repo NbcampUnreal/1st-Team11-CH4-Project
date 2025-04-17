@@ -31,12 +31,18 @@ public:
 	void ToggleInput(bool bInput);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
 	bool bInput;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Heal)
+	bool bHealing = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sound")
+	USoundBase* DieSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sound")
+	USoundBase* PosionSound;
 	virtual void OnDeath() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
+	UFUNCTION(blueprintcallable)
+	void HandleDeath();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UNiagaraSystem* HitNiagara;
@@ -48,7 +54,7 @@ protected:
 	void Multicast_Hit(UAnimMontage* Montage);
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_Heal(UAnimMontage* Montage);
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast, Reliable) 
 	void Multicast_PlayDodgeAnimation(float _DodgeDuration);
 	//공격 함수 및 변수들
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)

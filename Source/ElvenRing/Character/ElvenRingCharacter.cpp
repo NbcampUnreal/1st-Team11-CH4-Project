@@ -3,14 +3,19 @@
 
 #include "ElvenRingCharacter.h"
 
+#include "../Core/ElvenRingGameMode.h"
 #include "ElvenRingController.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
+#include "../Core/ElvenringGameInstance.h"
 #include "ElvenRing/Interaction/InteractionComponent.h"
+#include "array"
 #include "GameFramework/SpringArmComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "ElvenRing/UI/UIManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Kismet/GameplayStatics.h"
 #include "UniversalObjectLocators/AnimInstanceLocatorFragment.h"
 
 AElvenRingCharacter::AElvenRingCharacter()
@@ -64,6 +69,10 @@ void AElvenRingCharacter::OnDeath()
     if (HasAuthority())
     {
         Multicast_Death(DieMontage);
+        
+        UGameplayStatics::PlaySoundAtLocation(this, DieSound, GetActorLocation());
+        UElvenringGameInstance* Instance = Cast<UElvenringGameInstance>(GetGameInstance());
+        Instance->GetUIManager()->ShowMessage("YOU DIE", EMessageType::SystemMessage);
     }
 }
 
@@ -80,7 +89,20 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
     if (bIsDie) return 0;
     if (Invincibility) return 0;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    float ActualDamage = 0.0f;
+    if (bDefence)
+    {
+         ActualDamage = Super::TakeDamage(DamageAmount/2, DamageEvent, EventInstigator, DamageCauser);
+    }
+    else
+    {
+        ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+    }
+    
+    if (HasAuthority())
+    {
+        if (!bDefence) Multicast_Hit(HitMontage);
+    }
     FVector SpawnLocation = GetActorLocation();
     FRotator SpawnRotation = GetActorRotation();
     
@@ -92,20 +114,47 @@ float AElvenRingCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Da
             SpawnRotation            // 스폰 회전 값
             );
     if (bIsAttacking) bCanMove = false;
-    AnimInstance->Montage_Play(HitMontage);
-    if (HasAuthority())
-    {
-        Multicast_Hit(HitMontage);
-    }
     bIsAttacking = false;
     bCanCombo = false;
+    CurrentWeapon->ResetDamagedActors();
     CurrentWeapon->DisableCollision();
     if (CurHealth <= 0)
     {
         OnDeath();
         bCanMove = false;
+        
     }
+    
     return ActualDamage;
+}
+
+void AElvenRingCharacter::HandleDeath()
+{
+    if (!HasAuthority())
+    {
+        return; 
+    }
+
+    AController* PC = GetController();
+    if (!PC)
+    {
+        return;
+    }
+    
+    if (UWorld* World = GetWorld())
+    {
+        if (AElvenRingGameMode* GM  = World->GetAuthGameMode<AElvenRingGameMode>())
+        {
+            GM->HandlePlayerDeath(PC);
+            TArray<AActor*> Actors;
+            GetAttachedActors(Actors,true);
+            for (AActor* Actor : Actors)
+            {
+                Actor->Destroy();
+            }
+            Destroy();
+        }
+    }
 }
 
 void AElvenRingCharacter::Multicast_Heal_Implementation(UAnimMontage* Montage)
@@ -136,7 +185,6 @@ void AElvenRingCharacter::Multicast_Death_Implementation(UAnimMontage* Montage)
         if (AnimInstance)
         {
             AnimInstance->Montage_Play(Montage);
-            AnimInstance->Montage_Pause();
         }
     }
 }
@@ -475,8 +523,9 @@ void AElvenRingCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 void AElvenRingCharacter::Heal(const FInputActionValue& value)
 {
+    if (bHealing) return;
+    bHealing = true;
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    
     if (!HasAuthority())
     {
         Server_Heal();
@@ -484,10 +533,12 @@ void AElvenRingCharacter::Heal(const FInputActionValue& value)
     }
     bCanMove = false;
     CurHealth += 20;
+    
     if (CurHealth > MaxHealth)
     {
         CurHealth = MaxHealth;
     }
+    OnHpChanged.Broadcast(CurHealth, MaxHealth, 0);
     if (UAnimInstance* Anim = GetMesh()->GetAnimInstance())
     {
         Anim->Montage_Play(HealMontage);
@@ -769,6 +820,10 @@ void AElvenRingCharacter::BeginPlay()
     if (HasAuthority())
     {
         CurHealth = MaxHealth;
+    }
+    if (IsLocallyControlled())
+    {
+        OnHpChanged.Broadcast(CurHealth,MaxHealth,0);
     }
     GetCharacterMovement()->RotationRate = FRotator(0.f, 780.f, 0.f);
 
