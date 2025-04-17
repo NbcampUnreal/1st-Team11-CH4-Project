@@ -97,7 +97,7 @@ void AElvenRingGameMode::HandlePlayerDeath(AController* DeadController)
 		return;
 	}
 
-	if (!DeadController->GetPawn())
+	if (DeadController->GetPawn())
 	{
 		DeadController->UnPossess();
 	}
