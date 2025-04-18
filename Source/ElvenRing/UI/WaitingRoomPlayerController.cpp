@@ -72,14 +72,27 @@ void AWaitingRoomPlayerController::Client_OnUpdatePlayerName_Implementation()
 	AWaitingRoomGameState* WaitingRoomGameState = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
 	if (WaitingRoomGameState)
 	{
-		const TArray<APlayerState*> PlayerStates = WaitingRoomGameState->PlayerArray;
+		//const TArray<APlayerState*> PlayerStates = WaitingRoomGameState->PlayerArray;
 
 		//UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d / PlayerArray.SIZE %d"), MyPlayerIndex, PlayerStates.Num());
-
-		for (int32 i = 0; i < PlayerStates.Num();++i) //(APlayerState* PS : PlayerStates)
+		//UE_LOG(LogTemp, Warning, TEXT("GS->PlayerNames.Num = %d / PlayerArray.SIZE %d"), WaitingRoomGameState->PlayerNames.Num(), PlayerStates.Num());
+		//if (WaitingRoomGameState->PlayerNames.Num() < PlayerStates.Num())
+		//{
+		//	// 아직 동기화가 안된 상태니까 타이머로 재시도
+		//	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AWaitingRoomPlayerController::Client_OnUpdatePlayerName);
+		//	UE_LOG(LogTemp, Warning, TEXT("Return PlayerNames.Num() < PlayerStates.Num()"));
+		//	return;
+		//}else
+		//{
+		//	UE_LOG(LogTemp, Warning, TEXT("Ok"));
+		//}
+		
+		for (int32 i = 0; i < WaitingRoomGameState->PlayerNames.Num();++i)//(int32 i = 0; i < PlayerStates.Num();++i) //(APlayerState* PS : PlayerStates)
 		{
-			FText PlayerCardName = Cast<AWaitingRoomPlayerState>(PlayerStates[i])->PlayerName;
-			PlayerCardName = WaitingRoomGameState->PlayerNames[i];
+			//FText PlayerCardName = Cast<AWaitingRoomPlayerState>(PlayerStates[i])->PlayerName;
+			FText PlayerCardName = WaitingRoomGameState->PlayerNames[i];
+			FString DBG = PlayerCardName.ToString();
+			UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d /CarIndex %d / PlayerCardName %s"), MyPlayerIndex,i, *DBG);
 			WaitingRoomPlayerCardsRT->OnUpdatePlayerName(i, PlayerCardName );
 
 		//	UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d / PlayerCardName %s"), MyPlayerIndex, *PlayerCardName.ToString());
@@ -153,11 +166,11 @@ void AWaitingRoomPlayerController::BeginPlay()
 	UElvenringGameInstance* EGameInstance = Cast<UElvenringGameInstance>(GetGameInstance());
 	if (EGameInstance)
 	{
-		if (MyPlayerIndex == 0)
+		if (HasAuthority())//(MyPlayerIndex == 0)
 		{
 			EGameInstance->GetUIManager()->GetWaitingRoomUi()->HostMode();
 		}
-		else if (MyPlayerIndex > 0)
+		else //if (MyPlayerIndex > 0)
 		{
 			EGameInstance->GetUIManager()->GetWaitingRoomUi()->GuestMode();
 		}

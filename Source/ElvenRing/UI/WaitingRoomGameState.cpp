@@ -40,7 +40,6 @@ void AWaitingRoomGameState::OnRep_bUpdatePlayerName()
         {
             PC->Client_OnUpdatePlayerName();
            // UE_LOG(LogTemp, Warning, TEXT("OnRep_UpdatePlayerName/ num %d"), PC->GetMyPlayerIndex());
-
         }
     }
     //APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -82,5 +81,7 @@ void AWaitingRoomGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
     DOREPLIFETIME(AWaitingRoomGameState, bUpdatePlayerName);
+    DOREPLIFETIME(AWaitingRoomGameState, PlayerNames);
+
 }
 
