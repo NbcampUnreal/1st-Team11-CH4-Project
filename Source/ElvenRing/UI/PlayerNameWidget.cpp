@@ -5,3 +5,8 @@ void UPlayerNameWidget::SetName(FText Name)
 {
 	TextName->SetText(Name);//FText::FromString(Name)
 }
+
+FText UPlayerNameWidget::GetTextName()
+{
+	return TextName->GetText();
+}

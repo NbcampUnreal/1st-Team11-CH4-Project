@@ -5,6 +5,8 @@
 #include "WaitingRoomPlayerCardsRT.generated.h"
 
 class APlayerCard;
+class UTextureRenderTarget2D;
+class AWaitingRoomPlayerController;
 UCLASS()
 class ELVENRING_API AWaitingRoomPlayerCardsRT : public AActor
 {
@@ -13,6 +15,12 @@ class ELVENRING_API AWaitingRoomPlayerCardsRT : public AActor
 public:	
 	AWaitingRoomPlayerCardsRT();
 
+
+
+	void OnUpdatePlayerName(int idx, FText Name);
+
+	AWaitingRoomPlayerController* Controller;
+
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Root;
 
@@ -20,11 +28,15 @@ public:
 	class USceneCaptureComponent2D* SceneCapture;
 
 	TArray<APlayerCard*> PlayerCards;
+	
 
-	UFUNCTION(BlueprintCallable,Category = "PlayerCard")
-	void SetName(FText Name, int32 Idx);
+	UFUNCTION(BlueprintCallable, Category = "RenderTarget")
+	UTextureRenderTarget2D* GetRenderTarget();
 
-	void ConnectOpenPlayerCard(int Index, bool bMyOrder = false);
+	//UFUNCTION(Server, Reliable,BlueprintCallable,Category = "PlayerCard")
+	void SetName(FText Name);
+
+	void ConnectOpenPlayerCard(int32 Index, bool bMyOrder = false);
 protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "PlayerCard")
@@ -33,8 +45,10 @@ protected:
 
 	void TempCreatePlayerCard(); //임시 Test 생성용 곧 지울것!!2250414
 
-	
-
 private:	
 	FTimerHandle TimerHandle;
+
+	bool bTempInit = false;
+
+	UTextureRenderTarget2D* MyRenderTarget;
 };

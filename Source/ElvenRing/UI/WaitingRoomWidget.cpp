@@ -8,7 +8,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/WaitingRoomPlayerCardsRT.h"
-
+#include "Engine/TextureRenderTarget2D.h"
+#include "ElvenRing/UI/WaitingRoomPlayerController.h"
 void UWaitingRoomWidget::OnStartButtonClicked()
 {
     // UGameplayStatics::OpenLevel(this, FName("ElvenRuins_fix"));
@@ -24,8 +25,15 @@ void UWaitingRoomWidget::OnOkNickNameButtonClicked()
     {
         ElvenringGameInstance->SetNickname(InputName);
         TextPlayerCardNickName->SetText(FText::FromString(InputName));
-        WaitingRoomPlayerCardsRT->SetName(FText::FromString(InputName),0);
-        OverlayNickNameFrame->SetVisibility(ESlateVisibility::Collapsed);
+
+        UE_LOG(LogTemp, Warning, TEXT("InputName  : %s"), *InputName);
+       // WaitingRoomPlayerCardsRT->SetName(FText::FromString(InputName));
+        AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(GetOwningPlayer());
+        if (PC)
+        {
+            PC->Server_SetName1(FText::FromString(InputName));
+            OverlayNickNameFrame->SetVisibility(ESlateVisibility::Collapsed);
+        }
     }
 }
 
@@ -50,6 +58,22 @@ void UWaitingRoomWidget::NativeConstruct()
     ShockTimerHandles.AddDefaulted(3);
     OpenNamePopup();
     //PlayerCardEffect();
+
+    FTimerHandle TimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(
+        TimerHandle,
+        FTimerDelegate::CreateLambda([this]() 
+        {
+            UTextureRenderTarget2D* MyRenderTarget = WaitingRoomPlayerCardsRT->GetRenderTarget();
+            UMaterialInstanceDynamic* MyDynamicMaterial = UMaterialInstanceDynamic::Create(BaseRtMaterial, this);
+            MyDynamicMaterial->SetTextureParameterValue("MyRenderTargetParam", MyRenderTarget);
+
+            FSlateBrush Brush;
+            Brush.SetResourceObject(MyDynamicMaterial); // 생성한 머티리얼 인스턴스
+            ImagePlayerCardRTMat->SetBrush(Brush);
+           //SetRenderTarget();
+        }), 0.02f, false
+    );
 }
 void UWaitingRoomWidget::GuestMode()
 {
@@ -64,6 +88,16 @@ void UWaitingRoomWidget::HostMode()
 void UWaitingRoomWidget::SetPlayerCardRT(AWaitingRoomPlayerCardsRT* PlayerCardsRT)
 {
     this->WaitingRoomPlayerCardsRT = PlayerCardsRT;
+}
+void UWaitingRoomWidget::SetRenderTarget()//UMaterialInterface* RenderMaterialInstance
+{
+	UTextureRenderTarget2D* MyRenderTarget = WaitingRoomPlayerCardsRT->GetRenderTarget();
+    UMaterialInstanceDynamic* MyDynamicMaterial = UMaterialInstanceDynamic::Create(BaseRtMaterial, this);
+    MyDynamicMaterial->SetTextureParameterValue("MyRenderTargetParam", MyRenderTarget);
+
+    FSlateBrush Brush;
+    Brush.SetResourceObject(MyDynamicMaterial); // 생성한 머티리얼 인스턴스
+    ImagePlayerCardRTMat->SetBrush(Brush);
 }
 void UWaitingRoomWidget::PlayShockWave(int32 Index)
 {

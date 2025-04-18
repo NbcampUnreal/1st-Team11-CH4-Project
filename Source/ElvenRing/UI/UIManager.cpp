@@ -19,8 +19,7 @@
 #include "ScreenEffectWidget.h"
 #include "ElvenRing/Character/UnitBase.h"
 #include "Components/EditableTextBox.h"
-
-
+#include "Engine/TextureRenderTarget2D.h"
 
 UUIManager::UUIManager()
 {
@@ -232,6 +231,24 @@ void UUIManager::ShowMessage(const FString& Message, EMessageType MsgType)
          Widget->AddToViewport();
        Widget->ShowMessageText(Message);
    }
+}
+FRenderTargetMaterialSet UUIManager::CreateRenderTargetMaterial(UObject* WorldContext, UMaterialInterface* BaseMaterial)
+{
+    FRenderTargetMaterialSet Result;
+
+    // 렌더타겟 생성
+    UTextureRenderTarget2D* RenderTarget = NewObject<UTextureRenderTarget2D>(WorldContext);
+    RenderTarget->InitAutoFormat(1920, 1080);
+    RenderTarget->UpdateResourceImmediate(true);
+
+    // 머티리얼 생성
+    UMaterialInstanceDynamic* DynMat = UMaterialInstanceDynamic::Create(BaseMaterial, WorldContext);
+    DynMat->SetTextureParameterValue("MyRenderTargetParam", RenderTarget);
+
+    Result.RenderTarget = RenderTarget;
+    Result.Material = DynMat;
+
+    return Result;
 }
 
 void UUIManager::ShowScorePageWidget(UWorld* World)

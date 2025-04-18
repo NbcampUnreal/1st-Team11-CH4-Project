@@ -1,20 +1,34 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "WaitingRoomPlayerState.h"
+#include <Net/UnrealNetwork.h>
+#include "ElvenRing/UI/WaitingRoomPlayerController.h"
 
 AWaitingRoomPlayerState::AWaitingRoomPlayerState()
 {
-	PlayerName = TEXT("Empty");
+	PlayerName = FText::FromString(TEXT("Empty"));
 }
 
 void AWaitingRoomPlayerState::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HasAuthority())
-		PlayerName = TEXT("Host");
-	else
-		PlayerName = TEXT("Guest");
+
+    FTimerHandle TimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer
+	//(
+	//	TimerHandle,
+	//	FTimerDelegate::CreateLambda([this]() mutable
+	//	{
+ //    /*       APlayerController* PC = GetPlayerController();
+ //           if (!PC || !PC->IsLocalController())
+ //           {
+ //               UE_LOG(LogTemp, Warning, TEXT("Not LocalController / AWaitingRoomPlayerState"));
+ //               return;
+ //           }*/
+ //           if (HasAuthority())
+ //               PlayerName = FText::FromString(TEXT("Host"));
+ //           else
+ //               PlayerName = FText::FromString(TEXT("Guest"));
+	//	}), 0.1f, false
+	//);
 }
 
 void AWaitingRoomPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

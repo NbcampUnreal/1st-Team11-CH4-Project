@@ -19,9 +19,16 @@ class ELVENRING_API UWaitingRoomWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
+
+    UPROPERTY(EditDefaultsOnly, Category = "Mat")
+    UMaterialInterface* BaseRtMaterial;
+
     UPROPERTY(Transient, meta = (BindWidgetAnim))
     UWidgetAnimation* NickNameFrameAppeare;
 
+    UPROPERTY(meta = (BindWidget))
+    UImage* ImagePlayerCardRTMat;
+    
     UPROPERTY(meta = (BindWidget))
     UImage* ImageReady;
     UPROPERTY(meta = (BindWidget))
@@ -64,6 +71,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "UI")
     void SetPlayerCardRT(AWaitingRoomPlayerCardsRT* PlayerCardsRT);
 
+    UFUNCTION(BlueprintCallable, Category = UI)
+    void SetRenderTarget();//(UTextureRenderTarget2D* RenderTarget);
+	
     TArray<UImage*> ShockWaves;
 protected:
     UFUNCTION(BlueprintCallable,Category = "Effect")

@@ -9,9 +9,18 @@
 #include "ElvenRing/UI/WaitingRoomGameState.h"
 #include "ElvenRing/UI/WaitingRoomPlayerState.h"
 #include "ElvenRing/UI/WaitingRoomPlayerController.h"
+#include  "WaitingRoomGameState.h"
+#include "Kismet/GameplayStatics.h"
+#include "ElvenRing/Core/ElvenringGameInstance.h"
+#include "ElvenRing/UI/UIManager.h"
+#include "ElvenRing/UI/WaitingRoomWidget.h"
 
 AWaitingRoomPlayerCardsRT::AWaitingRoomPlayerCardsRT()
 {
+	if (bTempInit)
+		return;
+	bTempInit = true;
+
 	Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = Root;
 
@@ -27,14 +36,46 @@ AWaitingRoomPlayerCardsRT::AWaitingRoomPlayerCardsRT()
 		UE_LOG(LogTemp, Warning, TEXT("PlayerCardClass: %s"), *GetNameSafe(PlayerCardClass));
 	}
 }
-void AWaitingRoomPlayerCardsRT::SetName(FText Name,int32 Idx)
+void AWaitingRoomPlayerCardsRT::OnUpdatePlayerName(int idx, FText Name)
 {
-	PlayerCards[Idx]->SetName(Name);
+	PlayerCards[idx]->SetName( Name );
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerCard CurInputName from Server: %s"), *PlayerCards[idx]->GetPlayerName().ToString());
+}
+UTextureRenderTarget2D* AWaitingRoomPlayerCardsRT::GetRenderTarget()
+{
+	return MyRenderTarget;
+}
+void AWaitingRoomPlayerCardsRT::SetName(FText Name)
+{
+	AWaitingRoomPlayerController* WaitingRoomPlayerController = Controller;//Cast<AWaitingRoomPlayerController>();//(UGameplayStatics::GetPlayerController(this, 0));
+	if (!WaitingRoomPlayerController) return;
+
+	//if( Controller->IsLocalController())
+		WaitingRoomPlayerController->Server_SetName1(Name);
+	
+
+	/*int32 MyPlayerCardIndex = WaitingRoomPlayerController->GetMyPlayerIndex();
+	UE_LOG(LogTemp, Warning, TEXT("MyPlayerCardIndex = %d"), MyPlayerCardIndex);
+	if (MyPlayerCardIndex < 0 || MyPlayerCardIndex >= PlayerCards.Num())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Invalid PlayerCard Index"));
+		return;
+	}
+	PlayerCards[MyPlayerCardIndex]->SetName(Name);*/
 }
 
 void AWaitingRoomPlayerCardsRT::BeginPlay()
 {
 	Super::BeginPlay();
+
+	MyRenderTarget = NewObject<UTextureRenderTarget2D>(this);
+	MyRenderTarget->InitAutoFormat(1920, 1080);
+	MyRenderTarget->ClearColor = FLinearColor::Transparent;
+	MyRenderTarget->UpdateResourceImmediate(true);
+
+	SceneCapture->TextureTarget = MyRenderTarget;
+	//UE_LOG(LogTemp, Warning, TEXT("AWaitingRoomPlayerCardsRT MyRenderTarget"));
 	SceneCapture->TextureTarget->ClearColor = FLinearColor(0, 0, 0, 0);
 	//SceneCapture->ShowFlags.SetLighting(false);
 	SceneCapture->ShowFlags.SetPostProcessing(false);
@@ -68,53 +109,54 @@ void AWaitingRoomPlayerCardsRT::TempCreatePlayerCard()
 	(
 		TimerHandle,
 		FTimerDelegate::CreateLambda([this, Index, ElapsedTime, PrveTime]() mutable
+		{
+			ElapsedTime += GetWorld()->GetTimeSeconds() - PrveTime;
+			if (ElapsedTime > 0.8f)
 			{
-				ElapsedTime += GetWorld()->GetTimeSeconds() - PrveTime;
-				if (ElapsedTime > 0.8f)
-				{
-					ElapsedTime = 0.f;
-					FActorSpawnParameters SpawnParams;
-					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-					//for (int32 i = 0; i < 3; ++i)
-					//{
-					FVector SpawnLocation = FVector(-1025.f + 1025.f * Index, -1500.f, 50.f);
-					FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
-					APlayerCard* CreatePlayerCard = GetWorld()->SpawnActor<APlayerCard>(
-						PlayerCardClass, SpawnLocation, SpawnRotation, SpawnParams
-					);
+				ElapsedTime = 0.f;
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+				//for (int32 i = 0; i < 3; ++i)
+				//{
+				FVector SpawnLocation = FVector(-1025.f + 1025.f * Index, -1500.f, 50.f);
+				FRotator SpawnRotation = FRotator(0.f, 0.f, 0.f);
+				APlayerCard* CreatePlayerCard = GetWorld()->SpawnActor<APlayerCard>(
+					PlayerCardClass, SpawnLocation, SpawnRotation, SpawnParams
+				);
 
-					if (CreatePlayerCard)
-					{
-						CreatePlayerCard->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-						CreatePlayerCard->SetName(FText::FromString(TEXT("Guest")));
-						CreatePlayerCard->SetIndex(Index);
-						PlayerCards.Add(CreatePlayerCard);
-					}
-					Index++;
-					if (Index >= 3)
-					{
-						GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-						UE_LOG(LogTemp, Warning, TEXT("Index %d / ElapsedTime = %f"), Index, ElapsedTime);
-					}
-					//}
+				if (CreatePlayerCard)
+				{
+					CreatePlayerCard->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+					CreatePlayerCard->SetName(FText::FromString(TEXT("Guest")));
+					CreatePlayerCard->SetIndex(Index);
+					PlayerCards.Add(CreatePlayerCard);
 				}
-				else
-					PrveTime = GetWorld()->GetTimeSeconds();
-			}), 0.1f, true
+				Index++;
+				if (Index >= 3)
+				{
+					GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+					//UE_LOG(LogTemp, Warning, TEXT("Index %d / ElapsedTime = %f"), Index, ElapsedTime);
+				}
+				//}
+			}
+			else
+				PrveTime = GetWorld()->GetTimeSeconds();
+		}), 0.1f, true
 	);
 }
 
 //네트워크 연결시 플레이어 카드 생성 예비 코드
-void AWaitingRoomPlayerCardsRT::ConnectOpenPlayerCard(int Index,bool bMyOrder)
+void AWaitingRoomPlayerCardsRT::ConnectOpenPlayerCard(int32 Index,bool bMyOrder)
 {
-	//if (true)
-	//	return;
+	int StartIdx = PlayerCards.Num();
 
-	UE_LOG(LogTemp, Warning, TEXT("ConnectPlayerCard / Index %d"), Index);
-	if (PlayerCards.Num() > 0)
-		return;
-	int StartIdx =  PlayerCards.Num();
-
+	AWaitingRoomPlayerController* WaitingRoomPlayerController = Cast<AWaitingRoomPlayerController>(UGameplayStatics::GetPlayerController(this, 0));
+	if (WaitingRoomPlayerController)
+	{
+		int32 ControllerIdx = WaitingRoomPlayerController->GetMyPlayerIndex();
+		UE_LOG(LogTemp, Warning, TEXT("StartIdx   %d/ Index %d / ControllerIdx %d"), StartIdx, Index, ControllerIdx);
+	}
+	
 	AWaitingRoomGameState* GameState = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
 	if (!GameState)
 	{
@@ -122,7 +164,6 @@ void AWaitingRoomPlayerCardsRT::ConnectOpenPlayerCard(int Index,bool bMyOrder)
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("StartIdx %d  / Index %d"), StartIdx, Index);
 	for (int32 i = StartIdx; i < Index;++i)
 	{
 		FActorSpawnParameters SpawnParams;
@@ -143,15 +184,9 @@ void AWaitingRoomPlayerCardsRT::ConnectOpenPlayerCard(int Index,bool bMyOrder)
 				AWaitingRoomPlayerState* PlayerState = Cast<AWaitingRoomPlayerState>(GameState->PlayerArray[i]);
 				if (PlayerState)
 				{
-					FString PlayerName = PlayerState->PlayerName;
+					FString PlayerName = PlayerState->PlayerName.ToString();
 					CreatePlayerCard->SetName(FText::FromString(PlayerName));
-				}
-				else
-				{
-					if(i == 0)
-						CreatePlayerCard->SetName(FText::FromString(TEXT("Host")));
-					else
-						CreatePlayerCard->SetName(FText::FromString(TEXT("Guest")));
+					UE_LOG(LogTemp, Warning, TEXT("CreatePlayerCard %d  / PlayerName : %s"), i, *PlayerName);
 				}
 				PlayerCards.Add(CreatePlayerCard);
 			}

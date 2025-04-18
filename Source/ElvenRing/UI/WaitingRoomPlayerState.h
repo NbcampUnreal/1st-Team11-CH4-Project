@@ -18,7 +18,7 @@ public:
 	AWaitingRoomPlayerState();
 public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Info")
-	FString PlayerName;
+	FText PlayerName;
 protected:
 
 	virtual void BeginPlay() override;

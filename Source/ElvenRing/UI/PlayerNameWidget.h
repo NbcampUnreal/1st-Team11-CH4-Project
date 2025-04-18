@@ -16,4 +16,6 @@ public:
 
 	UFUNCTION(BlueprintCallable,Category = "UI")
 	void SetName(FText Name);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	FText GetTextName();
 };

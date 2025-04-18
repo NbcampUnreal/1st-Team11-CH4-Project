@@ -20,6 +20,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "PlayerCard")
 	void SetName(FText Name);
+	FText GetPlayerName();
 protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "PlayerCard")

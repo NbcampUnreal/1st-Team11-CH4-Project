@@ -5,6 +5,17 @@
 #include "CoreMinimal.h"
 #include "CommonTypes.generated.h" 
 
+
+USTRUCT(BlueprintType)
+struct FRenderTargetMaterialSet
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTextureRenderTarget2D* RenderTarget;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterialInstanceDynamic*	Material;
+};
 USTRUCT(BlueprintType)
 struct FResultStat
 {

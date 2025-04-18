@@ -55,7 +55,7 @@ void UMainTitleWidget::OnMultiButtonClicked()
 
     GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
     GetWorld()->GetTimerManager().SetTimer(AlphaPingpongTimerHandle, this, &UMainTitleWidget::PingpongText, 0.05f, true);
-
+	
     ConnetingTimer();
 	if (UElvenRingOnline* ElvenRingOnline = GetGameInstance()->GetSubsystem<UElvenRingOnline>())
 	{
@@ -97,6 +97,7 @@ void UMainTitleWidget::OnMultiButtonClicked()
 							GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
 							GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 							UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"), true, TEXT("listen"));
+							UE_LOG(LogTemp, Warning, TEXT("Create Session Success"));
 						}
 						else
 						{

@@ -14,7 +14,21 @@ class ELVENRING_API AWaitingRoomGameState : public AGameState
 public:
 	AWaitingRoomGameState();
 
-	void AppeareWaitingRoomPlayerCard(int Index); 
+	UPROPERTY(ReplicatedUsing = OnRep_bUpdatePlayerName)
+	bool bUpdatePlayerName;
+
+	UFUNCTION()
+	void OnRep_bUpdatePlayerName();
+
+	void AppeareWaitingRoomPlayerCard(int Index);
+	void UpdatePlayerName(FText Name);
+
+	//TMap<int32, FString> PlayerNameMap;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Info")
+	TArray<FText> PlayerNames;
 protected:
+
+
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

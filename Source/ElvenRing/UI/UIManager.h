@@ -1,5 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// Fill out your copyright notice in the Description page of Project Settings
 #pragma once
 
 #include "CoreMinimal.h"
@@ -60,6 +59,8 @@ public:
     
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowMessage(const FString& Message, EMessageType MsgType);
+
+    FRenderTargetMaterialSet CreateRenderTargetMaterial(UObject* WorldContext, UMaterialInterface* BaseMaterial);
     
     UFUNCTION(BlueprintCallable, Category = "UI")
     void ShowScorePageWidget(UWorld* World);
@@ -71,6 +72,9 @@ public:
     void DestroyMonsterHpWidget(AActor* Monster);
 
     void RegisterMessageWidgets();
+
+    UPROPERTY(EditDefaultsOnly)
+    UMaterialInterface* BaseRenderTargetMaterial;
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     UPlayerMainUi* GetPlayerMainUi() const { return PlayerMainUiWedget; };

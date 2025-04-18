@@ -38,7 +38,11 @@ void APlayerCard::SetName(FText Name)
 	UPlayerNameWidget* NickNameWidget = Cast<UPlayerNameWidget>(NameWidgetComponent->GetUserWidgetObject());
 	NickNameWidget->SetName(Name);
 }
-
+FText APlayerCard::GetPlayerName()
+{
+	UPlayerNameWidget* NickNameWidget = Cast<UPlayerNameWidget>(NameWidgetComponent->GetUserWidgetObject());
+	return NickNameWidget->GetTextName();
+}
 void APlayerCard::BeginPlay()
 {
 	Super::BeginPlay();

@@ -39,11 +39,6 @@ void AEvenRingWaitingRoomGameMode::InitGame(const FString& MapName, const FStrin
 void AEvenRingWaitingRoomGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	//if (!NewPlayer->IsLocalController())
-	//{
-	//	UE_LOG(LogTemp, Warning, TEXT("Not LocalController / AEvenRingWaitingRoomGameMode"));
-	//	return;
-	//}
 
 	ConnectedPlayers.Add(NewPlayer);
 
@@ -51,7 +46,7 @@ void AEvenRingWaitingRoomGameMode::PostLogin(APlayerController* NewPlayer)
 	if (ConnectedPlayers.Num() == 1) //처음접속
 		PlayerName = TEXT("Host");
 	AWaitingRoomPlayerController* WaitingRoomPlayerController = Cast<AWaitingRoomPlayerController>(NewPlayer);
-	WaitingRoomPlayerController->SetIndex(ConnectedPlayerCount);
+	WaitingRoomPlayerController->MyPlayerIndex = ConnectedPlayerCount;
 	ConnectedPlayerCount++;
 
 	int TempConnectedPlayerCount = ConnectedPlayerCount;
