@@ -21,6 +21,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PlayerCard")
 	void SetName(FText Name);
 	FText GetPlayerName();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerCard")
+	float GlowPowerSpeed = 1000.f;
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerCard")
+	void CloseGlowPowr();
 protected:
 
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly, Category = "PlayerCard")
@@ -44,7 +50,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerCard")
 	FRotator NameWidgetRot;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "PlayerCard")
+	UMaterialInterface* PlayerCardMaterialInstance;
+
 	FName BoneName;
+	UMaterialInstanceDynamic* PlayerCardDynamicMaterial = nullptr;
+	float GlowPowerDir = 1.f;
+	bool bInit = false;
+	float GlowPower = 0.f;
+	float Opacity = 0.f;
 	virtual void BeginPlay() override;
 public:	
 

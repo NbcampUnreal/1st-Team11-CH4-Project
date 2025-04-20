@@ -10,10 +10,13 @@
 #include "GameFramework/GameState.h"
 #include "ElvenRing/UI/WaitingRoomPlayerController.h"
 #include "ElvenRing/UI/WaitingRoomGameState.h"
+#include "ElvenRing/UI/WaitingRoomPlayerState.h"
 
 AEvenRingWaitingRoomGameMode::AEvenRingWaitingRoomGameMode()
 {
 	DefaultPawnClass = nullptr;
+	PlayerStateClass = AWaitingRoomPlayerState::StaticClass();
+
 	//static ConstructorHelpers::FClassFinder<AWaitingRoomPlayerCardsRT> BP_WaitingRoomPlayerCardsRT(TEXT("/Game/ElvenRing/Blueprints/UI/BP_WaitingRoomPlayerCardsRT"));
 	//if (BP_WaitingRoomPlayerCardsRT.Succeeded())
 	//	WaitingRoomPlayerCardsRTClass = BP_WaitingRoomPlayerCardsRT.Class;

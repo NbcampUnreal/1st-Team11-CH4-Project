@@ -66,42 +66,93 @@ void AWaitingRoomPlayerController::OpenWaitingRoom_Implementation(int CurConnect
 }
 void AWaitingRoomPlayerController::Client_OnUpdatePlayerName_Implementation()
 {
-	//if (true)
+	if (!IsLocalController())
+		return;
+
+	//FTimerHandle HpTimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer
+	//(
+	//	HpTimerHandle,
+	//	FTimerDelegate::CreateLambda([this]() mutable
+	//	{
+	//	}), 1.f, false
+	//);
+
+	AWaitingRoomGameState* GS = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
+	if (!GS) return;
+
+	//bool bIsValid = true;
+
+	//for (int32 i = 0; i < GS->PlayerArray.Num(); ++i)
+	//{
+	//	AWaitingRoomPlayerState* PS = Cast<AWaitingRoomPlayerState>(GS->PlayerArray[i]);
+	//	if (!PS || PS->PlayerNickName.IsEmpty())
+	//	{
+	//		bIsValid = false;
+	//		break;
+	//	}
+	//}
+
+	//if (!bIsValid)
+	//{
+	//	// 아직 완전히 복제되지 않음 → 다음 틱에 다시 시도
+	//	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AWaitingRoomPlayerController::Client_OnUpdatePlayerName);
+	//	UE_LOG(LogTemp, Warning, TEXT("복제 미완료: 다시 시도"));
 	//	return;
-
-	AWaitingRoomGameState* WaitingRoomGameState = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
-	if (WaitingRoomGameState)
+	//}
+	//GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AWaitingRoomPlayerController::Client_OnUpdatePlayerName);
+	//	UE_LOG(LogTemp, Warning, TEXT("복제 미완료: 다시 시도"));
+	//	return;
+	// ✅ 여기 도달했을 때는 복제가 완료된 상태
+	for (int32 i = 0; i < GS->PlayerArray.Num(); ++i)
 	{
-		//const TArray<APlayerState*> PlayerStates = WaitingRoomGameState->PlayerArray;
-
-		//UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d / PlayerArray.SIZE %d"), MyPlayerIndex, PlayerStates.Num());
-		//UE_LOG(LogTemp, Warning, TEXT("GS->PlayerNames.Num = %d / PlayerArray.SIZE %d"), WaitingRoomGameState->PlayerNames.Num(), PlayerStates.Num());
-		//if (WaitingRoomGameState->PlayerNames.Num() < PlayerStates.Num())
-		//{
-		//	// 아직 동기화가 안된 상태니까 타이머로 재시도
-		//	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AWaitingRoomPlayerController::Client_OnUpdatePlayerName);
-		//	UE_LOG(LogTemp, Warning, TEXT("Return PlayerNames.Num() < PlayerStates.Num()"));
-		//	return;
-		//}else
-		//{
-		//	UE_LOG(LogTemp, Warning, TEXT("Ok"));
-		//}
-		
-		for (int32 i = 0; i < WaitingRoomGameState->PlayerNames.Num();++i)//(int32 i = 0; i < PlayerStates.Num();++i) //(APlayerState* PS : PlayerStates)
+		AWaitingRoomPlayerState* PS = Cast<AWaitingRoomPlayerState>(GS->PlayerArray[i]);
+		if (PS)
 		{
-			//FText PlayerCardName = Cast<AWaitingRoomPlayerState>(PlayerStates[i])->PlayerName;
-			FText PlayerCardName = WaitingRoomGameState->PlayerNames[i];
-			FString DBG = PlayerCardName.ToString();
-			UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d /CarIndex %d / PlayerCardName %s"), MyPlayerIndex,i, *DBG);
-			WaitingRoomPlayerCardsRT->OnUpdatePlayerName(i, PlayerCardName );
-
-		//	UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d / PlayerCardName %s"), MyPlayerIndex, *PlayerCardName.ToString());
+			WaitingRoomPlayerCardsRT->OnUpdatePlayerName(i, PS->PlayerNickName);
 		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("WaitingRoomGameState is NULL"));
-	}
+
+	//AWaitingRoomGameState* WaitingRoomGameState = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
+	//if (WaitingRoomGameState)
+	//{
+	//	const TArray<APlayerState*> PlayerStates = WaitingRoomGameState->PlayerArray;
+
+	//	//UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d / PlayerArray.SIZE %d"), MyPlayerIndex, PlayerStates.Num());
+	//	//UE_LOG(LogTemp, Warning, TEXT("GS->PlayerNames.Num = %d / PlayerArray.SIZE %d"), WaitingRoomGameState->PlayerNames.Num(), PlayerStates.Num());
+	//	//if (WaitingRoomGameState->PlayerNames.Num() < PlayerStates.Num())
+	//	//{
+	//	//	// 아직 동기화가 안된 상태니까 타이머로 재시도
+	//	//	GetWorld()->GetTimerManager().SetTimerForNextTick(this, &AWaitingRoomPlayerController::Client_OnUpdatePlayerName);
+	//	//	UE_LOG(LogTemp, Warning, TEXT("Return PlayerNames.Num() < PlayerStates.Num()"));
+	//	//	return;
+	//	//}else
+	//	//{
+	//	//	UE_LOG(LogTemp, Warning, TEXT("Ok"));
+	//	//}
+	//	for (int32 i = 0; i < PlayerStates.Num();++i)
+	//	{
+	//		FText PlayerCardName = Cast<AWaitingRoomPlayerState>(PlayerStates[i])->PlayerName;
+	//		FString DBG = PlayerCardName.ToString();
+	//		UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d /CarIndex %d / PlayerCardName %s"), MyPlayerIndex,i, *DBG);
+	//		WaitingRoomPlayerCardsRT->OnUpdatePlayerName(i, PlayerCardName );
+	//	}
+
+
+	//	//for (int32 i = 0; i < WaitingRoomGameState->PlayerNames.Num();++i)//(int32 i = 0; i < PlayerStates.Num();++i) //(APlayerState* PS : PlayerStates)
+	//	//{
+	//	//	//FText PlayerCardName = Cast<AWaitingRoomPlayerState>(PlayerStates[i])->PlayerName;
+	//	//	FText PlayerCardName = WaitingRoomGameState->PlayerNames[i];
+	//	//	FString DBG = PlayerCardName.ToString();
+	//	//	UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d /CarIndex %d / PlayerCardName %s"), MyPlayerIndex,i, *DBG);
+	//	//	WaitingRoomPlayerCardsRT->OnUpdatePlayerName(i, PlayerCardName );
+	//	////	UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d / PlayerCardName %s"), MyPlayerIndex, *PlayerCardName.ToString());
+	//	//}
+	//}
+	//else
+	//{
+	//	UE_LOG(LogTemp, Warning, TEXT("WaitingRoomGameState is NULL"));
+	//}
 }
 void AWaitingRoomPlayerController::TempCreateRT()
 {
@@ -122,9 +173,8 @@ void AWaitingRoomPlayerController::TempCreateRT()
 		EGameInstance->GetUIManager()->ShowWaitingRoom(GetWorld(), WaitingRoomPlayerCardsRT);
 //	UE_LOG(LogTemp, Warning, TEXT(" OPEN WaitingRoomPlayerCardsRT / MyPlayerIndex = %d"), MyPlayerIndex);
 }
-void AWaitingRoomPlayerController::Server_SetName1_Implementation(const FText& Name)
+void AWaitingRoomPlayerController::Server_SetName1_Implementation(const FString& Name)
 {
-
 	//if (PS)
 	//{
 	//	//if (IsLocalController())
@@ -136,10 +186,17 @@ void AWaitingRoomPlayerController::Server_SetName1_Implementation(const FText& N
 	AWaitingRoomGameState* GS = GetWorld()->GetGameState<AWaitingRoomGameState>();
 	if (GS)
 	{
-		Cast<AWaitingRoomPlayerState>(GS->PlayerArray[MyPlayerIndex])->PlayerName = Name;
+		Cast<AWaitingRoomPlayerState>(GS->PlayerArray[MyPlayerIndex])->PlayerNickName = Name;
+		FString dbg = Name;
+		UE_LOG(LogTemp, Warning, TEXT("MyPlayerIndex = %d  / PlayerName %s"), MyPlayerIndex, *dbg);
 		AWaitingRoomPlayerState* PS = Cast<AWaitingRoomPlayerState>(PlayerState);
+		if (PS)
+			PS->Server_UpdatePlayerNickName(Name);//PS->PlayerName = Name.ToString();
+		/*if (GS)
+			GS->UpdatePlayerName(Name);*/
+		
 
-		GS->UpdatePlayerName(Name);
+		
 		//GS->bUpdatePlayerName = !GS->bUpdatePlayerName; // RepNotify 트리거
 		//if (HasAuthority())
 		//{
@@ -217,6 +274,31 @@ void AWaitingRoomPlayerController::BeginPlay()
 	//	UE_LOG(LogTemp, Warning, TEXT("NetMode: Client"));
 	//	break;
 	//}
+
+	if (HasAuthority())
+		return;
+	AWaitingRoomGameState* GS = Cast<AWaitingRoomGameState>(GetWorld()->GetGameState());
+	if (!GS) return;
+
+	bool bIsValid = true;
+
+
+	//FTimerHandle HpTimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer
+	//(
+	//	HpTimerHandle,
+	//	FTimerDelegate::CreateLambda([this, GS]() mutable
+	//	{
+	//		for (int32 i = 0; i < GS->PlayerArray.Num(); ++i)
+	//		{
+	//			AWaitingRoomPlayerState* PS = Cast<AWaitingRoomPlayerState>(GS->PlayerArray[i]);
+	//			if (PS || !PS->PlayerNickName.IsEmpty())
+	//			{
+	//				UE_LOG(LogTemp, Warning, TEXT("index = %d / Name  = %s"), i, *PS->PlayerNickName);
+	//			}
+	//		}
+	//	}), 0.1f, true
+	//);
 }
 
 void AWaitingRoomPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

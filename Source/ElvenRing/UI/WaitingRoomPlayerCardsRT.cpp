@@ -36,11 +36,15 @@ AWaitingRoomPlayerCardsRT::AWaitingRoomPlayerCardsRT()
 		UE_LOG(LogTemp, Warning, TEXT("PlayerCardClass: %s"), *GetNameSafe(PlayerCardClass));
 	}
 }
-void AWaitingRoomPlayerCardsRT::OnUpdatePlayerName(int idx, FText Name)
+void AWaitingRoomPlayerCardsRT::SetGlowPoworDir(float Dir,int32 Index)
 {
-	PlayerCards[idx]->SetName( Name );
+	PlayerCards[Index]->CloseGlowPowr();
+}
+void AWaitingRoomPlayerCardsRT::OnUpdatePlayerName(int idx, FString Name)
+{
+	PlayerCards[idx]->SetName(FText::FromString( Name) );
 
-	UE_LOG(LogTemp, Warning, TEXT("PlayerCard CurInputName from Server: %s"), *PlayerCards[idx]->GetPlayerName().ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("PlayerCard CurInputName from Server: %s"), *PlayerCards[idx]->GetPlayerName().ToString());
 }
 UTextureRenderTarget2D* AWaitingRoomPlayerCardsRT::GetRenderTarget()
 {
@@ -52,7 +56,7 @@ void AWaitingRoomPlayerCardsRT::SetName(FText Name)
 	if (!WaitingRoomPlayerController) return;
 
 	//if( Controller->IsLocalController())
-		WaitingRoomPlayerController->Server_SetName1(Name);
+		WaitingRoomPlayerController->Server_SetName1(Name.ToString());
 	
 
 	/*int32 MyPlayerCardIndex = WaitingRoomPlayerController->GetMyPlayerIndex();
@@ -78,10 +82,25 @@ void AWaitingRoomPlayerCardsRT::BeginPlay()
 	//UE_LOG(LogTemp, Warning, TEXT("AWaitingRoomPlayerCardsRT MyRenderTarget"));
 	SceneCapture->TextureTarget->ClearColor = FLinearColor(0, 0, 0, 0);
 	//SceneCapture->ShowFlags.SetLighting(false);
-	SceneCapture->ShowFlags.SetPostProcessing(false);
-	SceneCapture->ShowFlags.SetShadowFrustums(false);
-	SceneCapture->ShowFlags.SetFog(false);
-	SceneCapture->ShowFlags.SetAtmosphere(false);
+	//SceneCapture->ShowFlags.SetPostProcessing(false);
+	//SceneCapture->ShowFlags.SetShadowFrustums(false);
+	//SceneCapture->ShowFlags.SetFog(false);
+	//SceneCapture->ShowFlags.SetAtmosphere(false);
+
+	//SceneCapture->ShowFlags.SetBloom(true);
+	//SceneCapture->ShowFlags.SetPostProcessing(true);
+	//SceneCapture->ShowFlags.SetTonemapper(true);
+
+	//SceneCapture->PostProcessSettings.bOverride_BloomIntensity = true;
+	//SceneCapture->PostProcessSettings.BloomIntensity = 3.f;
+
+	//SceneCapture->PostProcessSettings.bOverride_BloomThreshold = true;
+	//SceneCapture->PostProcessSettings.BloomThreshold = -1.f;
+
+	//SceneCapture->PostProcessSettings.bOverride_AutoExposureMethod = true;
+	//SceneCapture->PostProcessSettings.AutoExposureMethod = EAutoExposureMethod::AEM_Manual;
+	//SceneCapture->PostProcessSettings.ExposureCompensationSettings.ExposureCompensation = 1.0f;
+	//SceneCapture->CaptureSource = ESceneCaptureSource::SCS_FinalColorLDR;
 
 	//FActorSpawnParameters SpawnParams;
 	//SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -184,7 +203,7 @@ void AWaitingRoomPlayerCardsRT::ConnectOpenPlayerCard(int32 Index,bool bMyOrder)
 				AWaitingRoomPlayerState* PlayerState = Cast<AWaitingRoomPlayerState>(GameState->PlayerArray[i]);
 				if (PlayerState)
 				{
-					FString PlayerName = PlayerState->PlayerName.ToString();
+					FString PlayerName = PlayerState->PlayerNickName;
 					CreatePlayerCard->SetName(FText::FromString(PlayerName));
 					UE_LOG(LogTemp, Warning, TEXT("CreatePlayerCard %d  / PlayerName : %s"), i, *PlayerName);
 				}

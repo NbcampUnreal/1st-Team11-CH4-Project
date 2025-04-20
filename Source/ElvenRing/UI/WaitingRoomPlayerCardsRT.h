@@ -17,7 +17,8 @@ public:
 
 
 
-	void OnUpdatePlayerName(int idx, FText Name);
+
+	void OnUpdatePlayerName(int idx, FString Name);
 
 	AWaitingRoomPlayerController* Controller;
 
@@ -28,7 +29,9 @@ public:
 	class USceneCaptureComponent2D* SceneCapture;
 
 	TArray<APlayerCard*> PlayerCards;
-	
+
+	UFUNCTION(BlueprintCallable, Category = "PlayerCard")
+	void SetGlowPoworDir(float Dir, int32 Index);
 
 	UFUNCTION(BlueprintCallable, Category = "RenderTarget")
 	UTextureRenderTarget2D* GetRenderTarget();

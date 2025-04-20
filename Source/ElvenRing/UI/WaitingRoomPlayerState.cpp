@@ -4,7 +4,51 @@
 
 AWaitingRoomPlayerState::AWaitingRoomPlayerState()
 {
-	PlayerName = FText::FromString(TEXT("Empty"));
+	PlayerNickName = TEXT("Empty");//FText::FromString(TEXT("Empty"));
+}
+void AWaitingRoomPlayerState::Server_UpdatePlayerNickName(const FString& Name)//_Implementation
+{
+	PlayerNickName = Name;
+
+	if (HasAuthority()) 
+	{
+		for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+		{
+			if (AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(It->Get()))
+			{
+				if (PC->IsLocalController())
+					PC->Client_OnUpdatePlayerName(); // 오직 호스트 자기화면
+			}
+		}
+	}
+}
+void AWaitingRoomPlayerState::OnRep_PlayerNickName()
+{
+	for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		if (AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(It->Get()))
+		{
+			if (PC->IsLocalController())
+				PC->Client_OnUpdatePlayerName(); // 오직 호스트 자기화면
+		}
+	}
+	/*AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(GetPlayerController());
+	if (PC) 
+	{
+		PC->Client_OnUpdatePlayerName();
+	}*/
+
+	//for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	//{
+	//	if (AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(It->Get()))
+	//	{
+	//		if (PC->IsLocalController() )
+	//		{
+	//			PC->Client_OnUpdatePlayerName(); // 오직 호스트 자기화면
+	//		}
+	//	}
+	//}
+	//bUpdatePlayerName = !bUpdatePlayerName;
 }
 
 void AWaitingRoomPlayerState::BeginPlay()
@@ -35,5 +79,5 @@ void AWaitingRoomPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AWaitingRoomPlayerState, PlayerName);
+	DOREPLIFETIME(AWaitingRoomPlayerState, PlayerNickName);
 }

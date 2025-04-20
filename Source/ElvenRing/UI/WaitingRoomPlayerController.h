@@ -31,7 +31,7 @@ public:
 	int32 GetMyPlayerIndex() { return MyPlayerIndex; }
 
 	UFUNCTION(Server, Reliable)
-	void Server_SetName1(const FText& Name);
+	void Server_SetName1(const FString& Name);
 protected:
 	
 

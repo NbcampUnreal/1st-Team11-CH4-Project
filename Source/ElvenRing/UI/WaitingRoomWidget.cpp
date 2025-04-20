@@ -31,7 +31,7 @@ void UWaitingRoomWidget::OnOkNickNameButtonClicked()
         AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(GetOwningPlayer());
         if (PC)
         {
-            PC->Server_SetName1(FText::FromString(InputName));
+            PC->Server_SetName1(InputName);
             OverlayNickNameFrame->SetVisibility(ESlateVisibility::Collapsed);
         }
     }
@@ -72,7 +72,7 @@ void UWaitingRoomWidget::NativeConstruct()
             Brush.SetResourceObject(MyDynamicMaterial); // 생성한 머티리얼 인스턴스
             ImagePlayerCardRTMat->SetBrush(Brush);
            //SetRenderTarget();
-        }), 0.02f, false
+        }), 0.01f, false
     );
 }
 void UWaitingRoomWidget::GuestMode()
@@ -101,10 +101,13 @@ void UWaitingRoomWidget::SetRenderTarget()//UMaterialInterface* RenderMaterialIn
 }
 void UWaitingRoomWidget::PlayShockWave(int32 Index)
 {
+    if ( !IsInViewport() || GetVisibility() == ESlateVisibility::Collapsed)
+        return;
+
     if (bDegCntArr[Index] )
         return;
     bDegCntArr[Index] = true;
-
+    
     //ShockWaves[Index]->SetVisibility(ESlateVisibility::Visible);
    // UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/ElvenRing/UI/M_ShockWave_Red_Inst.M_ShockWave_Red_Inst"));
    // UE_LOG(LogTemp, Warning, TEXT("ShockWaves cnt : %d"), cnt);
@@ -167,6 +170,7 @@ void UWaitingRoomWidget::PlayerCardEffect()
 }
 void UWaitingRoomWidget::CloseShockWave(FSlateBrush& Brush, UMaterialInstanceDynamic* DynMat,int Index)
 {
+   WaitingRoomPlayerCardsRT->SetGlowPoworDir(-1.f, Index);
   //  UMaterialInterface* Mat = Cast<UMaterialInterface>(Brush.GetResourceObject());
    // UMaterialInterface* Mat = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/ElvenRing/UI/M_ShockWave_Red_Inst.M_ShockWave_Red_Inst"));
   //  FSlateBrush Brush1 = ShockWaves[Index]->Brush;

@@ -43,15 +43,26 @@ FText APlayerCard::GetPlayerName()
 	UPlayerNameWidget* NickNameWidget = Cast<UPlayerNameWidget>(NameWidgetComponent->GetUserWidgetObject());
 	return NickNameWidget->GetTextName();
 }
+void APlayerCard::CloseGlowPowr()
+{
+	GlowPowerDir = -1.f;
+	GlowPowerSpeed *= 0.75f;
+}
 void APlayerCard::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	GlowPower = 0.f;
+	bInit = true;
+	//PlayerCardMesh->CreateDynamicMaterialInstance(0, PlayerCardMaterialInstance);
+	PlayerCardDynamicMaterial = PlayerCardMesh->CreateAndSetMaterialInstanceDynamic(0);
+	int32 dsfsdf = 9;
 }
 
 void APlayerCard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (!bInit)return;
 
 	if (NameWidgetComponent && PlayerCardMesh)
 	{
@@ -60,6 +71,15 @@ void APlayerCard::Tick(float DeltaTime)
 
 		NameWidgetComponent->SetWorldLocation(BoneWorldLocation + NameWidgetPos);
 		NameWidgetComponent->SetWorldRotation(FRotator(BoneWorldRotation.X, BoneWorldRotation.Y, BoneWorldRotation.Z)- NameWidgetRot);
+	}
+	
+	GlowPower = FMath::Clamp(GlowPower += DeltaTime* GlowPowerSpeed * GlowPowerDir, 0.f,10000.f);
+	//UE_LOG(LogTemp, Warning, TEXT("GlowPower = %f"), GlowPower);
+	Opacity = FMath::Clamp(Opacity += DeltaTime* 0.75f, 0.f, 1.f);
+	if (PlayerCardDynamicMaterial)
+	{
+		PlayerCardDynamicMaterial->SetScalarParameterValue("GlowPower", GlowPower);
+		PlayerCardDynamicMaterial->SetScalarParameterValue("Opacity", Opacity);
 	}
 }
 

@@ -16,9 +16,15 @@ class ELVENRING_API AWaitingRoomPlayerState : public APlayerState
 	GENERATED_BODY()
 public:
 	AWaitingRoomPlayerState();
+
+	//UFUNCTION(Server, Reliable)
+	void Server_UpdatePlayerNickName(const FString& Name);
 public:
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Player Info")
-	FText PlayerName;
+	UPROPERTY(ReplicatedUsing = OnRep_PlayerNickName)
+	FString PlayerNickName;
+
+	UFUNCTION()
+	void OnRep_PlayerNickName();
 protected:
 
 	virtual void BeginPlay() override;

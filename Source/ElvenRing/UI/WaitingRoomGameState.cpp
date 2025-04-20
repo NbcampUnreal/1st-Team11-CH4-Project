@@ -5,6 +5,7 @@
 #include "WaitingRoomPlayerController.h"
 #include <Net/UnrealNetwork.h>
 #include "WaitingRoomPlayerState.h"
+
 AWaitingRoomGameState::AWaitingRoomGameState()
 {
 
@@ -25,11 +26,24 @@ void AWaitingRoomGameState::AppeareWaitingRoomPlayerCard(int Index)
         }
     }
 }
-void AWaitingRoomGameState::UpdatePlayerName(FText Name)
+void AWaitingRoomGameState::UpdatePlayerName(FText Name)//, AWaitingRoomPlayerState* PS
 {
-    PlayerNames.Add(Name);
+    if (true)return;
+   
+    for (auto It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+    {
+        if (AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(It->Get()))
+        {
+            if (PC->IsLocalController() && PC->HasAuthority())
+            {
+                PC->Client_OnUpdatePlayerName(); // 오직 호스트 자기화면
+            }
+        }
+    }
     bUpdatePlayerName = !bUpdatePlayerName;
-    OnRep_bUpdatePlayerName();
+   // PlayerNames.Add(Name);
+   // bUpdatePlayerName = !bUpdatePlayerName;
+   // OnRep_bUpdatePlayerName();
 }
 void AWaitingRoomGameState::OnRep_bUpdatePlayerName()
 {
