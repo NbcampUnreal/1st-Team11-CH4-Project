@@ -35,6 +35,10 @@ AWaitingRoomPlayerCardsRT::AWaitingRoomPlayerCardsRT()
 		PlayerCardClass = BP_PlayerCard.Class;
 		UE_LOG(LogTemp, Warning, TEXT("PlayerCardClass: %s"), *GetNameSafe(PlayerCardClass));
 	}
+	SceneCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("SceneCamera"));
+	SceneCamera->SetupAttachment(RootComponent);
+	SceneCamera->SetRelativeLocation( FVector(0.f, 200.f, 0.f));
+	SceneCamera->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 }
 void AWaitingRoomPlayerCardsRT::SetGlowPoworDir(float Dir,int32 Index)
 {
@@ -81,6 +85,15 @@ void AWaitingRoomPlayerCardsRT::BeginPlay()
 	SceneCapture->TextureTarget = MyRenderTarget;
 	//UE_LOG(LogTemp, Warning, TEXT("AWaitingRoomPlayerCardsRT MyRenderTarget"));
 	SceneCapture->TextureTarget->ClearColor = FLinearColor(0, 0, 0, 0);
+
+	AWaitingRoomPlayerController* PC = Cast<AWaitingRoomPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (PC)
+	{
+		PC->SetViewTargetWithBlend(this, 0.f);
+		
+	}
+
+
 	//SceneCapture->ShowFlags.SetLighting(false);
 	//SceneCapture->ShowFlags.SetPostProcessing(false);
 	//SceneCapture->ShowFlags.SetShadowFrustums(false);

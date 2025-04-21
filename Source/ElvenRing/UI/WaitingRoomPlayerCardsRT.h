@@ -36,6 +36,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "RenderTarget")
 	UTextureRenderTarget2D* GetRenderTarget();
 
+	UPROPERTY(VisibleAnywhere,Category = "camera")
+	class UCameraComponent* SceneCamera;
+
 	//UFUNCTION(Server, Reliable,BlueprintCallable,Category = "PlayerCard")
 	void SetName(FText Name);
 

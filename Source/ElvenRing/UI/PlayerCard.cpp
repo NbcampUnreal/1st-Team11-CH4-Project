@@ -46,7 +46,8 @@ FText APlayerCard::GetPlayerName()
 void APlayerCard::CloseGlowPowr()
 {
 	GlowPowerDir = -1.f;
-	GlowPowerSpeed *= 0.75f;
+	GlowPowerSpeed *= 1.25f;
+	LightSweep();
 }
 void APlayerCard::BeginPlay()
 {
@@ -56,9 +57,50 @@ void APlayerCard::BeginPlay()
 	bInit = true;
 	//PlayerCardMesh->CreateDynamicMaterialInstance(0, PlayerCardMaterialInstance);
 	PlayerCardDynamicMaterial = PlayerCardMesh->CreateAndSetMaterialInstanceDynamic(0);
+	if(PlayerCardDynamicMaterial)
+		PlayerCardDynamicMaterial->SetScalarParameterValue("Opacity", Opacity);
 	int32 dsfsdf = 9;
 }
+void APlayerCard::LightSweep()
+{
+	float ElapsedTime = 0.f;
+	float PrevTime = 0.f;
+	TWeakObjectPtr<APlayerCard> SafeThis = this;
+	GetWorld()->GetTimerManager().SetTimer
+	(
+		LightSweepDelayTimerHandle,
+		FTimerDelegate::CreateLambda([SafeThis, ElapsedTime, PrevTime]() mutable
+		{
+			if (!SafeThis.IsValid())return;
+			UWorld* World = SafeThis->GetWorld();
+			if (!World) return;
 
+			PrevTime = World->GetTimeSeconds();
+			World->GetTimerManager().SetTimer
+			(
+				SafeThis->LightSweepTimerHandle,
+				FTimerDelegate::CreateLambda([SafeThis, ElapsedTime, PrevTime]() mutable
+				{
+					if (!SafeThis.IsValid())return;
+					UWorld* World = SafeThis->GetWorld();
+					if (!World) return;
+					ElapsedTime += World->GetTimeSeconds() - PrevTime;
+					SafeThis->PlayerCardDynamicMaterial->SetScalarParameterValue("LightSweepElapsedTime", ElapsedTime);
+
+					//UE_LOG(LogTemp, Warning, TEXT("ElapsedTime %f / idx %d"), ElapsedTime, Index);
+					if (ElapsedTime >= 2.1f)
+					{
+						SafeThis->PlayerCardDynamicMaterial->SetScalarParameterValue("LightSweepElapsedTime", 0.0f);
+						World->GetTimerManager().ClearTimer(SafeThis->LightSweepTimerHandle);
+					}
+					else
+						PrevTime = World->GetTimeSeconds();
+				}),0.01f, true
+			);
+
+		}),1.f, false
+	);
+}
 void APlayerCard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -73,7 +115,7 @@ void APlayerCard::Tick(float DeltaTime)
 		NameWidgetComponent->SetWorldRotation(FRotator(BoneWorldRotation.X, BoneWorldRotation.Y, BoneWorldRotation.Z)- NameWidgetRot);
 	}
 	
-	GlowPower = FMath::Clamp(GlowPower += DeltaTime* GlowPowerSpeed * GlowPowerDir, 0.f,10000.f);
+	GlowPower = FMath::Clamp(GlowPower += DeltaTime* GlowPowerSpeed * GlowPowerDir, 0.f,2000.f);
 	//UE_LOG(LogTemp, Warning, TEXT("GlowPower = %f"), GlowPower);
 	Opacity = FMath::Clamp(Opacity += DeltaTime* 0.75f, 0.f, 1.f);
 	if (PlayerCardDynamicMaterial)

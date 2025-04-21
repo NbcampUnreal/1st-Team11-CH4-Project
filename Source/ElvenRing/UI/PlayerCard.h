@@ -55,11 +55,14 @@ protected:
 
 	FName BoneName;
 	UMaterialInstanceDynamic* PlayerCardDynamicMaterial = nullptr;
+	FTimerHandle LightSweepTimerHandle;
+	FTimerHandle LightSweepDelayTimerHandle;
 	float GlowPowerDir = 1.f;
 	bool bInit = false;
 	float GlowPower = 0.f;
 	float Opacity = 0.f;
 	virtual void BeginPlay() override;
+	void LightSweep();
 public:	
 
 	virtual void Tick(float DeltaTime) override;
