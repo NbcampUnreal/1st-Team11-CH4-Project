@@ -2,6 +2,8 @@
 
 
 #include "ElvenRingController.h"
+
+#include "ElvenRingCharacter.h"
 #include "EnhancedInputSubsystems.h"
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/Core/ElvenRingGameMode.h"
@@ -39,6 +41,22 @@ void AElvenRingController::BeginPlay()
 				// Subsystem을 통해 우리가 할당한 IMC를 활성화
 				// 우선순위(Priority)는 0이 가장 높은 우선순위
 				Subsystem->AddMappingContext(InputMappingContext, 0);
+			}
+		}
+	}
+}
+
+void AElvenRingController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	if (IsLocalController())
+	{
+		if (AElvenRingCharacter* Unit = Cast<AElvenRingCharacter>(InPawn))
+		{
+			if (UElvenringGameInstance* GameInstance = Cast<UElvenringGameInstance>(GetGameInstance()))
+			{
+				GameInstance->BindToCharacterOpenWidget(ECharacterType::Player, Unit);
 			}
 		}
 	}

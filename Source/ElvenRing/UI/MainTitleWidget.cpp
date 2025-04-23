@@ -63,10 +63,10 @@ void UMainTitleWidget::OnMultiButtonClicked()
 			FOnElvenRingFindSessionComplete::CreateLambda([this, ElvenRingOnline](bool bWasSuccessful, const TArray<FOnlineSessionSearchResult>& SearchResults) 
 			{
 				FString LogMessage = FString::Printf(TEXT("Find Session Complete : %d results"), SearchResults.Num());
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, LogMessage);
+				// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, LogMessage);
 				if (bWasSuccessful && SearchResults.Num() > 0)
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Join Session"));
+					// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Join Session"));
 					const FOnlineSessionSearchResult& SearchResult = SearchResults[0];
 					ElvenRingOnline->JoinSession(SearchResult, FOnElvenRingJoinSessionComplete::CreateLambda([this](FName SessionName, const EOnJoinSessionCompleteResult::Type Result) 
 					{
@@ -78,7 +78,7 @@ void UMainTitleWidget::OnMultiButtonClicked()
 						}
 						else
 						{
-							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Failed to join"));
+							// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Failed to join"));
 							FRamdaConnect FRConnect;
 							FRConnect.TimerHandle = &TimerHandle;
 							FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
@@ -88,12 +88,12 @@ void UMainTitleWidget::OnMultiButtonClicked()
 				}
 				else
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try Create New Session"));
+					// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Try Create New Session"));
 					ElvenRingOnline->CreateSession(4, FOnElvenRingCreateSessionComplete::CreateLambda([this](FName SessionName, bool bWasSuccessful)
 					{
 						if (bWasSuccessful)
 						{
-							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Create Session Success"));
+							// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Create Session Success"));
 							GetWorld()->GetTimerManager().ClearTimer(AlphaPingpongTimerHandle);
 							GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 							UGameplayStatics::OpenLevel(this, FName("WaitingRoomMap"), true, TEXT("listen"));
@@ -101,7 +101,7 @@ void UMainTitleWidget::OnMultiButtonClicked()
 						}
 						else
 						{
-							GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Failed to create session"));
+							// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("Failed to create session"));
 							FRamdaConnect FRConnect;
 							FRConnect.TimerHandle = &TimerHandle;
 							FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
@@ -174,7 +174,10 @@ void UMainTitleWidget::CloseConnectMaseege(FRamdaConnect& FRConnect)
                 ConnecState = EConnectState::Ready;
                 GetWorld()->GetTimerManager().ClearTimer(*FRConnect.TimerHandle);
             }
-            FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
+            else
+            {
+				FRConnect.PrevTime = GetWorld()->GetTimeSeconds();
+            }
         }), 0.05f, true
     );
 }

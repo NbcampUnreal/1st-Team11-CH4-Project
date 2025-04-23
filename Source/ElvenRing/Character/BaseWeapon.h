@@ -47,5 +47,5 @@ public:
 	UFUNCTION(Server, Reliable)
 	void ServerApplyDamage(AActor* Target, float DamageAmount, AController* InstigatorController, AActor* DamageCauser);
 	UFUNCTION(NetMulticast, Reliable)
-	void MulticastPlayAttackSound();
+	void MulticastPlayAttackSound(FVector Location);
 };

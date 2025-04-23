@@ -25,6 +25,7 @@ class ELVENRING_API ABossHangedMan : public ABoss
 
 public:
 	ABossHangedMan();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void OnSpawnSequenceEnded() override;
 	
@@ -95,7 +96,8 @@ private:
 
 	UPROPERTY(EditInstanceOnly, Category = "Boss|Stat")
 	TObjectPtr<ABossHangedManHeart> Heart;
-	
+
+	UPROPERTY(Replicated)
 	EHealthPhase HealthPhase;
 	
 	FTimerHandle LightningTimer;

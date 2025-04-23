@@ -5,22 +5,23 @@
 #include "OnlineSubsystem.h"
 #include "OnlineSubsystemUtils.h"
 #include "OnlineSessionSettings.h"
+#include "Online/OnlineSessionNames.h"
 #include "Interfaces/OnlineSessionInterface.h"
 
 void UElvenRingOnline::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	UE_LOG(LogTemp, Display, TEXT("ElvenRingOnline Initialize"));
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("ElvenRingOnline Initialize"));
+	// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("ElvenRingOnline Initialize"));
 	if (IOnlineSubsystem * OnlineSubsystem = Online::GetSubsystem(GetWorld()))
 	{
 		UE_LOG(LogTemp, Display, TEXT("%s"), *OnlineSubsystem->GetSubsystemName().ToString());
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, *OnlineSubsystem->GetSubsystemName().ToString());
+		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, *OnlineSubsystem->GetSubsystemName().ToString());
 	}
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No Online Subsystem found"));
-		GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("No Online Subsystem found"));
+		// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("No Online Subsystem found"));
 	}
 }
 
@@ -48,6 +49,7 @@ void UElvenRingOnline::CreateSession(int32 MaxPlayers, const FOnElvenRingCreateS
 				SessionSettings.bUseLobbiesIfAvailable = true;
 				SessionSettings.bUsesPresence = true;
 				SessionSettings.bIsLANMatch = false;
+				SessionSettings.Set(FName("CustomMatchKey"), FString("ElvenRing"), EOnlineDataAdvertisementType::ViaOnlineService);
 			}
 			else
 			{
@@ -58,6 +60,7 @@ void UElvenRingOnline::CreateSession(int32 MaxPlayers, const FOnElvenRingCreateS
 				SessionSettings.bIsLANMatch = true;
 			}
 
+			
 			OnCreateSessionCompleteDelegate = InCallback;
 			Session->ClearOnCreateSessionCompleteDelegates(this);
 			Session->OnCreateSessionCompleteDelegates.AddUObject(this, &UElvenRingOnline::OnCreateSessionComplete);
@@ -74,7 +77,7 @@ void UElvenRingOnline::CreateSession(int32 MaxPlayers, const FOnElvenRingCreateS
 void UElvenRingOnline::FindSession(const FOnElvenRingFindSessionComplete& InCallback)
 {
 	UE_LOG(LogTemp, Display, TEXT("SearchSession"));
-	GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("SearchSession"));
+	// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("SearchSession"));
 
 	if (IOnlineSubsystem * OnlineSubsystem = Online::GetSubsystem(GetWorld()))
 	{
@@ -90,13 +93,16 @@ void UElvenRingOnline::FindSession(const FOnElvenRingFindSessionComplete& InCall
 			if (IsSteamOnlineSubsystem(OnlineSubsystem))
 			{
 				UE_LOG(LogTemp, Display, TEXT("Search Steam Online Subsystem"));
-				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Search Steam Online Subsystem"));
+				// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Search Steam Online Subsystem"));
 				SearchObject->bIsLanQuery = false;
+				SearchObject->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+				SearchObject->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
+				SearchObject->QuerySettings.Set(FName("CustomMatchKey"), FString("ElvenRing"), EOnlineComparisonOp::Equals);
 			}
 			else
 			{
 				UE_LOG(LogTemp, Display, TEXT("Search LAN Online Subsystem"));
-				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Search LAN Online Subsystem"));
+				// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Search LAN Online Subsystem"));
 				SearchObject->bIsLanQuery = true;
 			}
 
@@ -144,18 +150,18 @@ void UElvenRingOnline::OnJoinSessionComplete(FName SessionName, EOnJoinSessionCo
 				{
 					PlayerController->ClientTravel(ConnectString, TRAVEL_Absolute);
 					UE_LOG(LogTemp,Display,TEXT("Connect String: %s"), *ConnectString);
-					GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Join Session Success"));
+					// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Green, TEXT("Join Session Success"));
 				}
 				else
 				{
 					UE_LOG(LogTemp, Warning, TEXT("PlayerController is null"));
-					GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("PlayerController is null"));
+					// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("PlayerController is null"));
 				}
 			}
 			else
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Failed to get resolved connect string"));
-				GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("Failed to get resolved connect string"));
+				// GEngine->AddOnScreenDebugMessage(-1, 15.f, FColor::Red, TEXT("Failed to get resolved connect string"));
 			}
 		}
 	}
@@ -174,7 +180,11 @@ void UElvenRingOnline::JoinSession(const FOnlineSessionSearchResult& SearchResul
 			FUniqueNetIdPtr UserId = GetGameInstance()->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 			if (UserId.IsValid())
 			{
-				Session->JoinSession(*UserId, NAME_GameSession, SearchResult);
+				// https://forums.unrealengine.com/t/ue-5-5-online-subsystem-join-session-always-results-in-on-failure/2125579/14
+				FOnlineSessionSearchResult ModSearchResult = SearchResult;
+				ModSearchResult.Session.SessionSettings.bUsesPresence = true;
+				ModSearchResult.Session.SessionSettings.bUseLobbiesIfAvailable = true;
+				Session->JoinSession(*UserId, NAME_GameSession, ModSearchResult);
 			}
 		}
 	}

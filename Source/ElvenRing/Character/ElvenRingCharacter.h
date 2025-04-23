@@ -31,18 +31,30 @@ public:
 	void ToggleInput(bool bInput);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Move)
 	bool bInput;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Heal)
+	bool bHealing = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sound")
+	USoundBase* DieSound;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sound")
+	USoundBase* PosionSound;
 	virtual void OnDeath() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
+	UFUNCTION(blueprintcallable)
+	void HandleDeath();
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Effects")
 	UNiagaraSystem* HitNiagara;
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_PlayAttackAnimation(UAnimMontage* Montage);
 	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Death(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Hit(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_Heal(UAnimMontage* Montage);
+	UFUNCTION(NetMulticast, Reliable) 
 	void Multicast_PlayDodgeAnimation(float _DodgeDuration);
 	//공격 함수 및 변수들
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attack",Replicated)
@@ -64,6 +76,8 @@ protected:
 	void OnDodgeInput(const FInputActionValue& Value);
 	UFUNCTION(Server, Reliable)
 	void Server_OnDodgeInput(const FInputActionValue& Value);
+	UFUNCTION(Server, Reliable)
+	void Server_Heal();
 	UFUNCTION(BlueprintCallable, Category = "Attack")
 	void OnAttackAnimationEnd();
 	void ComboEnd();
@@ -85,6 +99,8 @@ protected:
 	UAnimMontage* DieMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
 	UAnimMontage* HitMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animation")
+	UAnimMontage* HealMontage;
 	//달리기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeedMultiplier;  // "기본 속도" 대비 몇 배로 빠르게 달릴지 결정
@@ -108,6 +124,8 @@ protected:
 	bool bIsDodging = false;
 	FVector DodgeVelocity;
 	float OriginalMaxSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Dodge")
+	float DodgeSpeed;
 	//방어 관련함수
 	float DefenceSpeed = 1.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Defence")

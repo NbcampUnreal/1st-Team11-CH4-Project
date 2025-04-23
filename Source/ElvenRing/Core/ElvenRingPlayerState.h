@@ -52,6 +52,11 @@ public:
 	float GetBossDamage(const AActor* BossActor) const;
 	void ResetPlayerDamage(AActor* BossClass);
 	void AddRespawnCount() { RespawnCount++; }
+
+	float GetDamageDealt() const { return TotalDamageDealt; }
+	float GetDamageTaken() const { return TotalDamageTaken; }
+	int GetDodgeCount() const { return TotalDodgeCount; }
+	int GetRespawnCount() const { return RespawnCount; }
 protected:
 	static UClass* GetNativeClass(const AActor* Actor);
 	TMap<UClass*, float> BossDamageRecord;

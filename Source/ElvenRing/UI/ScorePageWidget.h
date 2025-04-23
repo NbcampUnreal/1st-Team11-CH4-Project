@@ -77,15 +77,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void OnClickOkBtn();
-
-
+	void CalculateResultStat();
+	
 protected:
 	TArray<UTextBlock*> PlayerNames;
 	TArray<FResultStat> AllResultStats;
 
 	virtual void NativeConstruct() override;
 	virtual void NativeDestruct() override;
-private:
-	void CalculateResultStat();
-
 };

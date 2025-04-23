@@ -21,9 +21,9 @@ ARampageMonster();
 	bool InstanceIsAttack;
 	bool InstanceIsDeath;
 
-	virtual void MulticastIsHit(bool value, FVector HitLocation, FRotator HitRotation)override;
-	virtual void MulticastIsAttack(bool value)override;
-	virtual void MulticastIsDeath(bool value)override;
+	virtual void MulticastIsHit_Implementation(bool value, FVector HitLocation, FRotator HitRotation) override;
+	virtual void MulticastIsAttack_Implementation(bool value) override;
+	virtual void MulticastIsDeath_Implementation(bool value) override;
 
 
 	virtual void BeginPlay() override;

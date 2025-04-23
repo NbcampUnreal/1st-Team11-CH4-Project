@@ -7,6 +7,7 @@
 #include "ElvenRing/Core/ElvenringGameInstance.h"
 #include "ElvenRing/UI/BossWidget.h"
 #include "ElvenRing/UI/UIManager.h"
+#include "Net/UnrealNetwork.h"
 
 ABossHangedMan::ABossHangedMan()
 {
@@ -27,6 +28,13 @@ void ABossHangedMan::BeginPlay()
 	NormalPattern->AddAttackPattern(this, &ABossHangedMan::ElectronicAttackDown, FString("ElectronicAttackDown"));
 	
 	Super::BeginPlay();
+}
+
+void ABossHangedMan::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ABossHangedMan, HealthPhase);
 }
 
 void ABossHangedMan::OnDeath()

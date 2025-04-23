@@ -45,7 +45,6 @@ void UNormalMonsterWatingTask::TickTask(UBehaviorTreeComponent& OwnerComp, uint8
 
 	if (bPlayerDetected)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("플레이어 감지됨! Task 종료."));
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 	}
 }
@@ -62,7 +61,6 @@ void UNormalMonsterWatingTask::UpdateWaiting(ANormalMonster* NormalMonster)
 	}
 
 	GruxAnimInstance->IsWaiting = true; // 시작 시 대기 상태로 변경
-	UE_LOG(LogTemp, Warning, TEXT("애니메이션 블루프린트: IsWaiting 활성화"));
 
 	// 함수 내부에서 사용할 타이머 핸들 선언
 	FTimerHandle WaitingLoopTimerHandle;

@@ -27,6 +27,7 @@ class ELVENRING_API ABossTenebris : public ABoss
 public:
 	ABossTenebris();
 
+	virtual void OnDeath() override;
 	virtual void OnSpawnSequenceEnded() override;
 	virtual void OnPhaseSequenceEnded() override;
 	

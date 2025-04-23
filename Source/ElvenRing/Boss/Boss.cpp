@@ -128,6 +128,7 @@ void ABoss::ChangeToAttackStateIfConditionSatisfied()
 void ABoss::OnSpawnSequenceEnded()
 {
 	AttachDelegateToWidget(ECharacterType::Boss);//ksw
+	OnRep_HealthChanged();
 	LOG(TEXT("Begin"));
 }
 
@@ -237,6 +238,8 @@ FVector ABoss::GetDirectionVectorToTarget() const
 
 void ABoss::SetBossBattleMode_Implementation()
 {
+	if (!HasAuthority()) return;
+	
 	LOG(TEXT("Begin"));
 	// 공격할 타겟 플레이어 지정
 	SetAttackTarget();
@@ -285,6 +288,7 @@ void ABoss::RegisterCollision(UCapsuleComponent* Collision, const FName SocketNa
 
 void ABoss::SetAttackTimer()
 {
+	GetWorldTimerManager().ClearTimer(AttackTimerHandle);
 	const float RandomAttackTime = FMath::RandRange(AttackInterval, AttackInterval + AttackIntervalRange);
 	GetWorldTimerManager().SetTimer(AttackTimerHandle, this, &ABoss::ChangeToAttackStateIfConditionSatisfied, RandomAttackTime,false);
 }

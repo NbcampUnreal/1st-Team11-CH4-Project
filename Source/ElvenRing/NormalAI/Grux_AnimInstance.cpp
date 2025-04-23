@@ -1,6 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "ElvenRing/NormalAI/Grux_AnimInstance.h"
 #include "ElvenRing/NormalAI/NormalMonster.h"
 
@@ -11,7 +8,6 @@ UGrux_AnimInstance::UGrux_AnimInstance()
 	IsWaiting = false;
 	IsDeath = false;
 }
-
 
 void UGrux_AnimInstance::UpdateAttack(bool value)
 {
@@ -25,7 +21,7 @@ void UGrux_AnimInstance::UpdateHit(bool value)
 		{
 			IsHit = false;
 			AActor* OwnerActor = GetOwningActor();
-		}, 0.8f, false);	
+		}, 0.7f, false);	
 }
 
 void UGrux_AnimInstance::UpdateDeath(bool value)
@@ -35,21 +31,38 @@ void UGrux_AnimInstance::UpdateDeath(bool value)
 
 void UGrux_AnimInstance::AnimNotify_EndHit()
 {
-	IsHit=false;
+	IsHit = false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
 	{
 		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
 		if (Monster)
-		{	
-			Monster->RPCIsHit(IsHit,OwnerActor);
+		{
+			Monster->RPCIsHit(IsHit, OwnerActor);
 		}
 	}
 }
 
 void UGrux_AnimInstance::AnimNotify_EndAttack()
 {
-	IsAttacking=false;
+	AActor* OwnerActor = GetOwningActor();
+	if (OwnerActor)
+	{
+		ANormalMonster* Monster = Cast<ANormalMonster>(OwnerActor);
+		if (Monster)
+		{
+			AActor* Target = Monster->TargetCharacterActor;
+			if (Target)
+			{
+				Monster->RealAttack(Target);
+			}
+		}
+	}
+}
+
+void UGrux_AnimInstance::AnimNotify_AttackValue()
+{
+	IsAttacking = false;
 	AActor* OwnerActor = GetOwningActor();
 	if (OwnerActor)
 	{

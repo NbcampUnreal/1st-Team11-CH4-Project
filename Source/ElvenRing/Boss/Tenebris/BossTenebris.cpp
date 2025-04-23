@@ -32,6 +32,12 @@ ABossTenebris::ABossTenebris()
 	TailAttackCollisions.Add(TailAttackCollision2);
 }
 
+void ABossTenebris::OnDeath()
+{
+	Super::OnDeath();
+	GetWorldTimerManager().ClearTimer(SpecialAttackTimer);
+}
+
 void ABossTenebris::BeginPlay()
 {
 	NormalPattern->AddAttackPattern(this, &ABossTenebris::GrabAttack, FString("GrabAttack"));
